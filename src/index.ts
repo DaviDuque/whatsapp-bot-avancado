@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import { sendMessage } from './twilio';
 import './commands';
 import { getCommand } from "./commandManager";
+import { AudioService } from './infra/audio.service';
 
 
 const app = express();
@@ -14,10 +15,21 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true}));
 
 app.get('/', (req: Request, res: Response) => {
-    res.send('Galo Doido');
+    res.send('gelo seco');
 });
 
+app.get('/bots', (req: Request, res: Response) => {
+    res.json({
+        message: 'Listando bots'
+    })
+});
 
+app.post('/send', async(req: Request, res: Response) => {
+    const {from, to, body} = req.body;
+    console.log(">>>>>>>>>>>>>>>>");
+    await sendMessage(from, to, body); 
+    res.send("menssagem enviada!");
+});
 
 app.post('/whatsapp', async(req: Request, res: Response) => {
     const {From, To, Body} = req.body;
@@ -26,12 +38,33 @@ app.post('/whatsapp', async(req: Request, res: Response) => {
 
     if(command){
         const response = command.execute(args);
+        console.log(">>>>>>>>>>>>>>>>>.>>>tt");
         sendMessage(To, From, response); 
     }else{
-        sendMessage(To, From, '\u{1F63A} Ola, não entendi. Comando não reconhecido. \u{2600} \n \u{1F3C4} digite "8" para lista de opções. \n \u{1F525} digite "9" para sair. ');
+        sendMessage(To, From, 'Comando não reconhecido. \n Envie "help" para lista de comandos');
     }
     
     res.send("menssagem recebida!");
+});
+
+
+app.get('/download', async (req: Request, res: Response) => {
+   try {
+    const serviceAudio = new AudioService();
+
+    //const url = 'https://getsamplefiles.com/download/ogg/sample-1.ogg';
+    const url = 'https://file-examples.com/storage/fe58a1f07d66f447a9512f1/2017/11/file_example_OOG_1MG.ogg';
+    
+    if (url == undefined) {
+        res.status(400).send('url não informada')
+        return;
+    }
+    const response = await serviceAudio.download(url);
+    res.json({url: response});
+   } catch (error) {
+    console.log(';;;;', error);
+      res.status(500).send(error);
+   }
 });
 
 app.listen(port, ()=> console.log(`Servidor rodando na porta ${port}`));
