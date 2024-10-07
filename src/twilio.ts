@@ -1,7 +1,12 @@
 import { Twilio } from "twilio";
 
-const accountSid = process.env.TWILIO_ACCONUT_SID;
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
+if(accountSid == undefined){
+    console.error(`-------------não carregou a env --> ${accountSid}`);
+}
+
+
 const client = new Twilio(accountSid, authToken);
 
 export const sendMessage = async (from: string, to: string, body: string) => {
@@ -14,6 +19,6 @@ export const sendMessage = async (from: string, to: string, body: string) => {
         });
 
     }catch(error){
-        console.error("erro ao acessar o twilio", error);
+        console.error("---------------->>>>>erro ao acessar o twilio", error);
     }
 }

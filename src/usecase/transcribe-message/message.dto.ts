@@ -8,5 +8,5 @@ export interface MessageDTO{
     to: string;
     from: string;
     mediaUrl0: string;
-    transcribeText: string;
+    transcribeText?: string;
 }
