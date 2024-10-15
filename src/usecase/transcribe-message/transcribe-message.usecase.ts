@@ -43,7 +43,7 @@ export class TranscribeMessageUseCase {
         const transcription = await this.transcriptionService.transcribe(mp3Path);
         console.log(">>>>>>>>>>>>>>>>>memory 5");
 
-        if (transcription.length > 1000) {
+        if (transcription.length > 10) {
             const summarizedTranscription = await this.summarizationService.summarize(transcription);
             newMessage.setTranscriptionText(summarizedTranscription);
             this.messageRepository.update(newMessage.smsMessageSid, newMessage);
