@@ -1,4 +1,4 @@
-import { AuthService } from '../infra/service/auth.service';
+import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 
 const authService = new AuthService();

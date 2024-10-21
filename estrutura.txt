@@ -1,0 +1,46 @@
+
+/project-root
+│
+├── /node_modules
+├── /src
+│   ├── /infra
+│   │   ├── /database                    # Singleton: Configura a conexão com o banco de dados
+│   │   │   └──mysql-connections.ts    
+│   │   ├── /integrations
+│   │   │   ├── twilio.ts                # Facade: Fornece uma interface simplificada para APIs externas
+│   │   │   ├── twilio.ts                # Facade: Fornece uma interface simplificada para APIs externas
+│   │   │   └── twilioOriginal.ts        # Adapter: Adapta APIs externas ao formato interno
+│   │   ├── /memory
+│   │   │   ├── message-memory.repository.ts               
+│   │   │   └── message-text-memory.repository.ts         
+│   │   │         
+├── authProvider.ts               # Strategy: Provedores de autenticação (OAuth, SAML, etc.)
+│   │   └── apiConfig.ts                    # Configuração de API's externas
+│   ├── /modules
+│   │   ├── /clientes
+│   │   │   ├── clientes.controller.ts
+│   │   │   ├── clientes.service.ts
+│   │   │   ├── clientes.repository.ts
+│   │   │   ├── clientes.entity.ts
+│   │   │   └── clientes.dto.ts
+│   │   ├── /transcricao
+│   │   │   ├── transcricao.controller.ts
+│   │   │   ├── transcricao.service.ts
+│   │   │   ├── transcricao.repository.ts
+│   │   │   ├── transcricao.entity.ts
+│   │   │   └── transcricao.dto.ts
+│   │   ├── /relatorios
+│   │   │   ├── relatorios.controller.ts
+│   │   │   ├── relatorios.service.ts
+│   │   │   ├── relatorios.repository.ts
+│   │   │   └── relatorios.dto.ts
+├── /decorators
+│   │   ├── loggingDecorator.ts         # Decorator: Adiciona logging a métodos/classes
+│   │   └── authDecorator.ts            # Decorator: Adiciona autenticação a métodos/classes
+│   └── app.ts                          # Ponto de entrada da aplicação
+├── /dist
+│   └── ...                             # Código transpilado (output)
+│
+├── tsconfig.json                       # Configurações do TypeScript
+├── package.json                        # Dependências e scripts do projeto
+└── README.md                           # Documentação do projeto

@@ -1,275 +1,120 @@
+//index para cadastro
+
 import * as dotenv from 'dotenv';
 dotenv.config();
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import { sendMessage } from './twilio';
+import { cadastrarCliente } from './modules/clientes/clientes.repository';
+import { sendMessage } from './infra/integrations/twilio';
 import './commands';
-import { getCommand } from "./commandManager";
-import { AudioService } from './infra/service/audio.service';
-import { TranscriptionService } from './infra/service/transcription.service';
-import { SummarizeService } from './infra/service/summarize.service';
-import { TranscribeMessageUseCase } from './usecase/transcribe-message/transcribe-message.usecase';
-import { MessageMemoryRepository } from './infra/memory/message-memory.repository';
-import { MessageTextMemoryRepository } from './infra/memory/message-text-memory.repository';
-import { SummarizeMessageUseCase } from './usecase/message-text/summerize-message.usecase';
-import { Auth } from './auth/auth';
-import { authMiddleware } from './infra/service/auth.middleware';
-
+import { getCommand } from './commandManager';
+import { verificarClientePorTelefone } from './modules/clientes/clientes.repository';
+import { formatarNumeroTelefone } from './utils/trata-telefone';
+import { verificarEstadoCliente, atualizarEstadoCliente, limparEstadoCliente } from './modules/clientes/clientes.repository';
+import { cadastrarClienteController } from './modules/clientes/clientes.service';
+import { generateRandomCode } from './utils/Gera-codigo';
+import { Clientes } from './modules/clientes/clientes.controller';
 const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true}));
-
-app.get('/', authMiddleware, (req: Request, res: Response) => {
+app.use(bodyParser.urlencoded({ extended: true }));
+console.log("index2 cadastro");
+app.get('/', (req: Request, res: Response) => {
     res.send('gelo seco');
 });
 
-const authUsercase = new Auth();
+// Armazenamento temporário para os dados do cliente em processo de cadastro
+const dadosClientesTemporarios: { [key: string]: any } = {};
+const newCliente = new Clientes();
 
-app.post('/login', authUsercase.login);
-app.post('/register', authMiddleware, authUsercase.register);
-app.post('/refresh-token', authUsercase.refreshToken);
+app.post('/whatsapp',  newCliente.whatsapp);
+
+/*app.post('/whatsapp', async (req: Request, res: Response) => {
+    const { From, To, Body } = req.body;
+    const [commandName, ...args] = Body.split(' ');
+
+    // Verificar se o cliente já está cadastrado
+    const clienteCadastrado = await verificarClientePorTelefone(From);
+
+    if (!clienteCadastrado) {
+        // Verificar o estado atual do cliente
+        const estadoAtual = verificarEstadoCliente(From);
+        // Exemplo de uso: Gerar um código com 10 caracteres
+               
+        if (!dadosClientesTemporarios[From]) {
+            dadosClientesTemporarios[From] = {
+                id_endereco: 1, // Aqui você pode ter uma lógica mais robusta para gerenciar endereços
+                senha: 'senhaPadrão',
+                codigo_indicacao: null
+            };
+        }
+
+        const novoCliente = dadosClientesTemporarios[From];
+
+        if (!estadoAtual) {
+            // Se não tiver estado, começar pedindo o nome
+            atualizarEstadoCliente(From, 'aguardando_nome');
+            sendMessage(To, From, 'Por favor, envie seu nome para continuar o cadastro.');
+        } else if (estadoAtual === 'aguardando_nome') {
+            console.log(".............1", Body);
+            novoCliente.nome = Body;
+            atualizarEstadoCliente(From, 'aguardando_email');
+            sendMessage(To, From, 'Obrigado! Agora, envie seu email.');
+        } else if (estadoAtual === 'aguardando_email') {
+            console.log(".............2", Body);
+            novoCliente.email = Body;
+            atualizarEstadoCliente(From, 'aguardando_cpf');
+            sendMessage(To, From, 'Perfeito! Agora, envie seu CPF.');
+        } else if (estadoAtual === 'aguardando_cpf') {
+            console.log(".............3", Body);
+            novoCliente.cpf = Body;
+            novoCliente.telefone = formatarNumeroTelefone(From.replace(/^whatsapp:/, ''));
+            novoCliente.codigo_proprio = generateRandomCode(12, novoCliente.telefone.slice(-5));
+        
+            console.log(".............4", novoCliente.telefone);
+            console.log(".............5", novoCliente);
+
+          try{
+            const cadastro: any = await cadastrarClienteController(novoCliente); // Chama a lógica de cadastro no banco de dados
+            console.log("cadastro", cadastro);
+            if(cadastro.error){
+                sendMessage(To, From, 'Ocorreu um erro ao realizar o cadastro. Por favor, tente novamente mais tarde.');
+            }else{
+                sendMessage(To, From, 'Cadastro realizado com sucesso! Obrigado.');
+            }
 
 
-app.get('/download', async (req: Request, res: Response) => {
-    try {
-     const serviceAudio = new AudioService();
+
  
-     const url = process.env.AUDIO_OGG_FILE_PATH;
-     
-     if (url == undefined) {
-         res.status(400).send('url não informada')
-         return;
-     }
-     const response = await serviceAudio.download(url);
-     res.json({url: response});
-    } catch (error) {
-     console.log(';;;;', error);
-       res.status(500).send(error);
-    }
- });
 
-app.post('/whatsapp1', async(req: Request, res: Response) => {
+            
+           
 
-    const { SmsMessageSid, MediaContentType0, NumMedia, ProfileName, WaId, Body, To, From, MediaUrl0, TranscribeText }  = req.body;
-    
-    console.log(">>>body>>>", req.body);
-    if(NumMedia =='1' && MediaContentType0 == 'audio/ogg' && MediaUrl0.length !== 0){
-        const transcriptionService = new TranscriptionService();
-        const audioService = new AudioService();
-        const summarizeService = new SummarizeService();
-        const messageRepository = new MessageMemoryRepository();
-
-        const transcribeMessageUseCase = new TranscribeMessageUseCase(
-            transcriptionService,
-            audioService,
-            summarizeService,
-            messageRepository
-        );
-         console.log(">>>>>>>>>ponto 0", MediaContentType0);
-        const response = await transcribeMessageUseCase.execute({
-           smsMessageSid: SmsMessageSid,
-           mediaContentType0: MediaContentType0,
-           numMedia: NumMedia,       
-           profileName: ProfileName,
-           waId: WaId,
-           body: Body,
-           to: To,
-           from: From,
-           mediaUrl0: MediaUrl0,
-           transcribeText: TranscribeText
-        });
-
-        if (!response) {
-            sendMessage(To, From, 'Não foi possível transcrever a msg');
-            return;
+            
+            limparEstadoCliente(From);  // Limpa o estado após o cadastro
+            delete dadosClientesTemporarios[From];  // Remove os dados temporários após o cadastro
+        } catch (error) {
+            console.error("Erro ao cadastrar cliente:", error);
+            
+            // Se ocorrer um erro no cadastro, envia a mensagem de falha
+            sendMessage(To, From, 'Ocorreu um erro ao realizar o cadastro. Por favor, tente novamente mais tarde.');
+        }
         }
 
+        return res.send("Processo de cadastro em andamento.");
+    }
+
+    // Processar o comando caso o cliente já esteja cadastrado
+    const command = getCommand(commandName);
+    if (command) {
+        const response = command.execute(args);
         sendMessage(To, From, response);
-        return;
-    }
-    const [commandName, ...args] = Body.split(' ');
-    const command = getCommand(commandName);
-
-    if(command){
-        const response = command.execute(args);
-        sendMessage(To, From, response); 
-    }else{
-        sendMessage(To, From, 'Ola, envie um audio para transcrição. \n Envie "help" para lista de comandos');
-    }
-});
-
-
-
-app.post('/whatsapp2', async(req: Request, res: Response) => {
-
-    const {  
-        SmsMessageSid, 
-        MediaContentType0, 
-        NumMedia, 
-        ProfileName, 
-        WaId, 
-        Body, 
-        To, 
-        From, 
-        MediaUrl0
-     }  = req.body;
-    
-    console.log(">>>body>>>", req.body);
-
-   
-    if(1===1){
-       
-    
-        const summarizeService = new SummarizeService();
-        const messageTextRepository = new MessageTextMemoryRepository();
-
-        const summarizeMessageUseCase = new SummarizeMessageUseCase(
-            summarizeService,
-            messageTextRepository
-        );
-         console.log(">>>>>>>>>ponto 0");
-         const response = await summarizeMessageUseCase.execute({
-            smsMessageSid: SmsMessageSid,
-            mediaContentType0: MediaContentType0, 
-            numMedia: NumMedia, 
-            profileName: ProfileName, 
-            waId: WaId,
-            body: Body,
-            to: To,
-            from: From,
-            mediaUrl0: MediaUrl0
-         });
-
-
-        if (!response) {
-            sendMessage(To, From, 'Não foi possível transcrever a msg');
-            return;
-        }
-
-        sendMessage(To, From, response);
-        return;
-    }
-    const [commandName, ...args] = Body.split(' ');
-    const command = getCommand(commandName);
-
-    if(command){
-        const response = command.execute(args);
-        sendMessage(To, From, response); 
-    }else{
-        sendMessage(To, From, 'Texto não enviado. \n Envie "help" para lista de comandos');
-    }
-});
-
-
-app.post('/whatsapp3', async(req: Request, res: Response) => {
-
-    const { SmsMessageSid, MediaContentType0, NumMedia, ProfileName, WaId, Body, To, From, MediaUrl0, TranscribeText }  = req.body;
-    
-    console.log(">>>body>>>", req.body);
-    if(NumMedia =='1' && MediaContentType0 == 'audio/ogg' && MediaUrl0.length !== 0){
-        const transcriptionService = new TranscriptionService();
-        const audioService = new AudioService();
-        const summarizeService = new SummarizeService();
-        const messageRepository = new MessageMemoryRepository();
-
-        const transcribeMessageUseCase = new TranscribeMessageUseCase(
-            transcriptionService,
-            audioService,
-            summarizeService,
-            messageRepository
-        );
-         console.log(">>>>>>>>>ponto 0", MediaContentType0);
-        const response = await transcribeMessageUseCase.execute({
-           smsMessageSid: SmsMessageSid,
-           mediaContentType0: MediaContentType0,
-           numMedia: NumMedia,       
-           profileName: ProfileName,
-           waId: WaId,
-           body: Body,
-           to: To,
-           from: From,
-           mediaUrl0: MediaUrl0,
-           transcribeText: TranscribeText
-        });
-
-        if (!response) {
-            sendMessage(To, From, 'Não foi possível transcrever a msg');
-            return;
-        }
-
-        //sendMessage(To, From, response);
-        console.log(To, From, response);
-        return;
-    }
-    
-
-    if(SmsMessageSid){
-        const summarizeService = new SummarizeService();
-        const messageTextRepository = new MessageTextMemoryRepository();
-
-        const summarizeMessageUseCase = new SummarizeMessageUseCase(
-            summarizeService,
-            messageTextRepository
-        );
-         console.log(">>>>>>>>>ponto 0");
-         const response = await summarizeMessageUseCase.execute({
-            smsMessageSid: SmsMessageSid,
-            mediaContentType0: MediaContentType0, 
-            numMedia: NumMedia, 
-            profileName: ProfileName, 
-            waId: WaId,
-            body: Body,
-            to: To,
-            from: From,
-            mediaUrl0: MediaUrl0
-         });
-
-
-        if (!response) {
-            sendMessage(To, From, 'Não foi possível transcrever a msg');
-            return;
-        }
-
-        //sendMessage(To, From, response);
-        console.log(To, From, response);
-        return;
+    } else {
+        sendMessage(To, From, '\u{1F63A} Olá, não entendi. Comando não reconhecido. \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
     }
 
+    res.send("Mensagem recebida!");
+});*/
 
-    
-    
-
-
-    const [commandName, ...args] = Body.split(' ');
-    const command = getCommand(commandName);
-
-    if(command){
-        const response = command.execute(args);
-        sendMessage(To, From, response); 
-    }else{
-        sendMessage(To, From, 'OPS! não identificamos a msg. \n Envie "help" para lista de comandos');
-    }
-});
-
-
-app.post('/whatsapp', async(req: Request, res: Response) => {
-    const {From, To, Body} = req.body;
-    const [commandName, ...args] = Body.split(' ');
-    const command = getCommand(commandName);
-
-    if(command){
-        const response = command.execute(args);
-        sendMessage(To, From, response); 
-    }else{
-        sendMessage(To, From, '\u{1F63A} Ola, não entendi. Comando não reconhecido. \u{2600} \n \u{1F3C4} digite "8" para lista de opções. \n \u{1F525} digite "9" para sair. ');
-    }
-    
-    res.send("menssagem recebida!");
-});
-
-
-
-
-app.listen(port, ()=> console.log(`Servidor rodando na porta ${port}`));
+app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));

@@ -61,49 +61,4 @@ export class AudioService implements AudioServiceInterface {
     }
 
 
-    /*async download2(url: string): Promise<string> {
-     // try {
-        // Busca os detalhes da mídia
-        //const mediaUrl = url;
-    
-        // Autenticando a requisição com o axios
-        const response = await axios({
-          url: url,
-          method: 'GET',
-          responseType: 'arraybuffer', // Recebe o conteúdo em formato de stream (para áudio)
-          auth: {
-            username: accountSid,
-            password: apiKeySecret,
-          }
-        });
-    
-        const audioBuffer = Buffer.from(response.data);
-       
-        await writeFileAsync(this.oggFilePath, audioBuffer);
-        this.audioLoaded = true;
-    
-        if(!this.audioLoaded) {
-            throw new Error('>>>>>>>>>>>>>Audio not loaded')
-        }
-        
-        console.log(">>>>>>>>>>>>>>>>ponto 2", this.oggFilePath);
-        return new Promise((resolve, reject) => {
-            Ffmpeg(this.oggFilePath)
-            .output(this.mp3FilePath)
-            .on('end', ()=> {
-                resolve(this.mp3FilePath);
-            })
-            .on('error', (err) => {
-                reject(err);
-            })
-            .run();
-    });
-
-  /*} catch (error) {
-    console.error('Erro ao buscar o áudio:', error);
-  }*/
-
-//}
-
-
 }

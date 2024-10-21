@@ -19,7 +19,7 @@ export class SummarizeMessageUseCase {
             messageData.body,
             messageData.to,
             messageData.from,
-            messageData.mediaUrl0
+            messageData.mediaUrl0,
         );
 
         if(!newMessageText.body){
