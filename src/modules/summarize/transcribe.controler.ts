@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import { AudioService } from '../../infra/integrations/audio.service';
 import { TranscriptionService } from '../../infra/integrations/transcription.service';
+import { SummarizeService } from '../../infra/integrations/summarize.service';
 import { TranscribeMessageController } from './transcribe.repository';
 import { MessageMemoryRepository } from '../../infra/memory/message-memory.repository';
 
@@ -10,7 +11,6 @@ import { MessageMemoryRepository } from '../../infra/memory/message-memory.repos
       
 
     if(NumMedia =='1' && MediaContentType0 == 'audio/ogg' && MediaUrl0.length !== 0){
-        console.log(">>>midia>>>", SmsMessageSid, NumMedia, MediaContentType0, MediaUrl0);
         const transcriptionService = new TranscriptionService();
         const audioService = new AudioService();
         const messageRepository = new MessageMemoryRepository();

@@ -1,4 +1,6 @@
 
+import dayjs from 'dayjs';
+
 export const validarNome = (nome: string): boolean  => {
     
     if (nome.length < 5) {
@@ -100,6 +102,24 @@ export const validarEmail = (email: string): boolean => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
 }
+
+export const validarDescricao = (descricao: string) => {
+    console.log("validarDescricao---->",descricao.length > 0 && descricao.length <= 255);
+    return descricao.length > 0 && descricao.length <= 255;
+};
+
+export const validarValor = (valor: number) => {
+    console.log("validarValor---->", valor > 0);
+    return valor > 0;
+};
+
+export const validarData = (data: string) => {
+    console.log("validarData---->", data);
+    const regex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD
+    console.log("validarData---->", regex.test(data));
+    return regex.test(data);
+};
+
 
 
 

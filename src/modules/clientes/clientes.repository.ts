@@ -1,8 +1,11 @@
 //clientes.repository.ts
 import { connection } from '../../infra/database/mysql-connection';
 import { RowDataPacket } from 'mysql2';
+import { reverterNumeroTelefone } from '../../utils/trata-telefone';
+import { verificarEstado, atualizarEstado, limparEstado, atualizarClienteEstado, verificarClienteEstado } from '../../infra/states/states'
 
 export interface Cliente {
+    id_cliente?: any;
     nome: string;
     email: string;
     telefone: string;
@@ -15,7 +18,28 @@ export interface Cliente {
 
 export const verificarClientePorTelefone = async (telefone: string): Promise<boolean> => {
     const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
+
+    if(rows.length > 0){
+        const From = reverterNumeroTelefone(telefone);
+        const cliente = verificarClienteEstado(rows[0].id_cliente);
+        const teste = verificarClienteEstado(From);
+        console.log("cliente----->", rows[0].id_cliente);
+    }
+    console.log("cliente rows----->", rows);
     return rows.length > 0;
+};
+
+
+export const criarClientePorTelefone = async (telefone: string): Promise<string> => {
+    const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
+
+    if(rows.length > 0){
+        const From = reverterNumeroTelefone(telefone);
+        const teste = verificarClienteEstado(rows[0].id_cliente);
+        console.log("cliente----->", rows[0].id_cliente);
+    }
+    console.log("cliente rows----->", rows);
+    return rows[0].id_cliente;
 };
 
 export const cadastrarCliente = async (cliente: Cliente): Promise<void> => {

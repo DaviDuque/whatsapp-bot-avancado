@@ -4,16 +4,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import { cadastrarCliente } from './modules/clientes/clientes.repository';
-import { sendMessage } from './infra/integrations/twilio';
 import './commands';
-import { getCommand } from './commandManager';
+import { Clientes } from './modules/clientes/clientes.controller';
+import { Despesas } from './modules/despesas/despesas.controller';
 import { verificarClientePorTelefone } from './modules/clientes/clientes.repository';
 import { formatarNumeroTelefone } from './utils/trata-telefone';
-import { verificarEstadoCliente, atualizarEstadoCliente, limparEstadoCliente } from './modules/clientes/clientes.repository';
-import { cadastrarClienteController } from './modules/clientes/clientes.service';
-import { generateRandomCode } from './utils/Gera-codigo';
-import { Clientes } from './modules/clientes/clientes.controller';
+import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
+
 const app = express();
 const port = 3000;
 
@@ -27,8 +24,57 @@ app.get('/', (req: Request, res: Response) => {
 // Armazenamento temporário para os dados do cliente em processo de cadastro
 const dadosClientesTemporarios: { [key: string]: any } = {};
 const newCliente = new Clientes();
+const newDespesas = new Despesas();
 
-app.post('/whatsapp',  newCliente.whatsapp);
+
+
+//app.post('/whatsapp',  newCliente.whatsapp);
+//app.post('/whatsapp/despesas', despesas.whatsapp);
+
+// Rota para o WhatsApp
+app.post('/whatsapp', async (req, res) => {
+    const { From } = req.body;
+    const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
+
+    console.log("index2 c......", req.body);
+    if(!clienteCadastrado){
+        await newCliente.whatsapp(req, res);
+    }
+
+    if(clienteCadastrado){
+        await newDespesas.whatsapp(req, res);
+        //await newCliente.whatsapp(req, res);
+    }
+
+    /*switch (!clienteCadastrado) {
+        case 'cadastrar_despesa':
+            app.post('/whatsapp/despesas', despesas.whatsapp);
+            break;
+        case 'cadastrar_cliente':
+            await newCliente.whatsapp(req, res);
+            //app.post('/whatsapp',  newCliente.whatsapp);
+            break;
+        default:
+            await newCliente.whatsapp(req, res);
+            //app.post('/whatsapp',  newCliente.whatsapp);
+            //res.status(400).send('Comando não reconhecido. Envie "help" para lista de comandos.');
+    }*/
+});
+
+
+app.get('/summarize', async (req: Request, res: Response) => {
+    try {
+     const summarizeServiceDespesas = new SummarizeServiceDespesas();
+ 
+     const text =  `supermercado, 25,00, 10/10/2024, tsste, n`;
+     
+     const response = await summarizeServiceDespesas.summarize(text);
+     res.json({text: response});
+    } catch (error) {
+     console.log(';;;;', error);
+       res.status(500).send(error);
+    }
+ });
 
 /*app.post('/whatsapp', async (req: Request, res: Response) => {
     const { From, To, Body } = req.body;
@@ -118,3 +164,13 @@ app.post('/whatsapp',  newCliente.whatsapp);
 });*/
 
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
+
+
+
+
+
+
+
+
+
+

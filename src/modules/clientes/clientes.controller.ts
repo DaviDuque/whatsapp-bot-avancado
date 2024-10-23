@@ -7,12 +7,12 @@ import '../../commands';
 import { getCommand } from '../../commandManager';
 import { verificarClientePorTelefone } from './clientes.repository';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
-import { verificarEstadoCliente, atualizarEstadoCliente, limparEstadoCliente } from './clientes.repository';
 import { cadastrarClienteController } from './clientes.service';
-import { generateRandomCode } from '../../utils/Gera-codigo';
+import { generateRandomCode } from '../../utils/gera-codigo';
 import { validarNome, validarCpfCnpj, validarEmail } from '../../utils/validation';
 import { transcribe } from '../transcribe/transcribe.controler';
 import { verificaTipoMsg } from '../../utils/verifica-tipo-msg';
+import { verificarEstado, atualizarEstado, limparEstado } from '../../infra/states/states';
 
 // Armazenamento temporário para os dados do cliente em processo de cadastro
 const dadosClientesTemporarios: { [key: string]: any } = {};
@@ -24,9 +24,9 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                 const [commandName, ...args] = Body.split(' ');
         
                 const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-        
-                if (!clienteCadastrado) {
-                    const estadoAtual = verificarEstadoCliente(From);
+                if (clienteCadastrado) {
+                    const estadoAtual = await verificarEstado(From);
+                    //const estadoAtual = verificarEstadoCliente(From);
                        
                     if (!dadosClientesTemporarios[From]) {
                         dadosClientesTemporarios[From] = {
@@ -41,7 +41,7 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                     novoCliente.codigo_proprio = generateRandomCode(12, novoCliente.telefone.slice(-5));
         
                     if (!estadoAtual) {
-                        atualizarEstadoCliente(From, 'aguardando_nome');
+                        atualizarEstado(From, 'aguardando_nome');
                         sendMessage(To, From, 'Por favor, envie seu nome para continuar o cadastro.');
                     } else if (estadoAtual === 'aguardando_nome') {
                         const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
@@ -50,17 +50,17 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                         const nome = Transcribe; // Captura o nome transcrito
                         if (validarNome(nome)) { // Valida o nome
                             novoCliente.nome = nome; // Armazena o nome
-                            atualizarEstadoCliente(From, 'confirmar_nome');
+                            atualizarEstado(From, 'confirmar_nome');
                             sendMessage(To, From, `Seu nome é ${nome}, está correto? (Sim/Não)`);
                         } else {
                             sendMessage(To, From, 'Nome inválido, por favor envie novamente.');
                         }
                     } else if (estadoAtual === 'confirmar_nome') {
                         if (Body.trim().toLowerCase() === 'sim') {
-                            atualizarEstadoCliente(From, 'aguardando_email');
+                            atualizarEstado(From, 'aguardando_email');
                             sendMessage(To, From, 'Perfeito! Agora, envie seu email.');
                         } else {
-                            atualizarEstadoCliente(From, 'aguardando_nome');
+                            atualizarEstado(From, 'aguardando_nome');
                             sendMessage(To, From, 'Por favor, envie seu nome novamente.');
                         }
                     } else if (estadoAtual === 'aguardando_email') {
@@ -70,24 +70,24 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                         const email = Transcribe; // Captura o email transcrito
                         if (validarEmail(email)) { // Valida o email
                             novoCliente.email = email; // Armazena o email
-                            atualizarEstadoCliente(From, 'confirmar_email');
+                            atualizarEstado(From, 'confirmar_email');
                             sendMessage(To, From, `Seu email é ${email}, está correto? (Sim/Não)`);
                         } else {
                             sendMessage(To, From, 'Email inválido, por favor envie novamente.');
                         }
                     } else if (estadoAtual === 'confirmar_email') {
                         if (Body.trim().toLowerCase() === 'sim') {
-                            atualizarEstadoCliente(From, 'aguardando_cpf');
+                            atualizarEstado(From, 'aguardando_cpf');
                             sendMessage(To, From, 'Perfeito! Agora, envie seu CPF.');
                         } else {
-                            atualizarEstadoCliente(From, 'aguardando_email');
+                            atualizarEstado(From, 'aguardando_email');
                             sendMessage(To, From, 'Por favor, envie seu email novamente.');
                         }
                     } else if (estadoAtual === 'aguardando_cpf') {
                         const cpf = Body; // Captura o CPF enviado
                         if (validarCpfCnpj(cpf)) { // Valida o CPF
                             novoCliente.cpf = cpf; // Armazena o CPF
-                            atualizarEstadoCliente(From, 'confirmar_cpf');
+                            atualizarEstado(From, 'confirmar_cpf');
                             sendMessage(To, From, `Seu CPF é ${cpf}, está correto? (Sim/Não)`);
                         } else {
                             sendMessage(To, From, 'CPF inválido, por favor envie novamente.');
@@ -97,18 +97,18 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                             try {
                                 const cadastro = await cadastrarClienteController(novoCliente);
                                 if (typeof cadastro === 'object' && 'error' in cadastro) {
-                                    atualizarEstadoCliente(From, 'aguardando_nome');
+                                    atualizarEstado(From, 'aguardando_nome');
                                     sendMessage(To, From, 'Erro no cadastro. Tente novamente.');
                                 } else {
-                                    limparEstadoCliente(From);
+                                    limparEstado(From);
                                     sendMessage(To, From, 'Cadastro realizado com sucesso!');
                                 }
                             } catch (error) {
-                                atualizarEstadoCliente(From, 'aguardando_nome');
+                                atualizarEstado(From, 'aguardando_nome');
                                 sendMessage(To, From, 'Erro no cadastro. Tente novamente.');
                             }
                         } else {
-                            atualizarEstadoCliente(From, 'aguardando_cpf');
+                            atualizarEstado(From, 'aguardando_cpf');
                             sendMessage(To, From, 'Por favor, envie seu CPF novamente.');
                         }
                     }

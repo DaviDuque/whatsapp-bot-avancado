@@ -14,26 +14,25 @@
 │   │   │   ├── message-memory.repository.ts               
 │   │   │   └── message-text-memory.repository.ts         
 │   │   │         
-├── authProvider.ts               # Strategy: Provedores de autenticação (OAuth, SAML, etc.)
-│   │   └── apiConfig.ts                    # Configuração de API's externas
 │   ├── /modules
 │   │   ├── /clientes
 │   │   │   ├── clientes.controller.ts
-│   │   │   ├── clientes.service.ts
 │   │   │   ├── clientes.repository.ts
-│   │   │   ├── clientes.entity.ts
-│   │   │   └── clientes.dto.ts
-│   │   ├── /transcricao
-│   │   │   ├── transcricao.controller.ts
-│   │   │   ├── transcricao.service.ts
-│   │   │   ├── transcricao.repository.ts
-│   │   │   ├── transcricao.entity.ts
-│   │   │   └── transcricao.dto.ts
+│   │   │   └── clientes.service.ts
+│   │   ├── /transcribe
+│   │   │   ├── transcribe.controller.ts
+│   │   │   ├── transcribe.repository.ts
+│   │   │   └── transcribe.service.ts
 │   │   ├── /relatorios
 │   │   │   ├── relatorios.controller.ts
 │   │   │   ├── relatorios.service.ts
 │   │   │   ├── relatorios.repository.ts
 │   │   │   └── relatorios.dto.ts
+├── /utils
+│   │   ├── gera-codigo.ts         # Gera codigo handometro
+│   │   ├── trata-telefone.ts      #
+│   │   ├── validation.ts          # Validações cpf, nome, email, etc...
+│   │   └── verifica-tipo-msg.ts   # verifica se mensagem tem arquivos de audio, img, etc...
 ├── /decorators
 │   │   ├── loggingDecorator.ts         # Decorator: Adiciona logging a métodos/classes
 │   │   └── authDecorator.ts            # Decorator: Adiciona autenticação a métodos/classes
