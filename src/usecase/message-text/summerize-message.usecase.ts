@@ -1,7 +1,7 @@
-import { MessageText } from "../../domain/entities/message-text";
+import { Message } from "../../domain/entities/message";
 import { MessageTextRepositoryInterface } from "../../domain/repository/message-text-repository.interface";
 import SummarizeServiceInterface from "../../domain/service/summarize.service.interface";
-import { MessageTextDTO } from "./message-text.dto";
+import { MessageDTO } from "../../DTO/message.dto";
 
 export class SummarizeMessageUseCase {
     constructor(
@@ -9,8 +9,8 @@ export class SummarizeMessageUseCase {
         private messageRepository: MessageTextRepositoryInterface,
     ){}
 
-    async execute(messageData: MessageTextDTO): Promise<string | undefined> {
-        const newMessageText = new MessageText(
+    async execute(messageData: MessageDTO): Promise<string | undefined> {
+        const newMessage = new Message(
             messageData.smsMessageSid,
             messageData.mediaContentType0, 
             messageData.numMedia, 
@@ -22,27 +22,30 @@ export class SummarizeMessageUseCase {
             messageData.mediaUrl0,
         );
 
-        if(!newMessageText.body){
+        if(!newMessage.body){
             console.log('Mensagem não identificada!');
+            return undefined;
+        }
+        if(!newMessage.smsMessageSid){
             return undefined;
         }
     
        
-        console.log("summerize-message-usecase>>>>>>>>>>>>>>>>>requisição recebida", newMessageText.body);
+        console.log("summerize-message-usecase>>>>>>>>>>>>>>>>>requisição recebida", newMessage.body);
 
-        this.messageRepository.add(newMessageText);
+        this.messageRepository.add(newMessage);
         console.log("summerize-message-usecase>>>>>>>>>>>>>>>>>adicionada a memoria");
 
         
         
-       if (newMessageText.body.length > 10) {
-            const summarizedText = await this.summarizationService.summarize(newMessageText.body);
-            this.messageRepository.update(newMessageText.smsMessageSid, newMessageText);
+       if (newMessage.body.length > 10) {
+            const summarizedText = await this.summarizationService.summarize(newMessage.body);
+            this.messageRepository.update(newMessage.smsMessageSid, newMessage);
             return summarizedText;
         }
         
 
-        return newMessageText.body;
+        return newMessage.body;
     }
 }
 

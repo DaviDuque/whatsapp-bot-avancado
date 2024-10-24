@@ -67,7 +67,6 @@ app.post('/whatsapp', async (req, res) => {
     const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
    
     
-    
     if(!clienteCadastrado){
         await newCliente.whatsapp(req, res);
     }

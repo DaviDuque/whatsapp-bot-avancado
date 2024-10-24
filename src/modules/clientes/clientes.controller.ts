@@ -96,6 +96,7 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                         if (Body.trim().toLowerCase() === 'sim') {
                             try {
                                 const cadastro = await cadastrarClienteController(novoCliente);
+
                                 if (typeof cadastro === 'object' && 'error' in cadastro) {
                                     atualizarEstado(From, 'aguardando_nome');
                                     sendMessage(To, From, 'Erro no cadastro. Tente novamente.');

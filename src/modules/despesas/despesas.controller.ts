@@ -10,12 +10,15 @@ import { verificaTipoMsg } from '../../utils/verifica-tipo-msg';
 import { criarClientePorTelefone } from '../clientes/clientes.repository';
 import { verificarEstado, atualizarEstado, limparEstado,  verificarClienteEstado } from '../../infra/states/states';
 import { formatDateToYYYYMMDD } from '../../utils/trata-data';
+import { transcribe } from '../transcribe/transcribe.controler';
+import { SummarizeServiceDespesas } from '../../infra/integrations/summarize.service';
 
 // Armazenamento temporário para os dados da despesa em processo de cadastro
 const dadosDespesasTemporarios: { [key: string]: any } = {};
 
 export class Despesas {
     whatsapp = async (req: Request, res: Response) => {
+        const summarizeServiceDespesas = new SummarizeServiceDespesas();
         const { SmsMessageSid, MediaContentType0, NumMedia, Body, To, From, MediaUrl0 } = req.body;
         const TipoMSG = verificaTipoMsg(NumMedia, MediaContentType0, MediaUrl0);
         const [...args] = Body.split(' ');
@@ -32,11 +35,20 @@ export class Despesas {
         }
 
         if (estadoAtual === "aguardando_dados") {
+
+            const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
+            if (!Transcribe) return;
+            const response = await summarizeServiceDespesas.summarize(Transcribe);
+            console.log("transcribe---->", response);
+     
+
             
             const [descricao, valorStr, dataStr, categoria, parcelado] = args;
+
+
            
             const datstr: string = dataStr.replace(/,/g, '');
-
+            
 
             if(!dataStr){return undefined}
             const dataString: any = formatDateToYYYYMMDD(dataStr.replace(/,/g, ''));
