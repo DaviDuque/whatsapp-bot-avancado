@@ -43,16 +43,17 @@ export class Despesas {
      
             
 
-            
-            const [descricao, valorStr, dataStr, categoria, parcelado] = args;
-
+    
+            const [descricao, valorStr, dataStr, categoria, parcelado] = response.split(',');
+            console.log("testeeeeee", descricao, valorStr, dataStr, categoria, parcelado);
 
            
-            const datstr: string = dataStr.replace(/,/g, '');
+            //const datstr: string = dataStr.replace(/,/g, '');
             
-
+           
             if(!dataStr){return undefined}
             const dataString: any = formatDateToYYYYMMDD(dataStr.replace(/,/g, ''));
+            console.log("data formatada",  dataString)
             const valor = parseFloat(valorStr);
  
             if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString)) {

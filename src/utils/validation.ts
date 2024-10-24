@@ -117,8 +117,11 @@ export const validarData = (data: string) => {
     console.log("validarData---->", data);
     const regex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD
     console.log("validarData---->", regex.test(data));
-    return regex.test(data);
+    return regex.test(data).toString;
 };
+
+
+
 
 
 
