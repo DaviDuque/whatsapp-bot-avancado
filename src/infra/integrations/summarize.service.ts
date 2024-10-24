@@ -30,7 +30,7 @@ export class SummarizeService implements SummarizeServiceInterface {
 
 export class SummarizeServiceDespesas implements SummarizeServiceInterface {
     private temperature = 0.7;
-    private prompt = 'crie uma lista a partir do texto no seguinte formato:';
+    private prompt = 'crie um array a partir do texto sempres no formato: [<nome da despesa>, <valor>, <data da despesa(YYYY-MM-DD)>, <parcelado(S/N)>]';
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';
 

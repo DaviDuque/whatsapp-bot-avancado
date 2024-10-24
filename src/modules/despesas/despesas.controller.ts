@@ -41,6 +41,7 @@ export class Despesas {
             const response = await summarizeServiceDespesas.summarize(Transcribe);
             console.log("transcribe---->", response);
      
+            
 
             
             const [descricao, valorStr, dataStr, categoria, parcelado] = args;
