@@ -1,34 +1,30 @@
-export const formatDateToYYYYMMDD = (dateStr: string): string | null => {
+export const formatDateToYYYYMMDD = (dateStr: any): string | null => {
+  // Converter para string, caso não seja
+  const dateAsString = String(dateStr);
+
   // Regex para validar os formatos DD/MM/YYYY e DD-MM-YYYY
   const regex = /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/;
-  const match = dateStr.match(regex);
+  const match = dateAsString.match(regex);
 
   if (match) {
-    const day = match[1];
-    const month = match[2];
-    const year = match[3];
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1; // Mês no JS começa do 0
+    const year = parseInt(match[3], 10);
 
-    // Criar uma nova data usando o formato YYYY-MM-DD
-    const formattedDate = `${year}-${month}-${day}`;
+    // Validar se a data é válida criando uma nova data
+    const parsedDate = new Date(year, month, day);
 
-    // Verificar se a data é válida (verifica se os valores são coerentes)
-    const parsedDate = new Date(formattedDate);
+    // Verificar se os componentes da data estão corretos
     if (
-      !isNaN(parsedDate.getTime()) &&
-      parsedDate.getUTCFullYear() === +year &&
-      parsedDate.getUTCMonth() + 1 === +month &&
-      parsedDate.getUTCDate() === +day
+      parsedDate.getFullYear() === year &&
+      parsedDate.getMonth() === month &&
+      parsedDate.getDate() === day
     ) {
-      return formattedDate; // Retorna no formato YYYY-MM-DD
+      // Retornar no formato YYYY-MM-DD
+      const formattedDate = parsedDate.toISOString().split('T')[0];
+      return formattedDate;
     }
   }
 
   return null; // Retorna null se a data não for válida
-};
-
-// Exemplo de uso:
-const dataDespesa1 = '10/10/2024';
-const dataDespesa2 = '10-10-2024';
-
-console.log(formatDateToYYYYMMDD(dataDespesa1)); // '2024-10-10'
-console.log(formatDateToYYYYMMDD(dataDespesa2)); // '2024-10-10'
+}

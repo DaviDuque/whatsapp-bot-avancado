@@ -12,7 +12,7 @@ import { verificarEstado, atualizarEstado, limparEstado,  verificarClienteEstado
 import { formatDateToYYYYMMDD } from '../../utils/trata-data';
 import { transcribe } from '../transcribe/transcribe.controler';
 import { SummarizeServiceDespesas } from '../../infra/integrations/summarize.service';
-
+import dayjs from 'dayjs';
 // Armazenamento temporário para os dados da despesa em processo de cadastro
 const dadosDespesasTemporarios: { [key: string]: any } = {};
 
@@ -52,8 +52,12 @@ export class Despesas {
             
            
             if(!dataStr){return undefined}
-            const dataString: any = formatDateToYYYYMMDD(dataStr.replace(/,/g, ''));
-            console.log("data formatada",  dataString)
+            //const dataString = formatDateToYYYYMMDD(dataStr.replace(/,/g, ''));
+
+            const dataString: string = dayjs().format('YYYY-MM-DD');
+
+            console.log("data formatada",  dataString);
+            if(!dataString){return undefined}
             const valor = parseFloat(valorStr);
  
             if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString)) {
