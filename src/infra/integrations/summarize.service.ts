@@ -30,7 +30,16 @@ export class SummarizeService implements SummarizeServiceInterface {
 
 export class SummarizeServiceDespesas implements SummarizeServiceInterface {
     private temperature = 0.7;
-    private prompt = 'crie um array a partir do texto sempres no formato: [<nome da despesa(string)>, <valor(float: 10,00)>, <data da despesa(date:DD-MM-YYYY)>, <categaria(string)>, <parcelado(char 1:S/N)>]';
+    private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
+    [<Despesa/gasto>, <valor>, <data da despesa>, <categaria>, <parcelado>]', 
+    onde "Dspesa" seja do tipo string, "valor" seja float: 10,00, 
+    "data da despesa" seja date:YYYY-MM-DD, "categoria" seja string, 
+    e "parcelado" seja char(1). caso os dados "data da despesa" e "valor"  
+    não seja identificado retorne null para cada um deles em sua devida posição no array. "Despesa" representa algo comprado, adiquirido ou utilizado. caso "parcelado" 
+    não seja identificado no texto, retorne o default "N". 
+    Para "categoria" localize em qual das o pções melhor se encaixa, 
+    opções["Mercado", "Veiculos", "Pets", "Contas_residência", "imóveis", "Lazer", "restaurante", "Shopping", "Transporte", "internet", "viajens", "hotéis", "N/A"]. Texto: `;
+
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';
 

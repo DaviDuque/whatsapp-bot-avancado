@@ -9,7 +9,6 @@ import { validarDescricao, validarValor, validarData } from '../../utils/validat
 import { verificaTipoMsg } from '../../utils/verifica-tipo-msg';
 import { criarClientePorTelefone } from '../clientes/clientes.repository';
 import { verificarEstado, atualizarEstado, limparEstado,  verificarClienteEstado } from '../../infra/states/states';
-import { formatDateToYYYYMMDD } from '../../utils/trata-data';
 import { transcribe } from '../transcribe/transcribe.controler';
 import { SummarizeServiceDespesas } from '../../infra/integrations/summarize.service';
 import dayjs from 'dayjs';
@@ -26,7 +25,7 @@ export class Despesas {
         const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
 
         
-        const usuarioId = verificarClienteEstado(cliente_id);
+        const cliente = verificarClienteEstado(cliente_id);
         const estadoAtual = await verificarEstado(From);
 
         if (!estadoAtual) {
@@ -38,6 +37,7 @@ export class Despesas {
 
             const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
             if (!Transcribe) return;
+
             const response = await summarizeServiceDespesas.summarize(Transcribe);
             console.log("transcribe---->", response);
      
@@ -47,30 +47,24 @@ export class Despesas {
             const [descricao, valorStr, dataStr, categoria, parcelado] = response.split(',');
             console.log("testeeeeee", descricao, valorStr, dataStr, categoria, parcelado);
 
-           
-            //const datstr: string = dataStr.replace(/,/g, '');
+   
+    
+            let dataString: string = dayjs(dataStr).format('YYYY-MM-DD');
+            console.log("data formatada 1",  dataString);
             
-           
-            if(!dataStr){return undefined}
-            //const dataString = formatDateToYYYYMMDD(dataStr.replace(/,/g, ''));
-
-            const dataString: string = dayjs().format('YYYY-MM-DD');
-
-            console.log("data formatada",  dataString);
-            if(!dataString){return undefined}
+            if(dataString == 'Invalid Date'){dataString = dayjs().format('YYYY-MM-DD')}
+            console.log("data formatada 2",  dataString);
             const valor = parseFloat(valorStr);
+            if(!cliente){return undefined}
  
             if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString)) {
-                await sendMessage(To, From,"Por favor, forneça os dados corretos da despesa.");
+                await sendMessage(To, From,"Desculpe não entendi, forneça os dados corretos da despesa. Você pode digitar ou falar");
                
+            }else{
+                await cadastrarDespesaController(cliente, descricao, valor, dataStr, categoria, parcelado);
+                await sendMessage(To, From, "Despesa cadastrada com sucesso!");
+                await limparEstado(From);
             }
-
-            if(!usuarioId){
-                return undefined
-            }
-            await cadastrarDespesaController(usuarioId, descricao, valor, dataStr, categoria, parcelado);
-            await sendMessage(To, From, "Despesa cadastrada com sucesso!");
-            await limparEstado(From);
         }
 
         res.status(400).send("Estado não reconhecido.");

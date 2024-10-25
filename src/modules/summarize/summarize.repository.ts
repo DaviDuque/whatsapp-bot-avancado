@@ -1,7 +1,7 @@
 import { Message } from "../../domain/entities/message";
 import { MessageRepositoryInterface } from "../../domain/repository/message-repository.interface";
 import { SummarizeService } from '../../infra/integrations/summarize.service';
-import { MessageDTO } from "./message.dto";
+import { MessageDTO } from "../../DTO/message.dto";
 
 export class SummarizeController {
     constructor(

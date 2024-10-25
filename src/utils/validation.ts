@@ -104,7 +104,7 @@ export const validarEmail = (email: string): boolean => {
 }
 
 export const validarDescricao = (descricao: string) => {
-    console.log("validarDescricao---->",descricao.length > 0 && descricao.length <= 255);
+    console.log("validarDescricao---->",descricao.length > 3 && descricao.length <= 255);
     return descricao.length > 0 && descricao.length <= 255;
 };
 
@@ -113,11 +113,11 @@ export const validarValor = (valor: number) => {
     return valor > 0;
 };
 
-export const validarData = (data: string) => {
+export const validarData = (data: string): boolean => {
     console.log("validarData---->", data);
     const regex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD
     console.log("validarData---->", regex.test(data));
-    return regex.test(data).toString;
+    return regex.test(data);
 };
 
 
