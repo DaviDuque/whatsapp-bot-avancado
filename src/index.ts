@@ -4,17 +4,22 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import './commands';
+//import './commands';
 import { Auth } from './infra/auth/auth';
 import { authMiddleware } from './infra/auth/auth.middleware';
 import { Clientes } from './modules/clientes/clientes.controller';
 import { Despesas } from './modules/despesas/despesas.controller';
-import { verificarClientePorTelefone } from './modules/clientes/clientes.repository';
-import { formatarNumeroTelefone } from './utils/trata-telefone';
+import { verificarClientePorTelefone, criarClientePorTelefone } from './modules/clientes/clientes.repository';
 import { AudioService } from './infra/integrations/audio.service';
 import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
-import { criarClientePorTelefone } from './modules/clientes/clientes.repository';
 import { GlobalState } from './infra/states/global-state';
+import { Menu } from './modules/menu/menu';
+import { sendMessage } from './infra/integrations/twilio';
+import './modules/menu/commands';
+import { getCommand } from './modules/menu/commandManager';
+import { formatarNumeroTelefone } from './utils/trata-telefone';
+
+
 
 
 const app = express();
@@ -22,6 +27,7 @@ const port = 3000;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 
 // Armazenamento temporário para os dados do cliente em processo de cadastro
@@ -61,26 +67,38 @@ app.get('/download', async (req: Request, res: Response) => {
  });
 
 
-// Rota para o WhatsApp
-app.post('/whatsapp', async (req, res) => {
-    const { From } = req.body;
+ app.post('/whatsapp', async (req: Request, res: Response) => {
+    const { From, To, Body } = req.body;
+    const [commandName, ...args] = Body.split(' ');
+    console.log("req...........",req.body);
+
+    // Verificar se o cliente já está cadastrado
     const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
    
     
-    if(!clienteCadastrado){
+    if (!clienteCadastrado) {
         await newCliente.whatsapp(req, res);
     }
 
     if(clienteCadastrado){
         const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-        // Armazene o ID do cliente no estado global
         globalState.setClientId(cliente_id);
         console.log(`ID do cliente armazenado: ${globalState.getClientId()}`);
         console.log("clientenn---->", cliente_id);
-        await newDespesas.whatsapp(req, res);
+        // Processar o comando
+        const command = getCommand(commandName);
+        if (command) {
+            const response = command.execute(args);
+            sendMessage(To, From, response);
+        } else {
+            sendMessage(To, From, '\u{1F63A} Olá, não entendiaaaaa. Comando não reconhecido. \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
+        }
     }
-  
+    
+    res.send("Mensagem recebida!");
 });
+
+
 
 
 app.get('/summarize', async (req: Request, res: Response) => {

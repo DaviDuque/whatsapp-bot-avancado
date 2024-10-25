@@ -29,7 +29,7 @@ export class Despesas {
         const estadoAtual = await verificarEstado(From);
 
         if (!estadoAtual) {
-            await sendMessage(To, From, "Para cadastrar uma despesa, envie os detalhes no formato: Despesa <descrição> <valor> <data> <categoria> <parcelado (s/n)>");
+            await sendMessage(To, From, "Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, se é parcelado, onde foi");
             await atualizarEstado(From, "aguardando_dados");
         }
 

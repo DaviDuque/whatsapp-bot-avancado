@@ -20,7 +20,7 @@ app.post('/whatsapp', async (req: Request, res: Response) => {
     const [commandName, ...args] = Body.split(' ');
     console.log("req...........",req.body);
 
-    // Verificar se o cliente já está cadastrado
+    //Verificar se o cliente já está cadastrado
     const clienteCadastrado = await verificarClientePorTelefone(From);
     
     if (!clienteCadastrado) {
