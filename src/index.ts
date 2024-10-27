@@ -4,7 +4,6 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-//import './commands';
 import { Auth } from './infra/auth/auth';
 import { authMiddleware } from './infra/auth/auth.middleware';
 import { Clientes } from './modules/clientes/clientes.controller';
@@ -13,10 +12,10 @@ import { verificarClientePorTelefone, criarClientePorTelefone } from './modules/
 import { AudioService } from './infra/integrations/audio.service';
 import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
 import { GlobalState } from './infra/states/global-state';
-import { Menu } from './modules/menu/menu';
+import { getCommand } from './commandManager';
 import { sendMessage } from './infra/integrations/twilio';
-import './modules/menu/commands';
-import { getCommand } from './modules/menu/commandManager';
+
+
 import { formatarNumeroTelefone } from './utils/trata-telefone';
 
 
@@ -67,6 +66,7 @@ app.get('/download', async (req: Request, res: Response) => {
  });
 
 
+
  app.post('/whatsapp', async (req: Request, res: Response) => {
     const { From, To, Body } = req.body;
     const [commandName, ...args] = Body.split(' ');
@@ -81,21 +81,56 @@ app.get('/download', async (req: Request, res: Response) => {
     }
 
     if(clienteCadastrado){
-        const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-        globalState.setClientId(cliente_id);
+        const cliente = globalState.getClientId();
+        if(!cliente){
+            const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
+            globalState.setClientId(cliente_id);
+            globalState.setClientCondition("inicial");
+            globalState.setMensagem([
+                req.body.SmsMessageSid,
+                req.body.NumMedia,
+                req.body.ProfileName,
+                req.body.MessageType,
+                req.body.SmsSid,
+                req.body.WaId,
+                req.body.SmsStatus,
+                req.body.Body,
+                req.body.To,
+                req.body.NumSegments,
+                req.body.ReferralNumMedia,
+                req.body.MessageSid,
+                req.body.AccountSid,
+                req.body.From,
+                req.body.ApiVersion
+            ]
+            );
+        }
+
+        
+        const mensagem = globalState.getMensagem();
         console.log(`ID do cliente armazenado: ${globalState.getClientId()}`);
-        console.log("clientenn---->", cliente_id);
+        console.log(`body do cliente armazenado-->: ${globalState.getMensagem()}`);
+        console.log(`body do cliente armazenado-->: ${mensagem[1]}`);
+        console.log(`cliente condição-->: ${globalState.getClientCondition()}`)
+
         // Processar o comando
-        const command = getCommand(commandName);
-        if (command) {
-            const response = command.execute(args);
-            sendMessage(To, From, response);
-        } else {
-            sendMessage(To, From, '\u{1F63A} Olá, não entendiaaaaa. Comando não reconhecido. \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
+        if(globalState.getClientCondition() == 'inicial'){
+            const command = getCommand(commandName);
+            if (command) {
+                const response = command.execute(args);
+                sendMessage(To, From, response);
+            } else {
+                sendMessage(To, From, '\u{1F63A} Olá, não entendiaaaaa. Comando não reconhecido. \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
+            }
+        }else if(globalState.getClientCondition() == 'despesas'){
+            console.log('-----despesas-----');
+            await newDespesas.whatsapp(req, res);
+        }else{
+            sendMessage(To, From, "Desculpe não entendi  mensagem");
         }
     }
     
-    res.send("Mensagem recebida!");
+    //res.send("Mensagem recebida!");
 });
 
 

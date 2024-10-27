@@ -12,6 +12,7 @@ import { verificarEstado, atualizarEstado, limparEstado,  verificarClienteEstado
 import { transcribe } from '../transcribe/transcribe.controler';
 import { SummarizeServiceDespesas } from '../../infra/integrations/summarize.service';
 import dayjs from 'dayjs';
+import { GlobalState } from '../../infra/states/global-state';
 // Armazenamento temporário para os dados da despesa em processo de cadastro
 const dadosDespesasTemporarios: { [key: string]: any } = {};
 
@@ -21,9 +22,12 @@ export class Despesas {
         const { SmsMessageSid, MediaContentType0, NumMedia, Body, To, From, MediaUrl0 } = req.body;
         const TipoMSG = verificaTipoMsg(NumMedia, MediaContentType0, MediaUrl0);
         const [...args] = Body.split(' ');
+        const globalState = GlobalState.getInstance();
+        const teste = globalState.getMensagem();
+        console.log("variavel global--->", teste);
 
         const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-
+        await atualizarEstado(From, "aguardando_dados");
         
         const cliente = verificarClienteEstado(cliente_id);
         const estadoAtual = await verificarEstado(From);

@@ -1,4 +1,8 @@
 import { addCommand, listCommands } from "./commandManager";
+import { GlobalState } from './infra/states/global-state';
+
+const globalState = GlobalState.getInstance();
+const cliente = globalState.getClientId();
 
 addCommand({
     name: '',
@@ -8,9 +12,18 @@ addCommand({
 
 addCommand({
     name: '1',
+    description: 'Digite 1 para entrar com gastos e despesas \u{1F648}',
+    execute: () => {
+        globalState.setClientCondition("despesas");
+        return 'Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, se é parcelado, onde foi';
+    },
+});
+
+/*addCommand({
+    name: '1',
     description: 'Digite 1 para \u{1F648} Entrada de gastos',
     execute: () => 'Ainda não consigo processar essa requisição, mas estamos trabalhando nisso ;) \n \u{2600} Digite 8 para voltar ao menu. \n \u{1F525} Digite 9 para sair.'
-});
+});*/
 
 addCommand({
     name: '2',
