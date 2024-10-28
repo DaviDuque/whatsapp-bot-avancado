@@ -8,6 +8,7 @@ import { Auth } from './infra/auth/auth';
 import { authMiddleware } from './infra/auth/auth.middleware';
 import { Clientes } from './modules/clientes/clientes.controller';
 import { Despesas } from './modules/despesas/despesas.controller';
+import { Receitas } from './modules/receitas/receitas.controller'
 import { verificarClientePorTelefone, criarClientePorTelefone } from './modules/clientes/clientes.repository';
 import { AudioService } from './infra/integrations/audio.service';
 import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
@@ -33,6 +34,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const dadosClientesTemporarios: { [key: string]: any } = {};
 const newCliente = new Clientes();
 const newDespesas = new Despesas();
+const newReceitas = new Receitas();
 const globalState = GlobalState.getInstance();
 const authUsercase = new Auth();
 
@@ -77,7 +79,11 @@ app.get('/download', async (req: Request, res: Response) => {
    
     
     if (!clienteCadastrado) {
+        console.log("receita...........",req.body);
+
+        //await newReceitas.processarMensagemReceita(req, res);
         await newCliente.whatsapp(req, res);
+        //await newDespesas.whatsapp(req, res);
     }
 
     if(clienteCadastrado){
@@ -125,6 +131,9 @@ app.get('/download', async (req: Request, res: Response) => {
         }else if(globalState.getClientCondition() == 'despesas'){
             console.log('-----despesas-----');
             await newDespesas.whatsapp(req, res);
+        }else if(globalState.getClientCondition() == 'receitas'){
+            console.log('-----receitas-----');
+            await newReceitas.processarMensagemReceita(req, res);
         }else{
             sendMessage(To, From, "Desculpe não entendi  mensagem");
         }

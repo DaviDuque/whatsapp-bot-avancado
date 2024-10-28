@@ -15,7 +15,7 @@ addCommand({
     description: 'Digite 1 para entrar com gastos e despesas \u{1F648}',
     execute: () => {
         globalState.setClientCondition("despesas");
-        return 'Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, se é parcelado, onde foi';
+        return 'Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, categoria, se é parcelado, onde foi';
     },
 });
 
@@ -27,11 +27,14 @@ addCommand({
 
 addCommand({
     name: '2',
-    description: 'Digite 2 para \u{1F60D} Entrada de dinheiro',
-    execute: () => 'Ainda não consigo processar essa requisição, mas estamos trabalhando nisso ;) \n \u{2600} Digite 8 para voltar ao menu. \n \u{1F525} Digite 9 para sair.'
+    description: 'Digite 2 para \u{1F60D} Entrada de receita',
+    execute: () => {
+        globalState.setClientCondition("receitas");
+        return 'Para cadastrar uma receita, envie os detalhes como: nome da receita, data, dia, categoria';
+    },
 });
 
-addCommand({
+/*addCommand({
     name: '3',
     description: 'Digite 3 para \u{1F947} Resumo do dia',
     execute: () => 'Ainda não consigo processar essa requisição, mas estamos trabalhando nisso ;) \n \u{2600} Digite 8 para voltar ao menu. \n \u{1F525} Digite 9 para sair.'
@@ -41,7 +44,7 @@ addCommand({
     name: '4',
     description: 'Digite 4 para \u{1F3C6} Resumo do mês',
     execute: () => 'Ainda não consigo processar essa requisição, mas estamos trabalhando nisso ;) \n \u{2600} Digite 8 para voltar ao menu. \n \u{1F525} Digite 9 para sair.'
-});
+});*/
 
 
 addCommand({
@@ -61,7 +64,7 @@ addCommand({
 });
 
 
-addCommand({
+/*addCommand({
     name: 'ping',
     description: 'Responde com "pong"',
     execute: () => 'pong'
@@ -81,4 +84,4 @@ addCommand({
             command => `${command.name}:${command.description}`
         ).join('\n');
     },
-});
+});*/

@@ -48,7 +48,7 @@ export class Despesas {
             
 
     
-            const [descricao, valorStr, dataStr, categoria, parcelado] = response.split(',');
+            let [descricao, valorStr, dataStr, categoria, parcelado] = response.split(',');
             console.log("testeeeeee", descricao, valorStr, dataStr, categoria, parcelado);
 
    
@@ -60,14 +60,23 @@ export class Despesas {
             console.log("data formatada 2",  dataString);
             const valor = parseFloat(valorStr);
             if(!cliente){return undefined}
+
+            const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
+            const newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
+            const newParcelado = parcelado.replace(/["'\[\]\(\)]/g, '');
  
             if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString)) {
                 await sendMessage(To, From,"Desculpe não entendi, forneça os dados corretos da despesa. Você pode digitar ou falar");
                
             }else{
-                await cadastrarDespesaController(cliente, descricao, valor, dataStr, categoria, parcelado);
+                //await cadastrarDespesaController(cliente, newDescricao, valor, dataString, newCategoria, parcelado);
+
+                const resultado = await cadastrarDespesaController(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
+                console.log("*****************:",  resultado);
+
                 await sendMessage(To, From, "Despesa cadastrada com sucesso!");
                 await limparEstado(From);
+                dataStr = "null";
             }
         }
 

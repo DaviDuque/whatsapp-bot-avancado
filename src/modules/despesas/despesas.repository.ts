@@ -18,13 +18,26 @@ export const verificarDespesaPorUsuario = async (userId: number) => {
     }
 };
 
-
-export const cadastrarDespesa = async (id_usuario: string, descricao: string, valor: number, data_despesa: string, categoria?: string, parcelado?: string) => {
-    const newDate: string = dayjs(data_despesa).format('YYYY-MM-DD HH:mm:ss');
-    const sql = 'INSERT INTO despesas (id_usuario, descricao, valor, data_despesa, categoria, parcelado) VALUES (?, ?, ?, ?, ?, ?)';
-    const values = [id_usuario, descricao, valor, newDate, categoria, parcelado];
-    await connection.execute(sql, values);
+export const cadastrarDespesa = async (id_usuario: string, descricao: string, valor: number, data_despesa: string,  categoria?: string, parcelado?: string) => {
+    try {
+        const newDate: string = dayjs(data_despesa).format('YYYY-MM-DD HH:mm:ss');
+        const query = 'INSERT INTO despesas (id_usuario, descricao, valor, data_despesa, categoria, parcelado) VALUES (?, ?, ?, ?, ?, ?)';
+        const values = [
+            id_usuario,
+            descricao.trim(),
+            valor,
+            newDate,
+            categoria ? categoria.trim() : null,
+            parcelado ?parcelado.trim() : 'n'
+        ];
+        await connection.execute(query, values);
+    } catch (error) {
+        console.error('Erro ao cadastrar receita:', error);
+        throw error;
+    }
 };
+
+
 
 export const verificarEstadoDespesa = async (from: string) => {
     // Implementar lógica para verificar o estado atual do cadastro
