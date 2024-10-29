@@ -23,14 +23,43 @@ export class Despesas {
         const TipoMSG = verificaTipoMsg(NumMedia, MediaContentType0, MediaUrl0);
         const [...args] = Body.split(' ');
         const globalState = GlobalState.getInstance();
-        const teste = globalState.getMensagem();
-        console.log("variavel global--->", teste);
+        const mensagem = globalState.getMensagem();
+        const condicao = globalState.getClientCondition();
+        console.log("variavel global--->", mensagem);
 
         const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-        await atualizarEstado(From, "aguardando_dados");
         
+        if(condicao == "despesas"){
+        await atualizarEstado(From, "aguardando_dados");
+        }
+
+
         const cliente = verificarClienteEstado(cliente_id);
-        const estadoAtual = await verificarEstado(From);
+
+      
+            const estadoAtual = await verificarEstado(From);
+
+            if((estadoAtual == 'aguardando_continuaca' && Body =='N') || (estadoAtual == 'aguardando_continuaca' && Body =='n') ){
+                globalState.setClientCondition("inicial");
+                await sendMessage(To, From, "Digite 8 para ver o menu");
+            }
+
+            if((estadoAtual == 'aguardando_continuaca' && Body =='S') || (estadoAtual == 'aguardando_continuaca' && Body =='s') ){
+                await sendMessage(To, From, "Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, se é parcelado, onde foi");
+                await atualizarEstado(From, "aguardando_dados");
+            }
+
+            if(estadoAtual == 'aguardando_continuaca' 
+                && Body !='N' 
+                && Body !='n' 
+                && Body !='S' 
+                && Body !='s'
+              ){
+                await sendMessage(To, From, "Não reconheci seu comando,Para cadastrar outra despesa digite 'S' ou voltar digite 'N'.");
+            }
+            
+        
+        
 
         if (!estadoAtual) {
             await sendMessage(To, From, "Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, se é parcelado, onde foi");
@@ -61,22 +90,27 @@ export class Despesas {
             const valor = parseFloat(valorStr);
             if(!cliente){return undefined}
 
-            const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
-            const newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
-            const newParcelado = parcelado.replace(/["'\[\]\(\)]/g, '');
+            try{
+                const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
+                const newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
+                const newParcelado = parcelado.replace(/["'\[\]\(\)]/g, '');
+            
  
-            if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString)) {
+            if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString) || newDescricao == null) {
                 await sendMessage(To, From,"Desculpe não entendi, forneça os dados corretos da despesa. Você pode digitar ou falar");
                
             }else{
-                //await cadastrarDespesaController(cliente, newDescricao, valor, dataString, newCategoria, parcelado);
-
-                const resultado = await cadastrarDespesaController(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
+                
+                    const resultado = await cadastrarDespesaController(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
                 console.log("*****************:",  resultado);
-
-                await sendMessage(To, From, "Despesa cadastrada com sucesso!");
-                await limparEstado(From);
-                dataStr = "null";
+                    await sendMessage(To, From, "Despesa cadastrada com sucesso! Para cadastrar outra despesa digite 'S' ou voltar digite 'N'.");
+                    await atualizarEstado(From, "aguardando_continuaca");
+                    //await limparEstado(From);
+                    globalState.setClientCondition("despesas_2");
+                    dataStr = "null";
+                }
+            } catch (error) {
+                await sendMessage(To, From, "Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
             }
         }
 

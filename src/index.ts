@@ -126,9 +126,9 @@ app.get('/download', async (req: Request, res: Response) => {
                 const response = command.execute(args);
                 sendMessage(To, From, response);
             } else {
-                sendMessage(To, From, '\u{1F63A} Olá, não entendiaaaaa. Comando não reconhecido. \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
+                sendMessage(To, From, '\u{1F63A} Olá, \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
             }
-        }else if(globalState.getClientCondition() == 'despesas'){
+        }else if(globalState.getClientCondition() == 'despesas' || globalState.getClientCondition() == 'despesas_2'){
             console.log('-----despesas-----');
             await newDespesas.whatsapp(req, res);
         }else if(globalState.getClientCondition() == 'receitas'){
