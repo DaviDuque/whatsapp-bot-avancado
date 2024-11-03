@@ -8,7 +8,8 @@ import { Auth } from './infra/auth/auth';
 import { authMiddleware } from './infra/auth/auth.middleware';
 import { Clientes } from './modules/clientes/clientes.controller';
 import { Despesas } from './modules/despesas/despesas.controller';
-import { Receitas } from './modules/receitas/receitas.controller'
+import { Receitas } from './modules/receitas/receitas.controller';
+import { Investimentos } from './modules/investimentos/investimentos.controller';
 import { verificarClientePorTelefone, criarClientePorTelefone } from './modules/clientes/clientes.repository';
 import { AudioService } from './infra/integrations/audio.service';
 import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
@@ -18,6 +19,7 @@ import { sendMessage } from './infra/integrations/twilio';
 
 
 import { formatarNumeroTelefone } from './utils/trata-telefone';
+
 
 
 
@@ -35,6 +37,7 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
 const newCliente = new Clientes();
 const newDespesas = new Despesas();
 const newReceitas = new Receitas();
+const newInvestimentos = new Investimentos();
 const globalState = GlobalState.getInstance();
 const authUsercase = new Auth();
 
@@ -76,10 +79,11 @@ app.get('/download', async (req: Request, res: Response) => {
 
     // Verificar se o cliente já está cadastrado
     const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-   
+
+    console.log("cliente index...........",clienteCadastrado);
     
     if (!clienteCadastrado) {
-        console.log("receita...........",req.body);
+        console.log("cliente index 2...........",clienteCadastrado);
 
         //await newReceitas.processarMensagemReceita(req, res);
         await newCliente.whatsapp(req, res);
@@ -131,9 +135,12 @@ app.get('/download', async (req: Request, res: Response) => {
         }else if(globalState.getClientCondition() == 'despesas' || globalState.getClientCondition() == 'despesas_2'){
             console.log('-----despesas-----');
             await newDespesas.whatsapp(req, res);
-        }else if(globalState.getClientCondition() == 'receitas'){
+        }else if(globalState.getClientCondition() == 'receitas' || globalState.getClientCondition() == 'receitas_2'){
             console.log('-----receitas-----');
             await newReceitas.processarMensagemReceita(req, res);
+        }else if(globalState.getClientCondition() == 'investimentos' || globalState.getClientCondition() == 'investimentos_2'){
+            console.log('-----investimentos-----');
+            await newInvestimentos.processarMensagemInvestimentos(req, res);
         }else{
             sendMessage(To, From, "Desculpe não entendi  mensagem");
         }

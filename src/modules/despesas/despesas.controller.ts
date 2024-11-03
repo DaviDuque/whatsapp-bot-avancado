@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { Request, Response } from 'express';
-import { sendMessage } from '../../infra/integrations/twilio';
+import { sendMessage, sendInteractiveMessage } from '../../infra/integrations/twilio';
 import '../../commands';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
 import { cadastrarDespesaController } from './despesas.service';
@@ -45,7 +45,7 @@ export class Despesas {
             }
 
             if((estadoAtual == 'aguardando_continuaca' && Body =='S') || (estadoAtual == 'aguardando_continuaca' && Body =='s') ){
-                await sendMessage(To, From, "Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, se é parcelado, onde foi");
+                await sendMessage(To, From, "Para cadastrar uma despesa, digite ou fale os detalhes como: nome da despesa, data, dia, se é parcelado, onde foi");
                 await atualizarEstado(From, "aguardando_dados");
             }
 
@@ -62,7 +62,7 @@ export class Despesas {
         
 
         if (!estadoAtual) {
-            await sendMessage(To, From, "Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, se é parcelado, onde foi");
+            await sendMessage(To, From, "Para cadastrar uma despesa, digite ou fale os detalhes como: nome da despesa, data, dia, se é parcelado, onde foi");
             await atualizarEstado(From, "aguardando_dados");
         }
 
@@ -97,19 +97,37 @@ export class Despesas {
             
  
             if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString) || newDescricao == null) {
-                await sendMessage(To, From,"Desculpe não entendi, forneça os dados corretos da despesa. Você pode digitar ou falar");
+                await sendMessage(To, From,"Desculpe não entendi, forneça os dados corretos da despesa. Muita atenção ao VALOR, Você pode digitar ou falar");
                
             }else{
                 
                     const resultado = await cadastrarDespesaController(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
                 console.log("*****************:",  resultado);
-                    await sendMessage(To, From, "Despesa cadastrada com sucesso! Para cadastrar outra despesa digite 'S' ou voltar digite 'N'.");
+
+                console.log("*****************T0---From---:",  To, From);
+                /*await sendInteractiveMessage(
+                    To, 
+                    From
+                );*/
+                await sendMessage(
+                    To, 
+                    From, 
+                    `
+*Despesa cadastrada com sucesso!* 
+\u{1F4B8}Despesa: ${newDescricao}
+\u{1F4B4} *Valor:* ${valor} 
+\u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')} \n
+\u{1F4A1} Para cadastrar outra despesa digite *S* ou voltar digite *N*.`
+                );
+                    
+                    
                     await atualizarEstado(From, "aguardando_continuaca");
                     //await limparEstado(From);
                     globalState.setClientCondition("despesas_2");
                     dataStr = "null";
                 }
             } catch (error) {
+                console.log("999999", error);
                 await sendMessage(To, From, "Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
             }
         }

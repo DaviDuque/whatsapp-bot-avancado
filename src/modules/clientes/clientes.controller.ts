@@ -24,7 +24,7 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                 const [commandName, ...args] = Body.split(' ');
         
                 const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-                if (clienteCadastrado) {
+                if (!clienteCadastrado) {
                     const estadoAtual = await verificarEstado(From);
                     //const estadoAtual = verificarEstadoCliente(From);
                        
@@ -35,12 +35,13 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                             codigo_indicacao: null
                         };
                     }
-        
+                    console.log("estado -------", estadoAtual);
                     const novoCliente = dadosClientesTemporarios[From];
                     novoCliente.telefone = formatarNumeroTelefone(From.replace(/^whatsapp:/, ''));
                     novoCliente.codigo_proprio = generateRandomCode(12, novoCliente.telefone.slice(-5));
         
                     if (!estadoAtual) {
+                        console.log("!!estado  -------", estadoAtual);
                         atualizarEstado(From, 'aguardando_nome');
                         sendMessage(To, From, 'Por favor, envie seu nome para continuar o cadastro.');
                     } else if (estadoAtual === 'aguardando_nome') {

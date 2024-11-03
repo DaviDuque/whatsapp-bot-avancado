@@ -15,7 +15,7 @@ addCommand({
     description: 'Digite 1 para entrar com gastos e despesas \u{1F648}',
     execute: () => {
         globalState.setClientCondition("despesas");
-        return 'Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, categoria, se é parcelado, onde foi';
+        return '\u{1F44D} Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, categoria, se é parcelado, onde foi';
     },
 });
 
@@ -30,7 +30,16 @@ addCommand({
     description: 'Digite 2 para \u{1F60D} Entrada de receita',
     execute: () => {
         globalState.setClientCondition("receitas");
-        return 'Para cadastrar uma receita, envie os detalhes como: nome da receita, data, dia, categoria';
+        return '\u{1F44D} Para cadastrar uma receita, envie os detalhes como: nome da receita, data, dia, categoria';
+    },
+});
+
+addCommand({
+    name: '3',
+    description: 'Digite 3 para \u{1F60D} Entrada de investimentos',
+    execute: () => {
+        globalState.setClientCondition("investimentos");
+        return '\u{1F44D} Para cadastrar uma investimento, envie os detalhes como: nome da investimento, data, dia, categoria';
     },
 });
 
