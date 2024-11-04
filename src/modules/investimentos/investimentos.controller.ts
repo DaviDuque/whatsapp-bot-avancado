@@ -44,17 +44,17 @@ export class Investimentos {
 
         }
 
-        if((estadoAtual == 'aguardando_continuaca' && Body =='N') || (estadoAtual == 'aguardando_continuaca' && Body =='n') ){
+        if((estadoAtual == 'aguardando_continuacao' && Body =='N') || (estadoAtual == 'aguardando_continuacao' && Body =='n') ){
             globalState.setClientCondition("inicial");
             await sendMessage(To, From, "Digite 8 para ver o menu");
         }
 
-        if((estadoAtual == 'aguardando_continuaca' && Body =='S') || (estadoAtual == 'aguardando_continuaca' && Body =='s') ){
+        if((estadoAtual == 'aguardando_continuacao' && Body =='S') || (estadoAtual == 'aguardando_continuacao' && Body =='s') ){
             await sendMessage(To, From, "Para cadastrar um investimento, digite ou fale os detalhes como: nome da investimento, data, tipo");
             await atualizarEstado(From, "aguardando_dados");
         }
 
-        if(estadoAtual == 'aguardando_continuaca' 
+        if(estadoAtual == 'aguardando_continuacao' 
             && Body !='N' 
             && Body !='n' 
             && Body !='S' 
@@ -66,63 +66,125 @@ export class Investimentos {
         //const estadoAtual = await verificarEstado(From);
         console.log("estadoAtual--->>", estadoAtual)
         // Processamento baseado no estado atual da conversa
-        if (estadoAtual === 'aguardando_dados') {
+       // ... (código anterior)
+
+// Adicione um objeto para armazenar os dados do investimento
+let investimentoDados: { descricao?: string; valor?: number; dataString?: string; categoria?: string } | null = null;
+
+if (estadoAtual === 'aguardando_dados') {
 
 
 
-            const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
-            if (!Transcribe) return;
+    const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
+    if (!Transcribe) return;
 
-            const response = await summarizeServiceInvestimentos.summarize(Transcribe);
-            console.log("transcribe---->", response);
-
-
-
-
-            let [descricao, valorStr, dataStr, categoria] = response.split(',');
-            console.log("testeeeeee", descricao, valorStr, dataStr, categoria);
+    const response = await summarizeServiceInvestimentos.summarize(Transcribe);
+    console.log("transcribe---->", response);
 
 
 
-            let dataString: string = dayjs(dataStr).format('YYYY-MM-DD');
-            console.log("data formatada 1", dataString);
 
-            if (dataString == 'Invalid Date') { dataString = dayjs().format('YYYY-MM-DD') }
-            console.log("data formatada 2", dataString);
-            const valor = parseFloat(valorStr);
-            if (!cliente) { return undefined }
+    let [descricao, valorStr, dataStr, categoria] = response.split(',');
+    console.log("testeeeeee", descricao, valorStr, dataStr, categoria);
 
+
+
+    let dataString: string = dayjs(dataStr).format('YYYY-MM-DD');
+    console.log("data formatada 1", dataString);
+
+    if (dataString == 'Invalid Date') { dataString = dayjs().format('YYYY-MM-DD') }
+    console.log("data formatada 2", dataString);
+    const valor = parseFloat(valorStr);
+    if (!cliente) { return undefined }
+
+    //globalState.setMensagem(`${response}, ${descricao}, ${valorStr}, ${dataStr}, ${categoria}`);
+    globalState.setMensagem(`${response}`);
+
+
+    try {
+        const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
+        const newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
+
+        if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString)) {
+            await sendMessage(To, From, "Desculpe não entendi, forneça os dados corretos do investimento. Você pode digitar ou falar");
+        } else {
+            // Armazena os dados no objeto
+            investimentoDados = { descricao: newDescricao, valor, dataString, categoria: newCategoria };
+            await atualizarEstado(From, "confirmacao_dados");
+            globalState.setClientCondition("investimentos_1");
+            // Solicita confirmação
+            await sendMessage(To, From, `Por favor, confirme os dados do investimento: 
+\u{1F4B5} Investimento: ${newDescricao}
+\u{1F4B0} Valor: ${valor}
+\u{231A} Data: ${dayjs(dataString).format('DD-MM-YYYY')}
+Responda com 'S' para confirmar ou 'N' para corrigir os dados.`);
+           
+        }
+    } catch (error) {
+        await sendMessage(To, From, "Houve um erro ao cadastrar o investimento. Por favor, tente novamente.");
+    }
+}
+
+if (estadoAtual == 'confirmacao_dados') {
+   
+    if (Body.toUpperCase() === 'S') {
+        console.log(">>>>>>>>>", investimentoDados);
+
+        let dados = globalState.getMensagem();
+      
+        if(!dados)return null
+        let [descricao, valorStr, dataStr, categoria] = dados.split(',');
+        
+        // Verifica se os dados do investimento e o cliente estão definidos
+        if (cliente) {
             try {
-                const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
-                const newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
+                let dataString: string = dayjs( dataStr!).format('YYYY-MM-DD');
+                console.log("data formatada 111", dataString);
 
-                if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString)) {
-                    await sendMessage(To, From, "Desculpe não entendi, forneça os dados corretos do investimento. Você pode digitar ou falar");
+                if (dataString == 'Invalid Date') { dataString = dayjs().format('YYYY-MM-DD') }
+                console.log("data formatada 2222", dataString);
 
-                } else {
-                    const resultado = await cadastrarInvestimentoService(cliente, newDescricao, valor, dataString, newCategoria);
-                    console.log("*****************:",  resultado);
-                    await sendMessage(To, From, `Investimento cadastrado com sucesso \u{1F60E}! 
-                       \u{1F4B5} Investimento: ${newDescricao}
-                       \u{1F4B0} Valor: ${valor}
-                       \u{231A} Data: ${dayjs(dataString).format('DD-MM-YYYY')}
-                    \u{1F4A1} Para cadastrar outro investimento digite 'S' ou voltar digite 'N'.`);
-                    await atualizarEstado(From, "aguardando_continuaca");
-                    //await limparEstado(From);
-                    globalState.setClientCondition("investimento_2");
-                    dataStr = "null";
-                }
+                const newDescricao = descricao!.replace(/["'\[\]\(\)]/g, '');
+                const newCategoria = categoria!.replace(/["'\[\]\(\)]/g, '');
+                const valor = parseFloat(valorStr);
+
+                console.log(">>>>>>>>>", dados);
+        console.log(">>>>>>>>>", newDescricao);
+        console.log(">>>>>>>>>", valor);
+        console.log(">>>>>>>>>", dataString);
+        console.log(">>>>>>>>>", newCategoria);
+
+                const resultado = await cadastrarInvestimentoService(
+                    cliente,
+                    newDescricao,
+                    valor!,
+                    dataString!,
+                    newCategoria!
+                );
+                console.log("*****************:", resultado);
+                await sendMessage(To, From, `Investimento cadastrado com sucesso \u{1F60E}! 
+\u{1F4B5} Investimento: ${descricao}
+\u{1F4B0} Valor: ${valor}
+\u{231A} Data: ${dayjs(dataString).format('DD-MM-YYYY')}
+\u{1F4A1} Para cadastrar outro investimento digite 'S' ou voltar digite 'N'.`);
+                await atualizarEstado(From, "aguardando_continuacao");
+                globalState.setClientCondition("investimento_2");
             } catch (error) {
                 await sendMessage(To, From, "Houve um erro ao cadastrar o investimento. Por favor, tente novamente.");
             }
+        } else {
+            await sendMessage(To, From, "Erro: dados do investimento ou cliente não estão disponíveis.");
         }
-
-        if (estadoAtual === 'aguardando_confirmacao_dados') {
-
-        }
-
-
-        //res.sendStatus(200);
-
-    };
+    } else if (Body.toUpperCase() === 'N') {
+        await sendMessage(To, From, "Por favor, envie novamente os detalhes do investimento.");
+        await atualizarEstado(From, "aguardando_dados");
+    } else {
+        await sendMessage(To, From, "\u{1F914} Não reconheci seu comando. Responda com 'S' para confirmar ou 'N' para corrigir os dados.");
+    }
 }
+
+
+
+// ... (código posterior)
+
+    }}

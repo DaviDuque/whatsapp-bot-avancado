@@ -120,7 +120,7 @@ app.get('/download', async (req: Request, res: Response) => {
         const mensagem = globalState.getMensagem();
         console.log(`ID do cliente armazenado: ${globalState.getClientId()}`);
         console.log(`body do cliente armazenado-->: ${globalState.getMensagem()}`);
-        console.log(`body do cliente armazenado-->: ${mensagem[1]}`);
+        console.log(`body do cliente armazenado-->: ${mensagem}`);
         console.log(`cliente condição-->: ${globalState.getClientCondition()}`)
 
         // Processar o comando
@@ -132,16 +132,17 @@ app.get('/download', async (req: Request, res: Response) => {
             } else {
                 sendMessage(To, From, '\u{1F63A} Olá, \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
             }
-        }else if(globalState.getClientCondition() == 'despesas' || globalState.getClientCondition() == 'despesas_2'){
+        }else if(globalState.getClientCondition() == 'despesas' || globalState.getClientCondition() == 'despesas_2' || globalState.getClientCondition() == 'despesas_1'){
             console.log('-----despesas-----');
             await newDespesas.whatsapp(req, res);
         }else if(globalState.getClientCondition() == 'receitas' || globalState.getClientCondition() == 'receitas_2'){
             console.log('-----receitas-----');
             await newReceitas.processarMensagemReceita(req, res);
-        }else if(globalState.getClientCondition() == 'investimentos' || globalState.getClientCondition() == 'investimentos_2'){
+        }else if(globalState.getClientCondition() == 'investimentos' || globalState.getClientCondition() == 'investimentos_1' || globalState.getClientCondition() == 'investimentos_2'){
             console.log('-----investimentos-----');
             await newInvestimentos.processarMensagemInvestimentos(req, res);
         }else{
+            globalState.setClientCondition('inicial');
             sendMessage(To, From, "Desculpe não entendi  mensagem");
         }
     }

@@ -33,7 +33,7 @@ export class SummarizeServiceDespesas implements SummarizeServiceInterface {
     private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
     [<Despesa/gasto>, <valor>, <data da despesa>, <categaria>, <parcelado>]', 
     onde "Despesa" seja do tipo string com o nome da despesa, "valor" seja float: 10,00, 
-    "data da despesa" seja date:YYYY-MM-DD, "categoria" seja string, 
+    "data da despesa" seja date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${new Date().getDate()}, "categoria" seja string, 
     e "parcelado" seja char(1) sim(s) ou não(n). caso os dados "data da despesa" e "valor"  
     não seja identificado retorne null para cada um deles em sua devida posição no array. "Despesa" representa algo comprado, adiquirido ou utilizado. caso "parcelado" 
     não seja identificado no texto, retorne o default "null". 
@@ -104,7 +104,7 @@ export class SummarizeServiceInvestimentos implements SummarizeServiceInterface 
     [<investimentos/entrada>, <valor>, <data>, <categaria>]', 
     onde "investimentos" seja do tipo string, "valor" seja tipo float: 10,00, 
     "data" seja tipo date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${new Date().getDate()}, "categoria" seja tipo string. caso os dados "data" e "valor"  
-    não seja identificado retorne null para cada um deles em sua devida posição no array. "receita" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
+    não seja identificado retorne null para cada um deles em sua devida posição no array. "investimento" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
     Para "categoria" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
     opções["Títulos", "Criptomoedas", "Ações", "Popança", "imóveis", "N/A", "Debentures", "Previdência"]. Texto: `;
 

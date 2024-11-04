@@ -5,7 +5,7 @@ export class GlobalState {
   public whatsappConnected: boolean = false;
   public clientId: string | null = null;  // Armazena o ID do cliente
   public clientMenuOption: string | null = null;  // Armazena a escolha do menu do cliente
-  public mensagem: any[] = []; //armazena retorno do whatsapp
+  public mensagem: string | null = null; //armazena retorno do whatsapp
   public clientCondition: string | null = null;  // Armazena o ponto do cliente
 
   private constructor() {}
@@ -34,11 +34,11 @@ export class GlobalState {
     return this.clientMenuOption;
   }
 
-  public setMensagem(mensagem: any[]) {
+  public setMensagem(mensagem: any) {
     this.mensagem = mensagem;
   }
 
-  public getMensagem(): any[] {
+  public getMensagem(): string | null {
     return this.mensagem;
   }
 
