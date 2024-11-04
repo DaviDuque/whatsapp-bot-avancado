@@ -114,9 +114,9 @@ if (estadoAtual === 'aguardando_dados') {
             globalState.setClientCondition("investimentos_1");
             // Solicita confirmação
             await sendMessage(To, From, `Por favor, confirme os dados do investimento: 
-\u{1F4B5} Investimento: ${newDescricao}
-\u{1F4B0} Valor: ${valor}
-\u{231A} Data: ${dayjs(dataString).format('DD-MM-YYYY')}
+\u{1F4B5} *Investimento:* ${newDescricao.trim()}
+\u{1F4B0} *Valor:* ${valor}
+\u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')}
 Responda com 'S' para confirmar ou 'N' para corrigir os dados.`);
            
         }
@@ -166,9 +166,9 @@ if (estadoAtual == 'confirmacao_dados') {
 \u{1F4B5} Investimento: ${descricao}
 \u{1F4B0} Valor: ${valor}
 \u{231A} Data: ${dayjs(dataString).format('DD-MM-YYYY')}
-\u{1F4A1} Para cadastrar outro investimento digite 'S' ou voltar digite 'N'.`);
-                await atualizarEstado(From, "aguardando_continuacao");
-                globalState.setClientCondition("investimento_2");
+\u{1F4A1} Para cadastrar outro investimento digite '3' ou voltar digite '8'.`);
+                await limparEstado(From);
+                globalState.setClientCondition("inicial");
             } catch (error) {
                 await sendMessage(To, From, "Houve um erro ao cadastrar o investimento. Por favor, tente novamente.");
             }

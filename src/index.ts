@@ -135,7 +135,7 @@ app.get('/download', async (req: Request, res: Response) => {
         }else if(globalState.getClientCondition() == 'despesas' || globalState.getClientCondition() == 'despesas_2' || globalState.getClientCondition() == 'despesas_1'){
             console.log('-----despesas-----');
             await newDespesas.whatsapp(req, res);
-        }else if(globalState.getClientCondition() == 'receitas' || globalState.getClientCondition() == 'receitas_2'){
+        }else if(globalState.getClientCondition() == 'receitas' || globalState.getClientCondition() == 'receitas_2' || globalState.getClientCondition() == 'receitas_1'){
             console.log('-----receitas-----');
             await newReceitas.processarMensagemReceita(req, res);
         }else if(globalState.getClientCondition() == 'investimentos' || globalState.getClientCondition() == 'investimentos_1' || globalState.getClientCondition() == 'investimentos_2'){
