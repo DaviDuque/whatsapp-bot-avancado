@@ -1,5 +1,6 @@
 
 import dayjs from 'dayjs';
+import { isNumberObject } from 'util/types';
 
 export const validarNome = (nome: string): boolean  => {
     
@@ -111,6 +112,11 @@ export const validarDescricao = (descricao: string) => {
 export const validarValor = (valor: number) => {
     console.log("validarValor---->", valor > 0);
     return valor > 0;
+};
+
+export const validarValorTotal = (valor: number) => {
+    console.log("validarValor---->", typeof valor === 'number' && !isNaN(valor));
+    return typeof valor === 'number' && !isNaN(valor);
 };
 
 export const validarData = (data: string): boolean => {

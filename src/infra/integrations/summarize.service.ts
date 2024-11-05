@@ -138,3 +138,68 @@ export class SummarizeServiceInvestimentos implements SummarizeServiceInterface 
         return response.choices[0].message.content;
     }
 }
+
+
+export class SummarizeServiceCartao implements SummarizeServiceInterface {
+    private temperature = 0.7;
+    private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
+    [<cartão>, <tipo>, <banco>, <limite> <saldo>]', 
+    onde "cartão" seja do tipo string, "tipo" seja tipo string, "banco" seja do tipo string, "limite" seja do tipo float: 10,00,  "saldo" seja do tipo float: 10,00.
+    caso os dados 
+    não sejam identificados retorne null para cada um deles em sua devida posição no array. "cartão" representa o nome de um cartao bancario. 
+    Para "tipo" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
+    opções["Cartão de Crédito", "Cartão de débito", "Cartão Pré Pago", "N/A"]. Texto: `;
+
+    private openai: OpenAI;
+    private model = 'gpt-3.5-turbo';
+
+    constructor(){
+        this.openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+        });
+    }
+
+    async summarize(text:string): Promise<string> {
+        const response = await this.openai.chat.completions.create({
+            messages: [{ role: 'user', content: `${this.prompt} ${text}`}],
+            model: this.model,
+            temperature: this.temperature,
+        });
+        if(!response.choices[0].message.content){
+            throw new Error('Não foi possível resumir o texto') ;
+        }
+        return response.choices[0].message.content;
+    }
+}
+
+export class SummarizeServiceConta implements SummarizeServiceInterface {
+    private temperature = 0.7;
+    private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
+    [<conta>, <tipo>, <banco>, <limite> <saldo>]', 
+    onde "cartão" seja do tipo string, "tipo" seja tipo string, "banco" seja do tipo string, "limite" seja do tipo float: 10,00,  "saldo" seja do tipo float: 10,00.
+    caso os dados 
+    não sejam identificados retorne null para cada um deles em sua devida posição no array. "conta" representa o nome de uma conta bancario. 
+    Para "tipo" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
+    opções["Poupança", "Conta corrente", "N/A"]. Texto: `;
+
+    private openai: OpenAI;
+    private model = 'gpt-3.5-turbo';
+
+    constructor(){
+        this.openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+        });
+    }
+
+    async summarize(text:string): Promise<string> {
+        const response = await this.openai.chat.completions.create({
+            messages: [{ role: 'user', content: `${this.prompt} ${text}`}],
+            model: this.model,
+            temperature: this.temperature,
+        });
+        if(!response.choices[0].message.content){
+            throw new Error('Não foi possível resumir o texto') ;
+        }
+        return response.choices[0].message.content;
+    }
+}
