@@ -2,9 +2,9 @@ import { connection } from '../../infra/database/mysql-connection';
 import dayjs from 'dayjs';
 
 
-export const verificarDespesaPorUsuario = async (userId: number) => {
+export const verificarDespesaPorCliente = async (id_cliente: number) => {
     try {
-        const [rows]: any = await connection.query('SELECT * FROM despesas WHERE userId = ?', [userId]);
+        const [rows]: any = await connection.query('SELECT * FROM despesas WHERE id_cliente = ?', [id_cliente]);
 
         // Verificando se a consulta retornou algum resultado
         if (Array.isArray(rows) && rows.length > 0) {
@@ -17,6 +17,25 @@ export const verificarDespesaPorUsuario = async (userId: number) => {
         throw error;
     }
 };
+
+export const ListarDespesaPorCliente = async (id_cliente: string, startDate: string, endDate: string) => {
+    try {
+        const [rows]: any = await connection.query( `SELECT 'despesas' AS despesas, id_cliente, descricao, valor, data_despesa AS data, categoria 
+            FROM despesas 
+            WHERE id_cliente = ? and data_despesa BETWEEN ? AND ?`, 
+           [id_cliente, startDate, endDate]
+       );
+       console.log("rows", rows);
+            return  rows;
+    }catch (error) {
+        console.error('Erro ao verificar despesa:', error);
+        throw error;
+    }
+
+}
+
+
+   
 
 export const cadastrarDespesa = async (id_cliente: string, descricao: string, valor: number, data_despesa: string,  categoria?: string, parcelado?: string) => {
     try {

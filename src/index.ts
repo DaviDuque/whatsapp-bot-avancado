@@ -18,6 +18,7 @@ import { SummarizeServiceDespesas } from './infra/integrations/summarize.service
 import { GlobalState } from './infra/states/global-state';
 import { getCommand } from './commandManager';
 import { sendMessage } from './infra/integrations/twilio';
+import { Relatorios } from './modules/relatorios/relatorios-simples.controller';
 
 
 import { formatarNumeroTelefone } from './utils/trata-telefone';
@@ -44,6 +45,7 @@ const NewCartao = new Cartao();
 const NewConta = new Conta();
 const globalState = GlobalState.getInstance();
 const authUsercase = new Auth();
+const newRelatorio = new Relatorios();
 
 
 
@@ -54,6 +56,7 @@ app.get('/', (req: Request, res: Response) => {
 app.post('/login', authUsercase.login);
 app.post('/register', authMiddleware, authUsercase.register);
 app.post('/refresh-token', authUsercase.refreshToken);
+app.post('/relatorio-simples', newRelatorio.RelatorioSimples);
 
 
 app.get('/download', async (req: Request, res: Response) => {
