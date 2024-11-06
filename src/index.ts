@@ -10,6 +10,8 @@ import { Clientes } from './modules/clientes/clientes.controller';
 import { Despesas } from './modules/despesas/despesas.controller';
 import { Receitas } from './modules/receitas/receitas.controller';
 import { Investimentos } from './modules/investimentos/investimentos.controller';
+import { Cartao } from './modules/cartao/cartao.controller';
+import { Conta } from './modules/conta/conta.controller';
 import { verificarClientePorTelefone, criarClientePorTelefone } from './modules/clientes/clientes.repository';
 import { AudioService } from './infra/integrations/audio.service';
 import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
@@ -38,6 +40,8 @@ const newCliente = new Clientes();
 const newDespesas = new Despesas();
 const newReceitas = new Receitas();
 const newInvestimentos = new Investimentos();
+const NewCartao = new Cartao();
+const NewConta = new Conta();
 const globalState = GlobalState.getInstance();
 const authUsercase = new Auth();
 
@@ -141,6 +145,12 @@ app.get('/download', async (req: Request, res: Response) => {
         }else if(globalState.getClientCondition() == 'investimentos' || globalState.getClientCondition() == 'investimentos_1' || globalState.getClientCondition() == 'investimentos_2'){
             console.log('-----investimentos-----');
             await newInvestimentos.processarMensagemInvestimentos(req, res);
+        }else if(globalState.getClientCondition() == 'cartao' || globalState.getClientCondition() == 'cartao_1' || globalState.getClientCondition() == 'cartao_2'){
+            console.log('-----cartao-----');
+            await NewCartao.whatsapp(req, res);
+        }else if(globalState.getClientCondition() == 'conta' || globalState.getClientCondition() == 'conta_1' || globalState.getClientCondition() == 'conta_2'){
+            console.log('-----conta-----');
+            await NewConta.whatsapp(req, res);
         }else{
             globalState.setClientCondition('inicial');
             sendMessage(To, From, "Desculpe não entendi  mensagem");

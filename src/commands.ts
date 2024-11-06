@@ -12,10 +12,15 @@ addCommand({
 
 addCommand({
     name: '1',
-    description: 'Digite 1 para entrar com gastos e despesas \u{1F648}',
+    description: '\u{1F648}Digite \u{0031}\u{FE0F}\u{20E3} para entrar com *gastos e despesas* ',
     execute: () => {
         globalState.setClientCondition("despesas");
-        return '\u{1F44D} Para cadastrar uma despesa, envie os detalhes como: nome da despesa, data, dia, categoria, se é parcelado, onde foi';
+        return `\u{1F44D} Para cadastrar uma despesa, digite ou fale os detalhes: 
+*Nome da despesa*
+*data* 
+*Valor*
+*dia*
+*Parcelado?* S/N`;
     },
 });
 
@@ -27,7 +32,7 @@ addCommand({
 
 addCommand({
     name: '2',
-    description: 'Digite 2 para \u{1F60D} Entrada de receita',
+    description: '\u{1F60E}Digite \u{0032}\u{FE0F}\u{20E3} para Entrada de *receita*',
     execute: () => {
         globalState.setClientCondition("receitas");
         return '\u{1F44D} Para cadastrar uma receita, envie os detalhes como: nome da receita, data, dia, categoria';
@@ -36,10 +41,46 @@ addCommand({
 
 addCommand({
     name: '3',
-    description: 'Digite 3 para \u{1F60D} Entrada de investimentos',
+    description: '\u{1F4B0}Digite \u{0033}\u{FE0F}\u{20E3} para Entrada de *investimentos*',
     execute: () => {
         globalState.setClientCondition("investimentos");
-        return '\u{1F44D} Para cadastrar uma investimento, envie os detalhes como: nome da investimento, data, dia, categoria';
+        return `\u{1F44D} Para cadastrar uma investimento, envie os detalhes: 
+*Nome da investimento*
+*Valor*
+*Data*
+*Categoria*
+`;
+    },
+});
+
+
+addCommand({
+    name: '4',
+    description: '\u{1F4F1}Digite \u{0034}\u{FE0F}\u{20E3} para cadastrar um *cartão*',
+    execute: () => {
+        globalState.setClientCondition("cartao");
+        return `Para cadastrar um cartão, digite ou fale os detalhes:
+*Nome da cartão*
+*tipo*
+*banco*
+*limite*
+*saldo*
+`;
+    },
+});
+
+addCommand({
+    name: '5',
+    description: '\u{1F3E6}Digite \u{0035}\u{FE0F}\u{20E3} para cadastrar uma *conta bancária*',
+    execute: () => {
+        globalState.setClientCondition("conta");
+        return `Para cadastrar uma conta bancária, digite ou fale os detalhes:
+*Nome da cartão*
+*tipo*
+*banco*
+*limite*
+*saldo*
+`;
     },
 });
 
@@ -58,17 +99,17 @@ addCommand({
 
 addCommand({
     name: '8',
-    description: 'Digite 8 para  \u{2600} Exibe operações disponíveis',
+    description: '\u{2600}Digite \u{0038}\u{FE0F}\u{20E3} para Exibir *operações disponíveis*',
     execute: () => {
         return listCommands().map(
-            command => `${command.name}:${command.description}`
+            command => `${command.description}`
         ).join('\n \n');
     },
 });
 
 addCommand({
     name: '9',
-    description: 'Digite 9 para  \u{1F525} Sair',
+    description: ' \u{1F525}Digite \u{0039}\u{FE0F}\u{20E3} para *Sair*',
     execute: () => '\u{1F60A} Obrigado, sigo a disposição'
 });
 
