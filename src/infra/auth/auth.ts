@@ -24,6 +24,18 @@ export class Auth {
         }
     }
 
+    async user(req: Request, res: Response) {
+        console.log("entrou>>>>", req.params);
+        try {
+            const id_usuario = parseInt(req.params.id_usuario);
+            const result = await authService.user(id_usuario);
+            res.status(200).json(result);
+        } catch (error) {
+            console.log("error>>>>", error);
+            res.status(400).json({ message: error });
+        }
+    }
+
     async refreshToken(req: Request, res: Response) {
         const { refreshToken } = req.body;
 

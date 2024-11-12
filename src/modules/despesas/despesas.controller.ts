@@ -22,7 +22,7 @@ export class Despesas {
         const condicao = globalState.getClientCondition();
 
         const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-        
+        console.log("PostbackData>>>>>>", Body);
         if(condicao == "despesas"){
         await atualizarEstado(From, "aguardando_dados");
         }
@@ -30,6 +30,7 @@ export class Despesas {
         const cliente = verificarClienteEstado(cliente_id);
         const estadoAtual = await verificarEstado(From);
 
+    
         if((estadoAtual == 'aguardando_continuacao' && Body =='N') || (estadoAtual == 'aguardando_continuacao' && Body =='n') ){
                 globalState.setClientCondition("inicial");
                 await sendMessage(To, From, "Digite 8 para ver o menu");
@@ -69,6 +70,7 @@ export class Despesas {
         }
 
         if (estadoAtual === "aguardando_dados") {
+            
 
             const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
             if (!Transcribe) return;
@@ -96,7 +98,10 @@ Por favor, confirme os dados abaixo:\n
 *Data:* ${dayjs(dataString).format('DD-MM-YYYY')}\n
 É correto? Responda com 'S' para sim ou 'N' para não.`;
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
-                    await sendMessage(To, From, confirmationMessage);   
+                   await sendMessage(To, From, confirmationMessage); 
+                   await sendInteractiveMessage(To, From);  
+                   //return 0;
+                   //return res.json({ message: "não deu"});
                 }
             } catch (error) {
                 await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
@@ -109,7 +114,7 @@ Por favor, confirme os dados abaixo:\n
         if(!dados)return null
         let [descricao, valorStr, dataStr, categoria, parcelado] = dados.split(',');
         
-            if (Body.toUpperCase() === 'S') {
+            if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
 
                 if(cliente){
                     try {
@@ -134,16 +139,18 @@ Por favor, confirme os dados abaixo:\n
                 
                 await limparEstado(From);
                 globalState.setClientCondition("inicial");
+                
                         
                     } catch (error) {
                         await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
                     }
                 }
                 
-            } else if (Body.toUpperCase() === 'N') {
+            } else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {
                 await sendMessage(To, From, "\u{26A0} Sem problemas. Você pode enviar os dados novamente.");
                 await atualizarEstado(From, "aguardando_dados");
             } else {
+                await atualizarEstado(From, "aguardando_dados");
                 await sendMessage(To, From, "\u{274C} Não reconheci sua resposta. Por favor, responda com 'S' para sim ou 'N' para não.");
             }
         }

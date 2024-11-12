@@ -52,6 +52,13 @@ export const cadastrarCliente = async (cliente: Cliente): Promise<void> => {
     );
 };
 
+export const buscarClientes = async (): Promise<any> => {
+    const [response] = await connection.execute(`select * from clientes cl inner join enderecos e on cl.id_endereco = e.id_endereco left join cidades c on e.id_cidade = c.id_cidade`);
+    
+    console.log("cliente rows----->", response);
+    return response;
+};
+
 
 const estadosClientes: { [telefone: string]: string } = {}; // Armazenar o estado temporário
 

@@ -17,7 +17,7 @@ interface User {
 export class AuthService {
    
         async login(email: string, senha: string) {
-            const [rows]: any = await connection.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+            const [rows]: any = await connection.query('SELECT id_usuario, email, senha FROM usuarios WHERE email = ?', [email]);
             const user: User = rows[0];
     
             if (!user) {
@@ -32,8 +32,10 @@ export class AuthService {
     
             const accessToken = this.generateAccessToken(user);
             const refreshToken = this.generateRefreshToken(user);
-    
-            return { accessToken, refreshToken };
+            delete rows[0].senha;
+            delete rows[0].email;
+            let usuario = rows[0];
+            return { accessToken, refreshToken , usuario};
         }
 
     async register(nome: string, email: string, telefone: string, senha: string) {
@@ -45,6 +47,17 @@ export class AuthService {
         );
 
         return result;
+    }
+
+    async user(id_usuario: number) {
+        const rows: any = await connection.query('SELECT id_usuario, nome, email, telefone, data_cadastro, data_insert, data_update FROM usuarios WHERE id_usuario = ?', [id_usuario]);
+        const user: User = rows[0];
+
+        if (!user) {
+            throw new Error('Usuário não encontrado');
+        }
+
+        return { user };
     }
 
     generateAccessToken(user: User) {

@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 import { Auth } from './infra/auth/auth';
 import { authMiddleware } from './infra/auth/auth.middleware';
 import { Clientes } from './modules/clientes/clientes.controller';
+import { RelatorioClientes } from './modules/clientes/relatorio-clientes.controller';
 import { Despesas } from './modules/despesas/despesas.controller';
 import { Receitas } from './modules/receitas/receitas.controller';
 import { Investimentos } from './modules/investimentos/investimentos.controller';
@@ -17,9 +18,9 @@ import { AudioService } from './infra/integrations/audio.service';
 import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
 import { GlobalState } from './infra/states/global-state';
 import { getCommand } from './commandManager';
-import { sendMessage } from './infra/integrations/twilio';
+import { sendMessage,sendInteractiveMessage } from './infra/integrations/twilio';
 import { Relatorios } from './modules/relatorios/relatorios-simples.controller';
-
+import cors from 'cors';
 
 import { formatarNumeroTelefone } from './utils/trata-telefone';
 
@@ -28,16 +29,22 @@ import { formatarNumeroTelefone } from './utils/trata-telefone';
 
 
 const app = express();
-const port = 3000;
+const port = 3333;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors({
+    origin: '*', // Substitua pelo URL do seu frontend
+    methods: 'GET,POST,PUT,DELETE', // Métodos permitidos
+    allowedHeaders: 'Content-Type, Authorization' // Cabeçalhos permitidos
+  }));
 
 
 
 // Armazenamento temporário para os dados do cliente em processo de cadastro
 const dadosClientesTemporarios: { [key: string]: any } = {};
 const newCliente = new Clientes();
+const newRelatorioClientes = new RelatorioClientes;
 const newDespesas = new Despesas();
 const newReceitas = new Receitas();
 const newInvestimentos = new Investimentos();
@@ -57,6 +64,9 @@ app.post('/login', authUsercase.login);
 app.post('/register', authMiddleware, authUsercase.register);
 app.post('/refresh-token', authUsercase.refreshToken);
 app.post('/relatorio-simples', newRelatorio.RelatorioSimples);
+app.get('/relatorio-clientes', newRelatorioClientes.buscar);
+app.get('/user/:id_usuario', authUsercase.user);
+
 
 
 app.get('/download', async (req: Request, res: Response) => {
@@ -81,6 +91,8 @@ app.get('/download', async (req: Request, res: Response) => {
 
  app.post('/whatsapp', async (req: Request, res: Response) => {
     const { From, To, Body } = req.body;
+    console.log("reqbody>>>", Body);
+    if(!Body) return undefined;
     const [commandName, ...args] = Body.split(' ');
     console.log("req...........",req.body);
 
@@ -135,6 +147,9 @@ app.get('/download', async (req: Request, res: Response) => {
             const command = getCommand(commandName);
             if (command) {
                 const response = command.execute(args);
+                console.log("To>>>>", To);
+                console.log("From>>>>", From);
+                //await sendInteractiveMessage(From, To);
                 sendMessage(To, From, response);
             } else {
                 sendMessage(To, From, '\u{1F63A} Olá, \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
