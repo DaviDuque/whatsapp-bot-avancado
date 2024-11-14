@@ -2,7 +2,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { Request, Response } from 'express';
-import { sendMessage } from '../../infra/integrations/twilio';
+import { sendMessage,sendInteractiveMessage } from '../../infra/integrations/twilio';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
 import { cadastrarReceitaService } from './receitas.service';
 import { validarDescricao, validarValor, validarData } from '../../utils/validation';
@@ -82,9 +82,15 @@ export class Receitas {
 \u{1F4B5} *Receita:* ${newDescricao.trim()}
 \u{1F4B0} *Valor:* ${valor}
 \u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')} \n
-É correto? Responda com 'S' para sim ou 'N' para não.`;
+`;
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
                     await sendMessage(To, From, confirmationMessage);
+                    await sendInteractiveMessage(To, From, 'Receita'); 
+
+
+
+                    
+                    //await sendMessage(To, From, confirmationMessage);
                 }
             } catch (error) {
                 await sendMessage(To, From, "Houve um erro ao cadastrar a receita. Por favor, tente novamente.");
@@ -97,7 +103,7 @@ export class Receitas {
             if(!dados)return null
             let [descricao, valorStr, dataStr, categoria] = dados.split(',');
     
-                if (Body.toUpperCase() === 'S') {
+                if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
                     if(cliente){
                         try {
     
@@ -128,7 +134,7 @@ export class Receitas {
                         }
                     }
                     
-                } else if (Body.toUpperCase() === 'N') {
+                } else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {
                     await sendMessage(To, From, "Cadastro de receita cancelado. Você pode tentar novamente.");
                     await atualizarEstado(From, "aguardando_dados");
                 } else {

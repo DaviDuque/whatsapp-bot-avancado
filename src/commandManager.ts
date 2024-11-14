@@ -17,3 +17,8 @@ export const getCommand = (name: string): Command | undefined => {
 export const listCommands = (): Command[] => {
     return commandList;
 }
+
+export const menuCommand = (Command: Command) => {
+    commandList.push(Command);
+}
+

@@ -2,7 +2,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { Request, Response } from 'express';
-import { sendMessage } from '../../infra/integrations/twilio';
+import { sendMessage,sendConfirmMessage } from '../../infra/integrations/twilio';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
 import { cadastrarInvestimentoService } from './investimentos.service';
 import { validarDescricao, validarValor, validarData } from '../../utils/validation';
@@ -91,11 +91,13 @@ export class Investimentos {
             investimentoDados = { descricao: newDescricao, valor, dataString, categoria: newCategoria };
             await atualizarEstado(From, "confirmacao_dados");
             globalState.setClientCondition("investimentos_1");
-            await sendMessage(To, From, `Por favor, confirme os dados do investimento: 
+            /*await sendMessage(To, From, `Por favor, confirme os dados do investimento: 
 \u{1F4B5} *Investimento:* ${newDescricao.trim()}
 \u{1F4B0} *Valor:* ${valor}
 \u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')}
-Responda com 'S' para confirmar ou 'N' para corrigir os dados.`); 
+Responda com 'S' para confirmar ou 'N' para corrigir os dados.`); */
+
+await sendConfirmMessage(To, From); 
         }
     } catch (error) {
         await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar o investimento. Por favor, tente novamente.");

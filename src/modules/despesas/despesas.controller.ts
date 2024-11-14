@@ -98,8 +98,8 @@ Por favor, confirme os dados abaixo:\n
 *Data:* ${dayjs(dataString).format('DD-MM-YYYY')}\n
 É correto? Responda com 'S' para sim ou 'N' para não.`;
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
-                   await sendMessage(To, From, confirmationMessage); 
-                   await sendInteractiveMessage(To, From);  
+                   //await sendMessage(To, From, confirmationMessage); 
+                   await sendInteractiveMessage(To, From, 'Despesa');  
                    //return 0;
                    //return res.json({ message: "não deu"});
                 }

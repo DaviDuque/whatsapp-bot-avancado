@@ -18,7 +18,7 @@ import { AudioService } from './infra/integrations/audio.service';
 import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
 import { GlobalState } from './infra/states/global-state';
 import { getCommand } from './commandManager';
-import { sendMessage,sendInteractiveMessage } from './infra/integrations/twilio';
+import { sendMessage,sendInteractiveMessage, sendListPickerMessage } from './infra/integrations/twilio';
 import { Relatorios } from './modules/relatorios/relatorios-simples.controller';
 import cors from 'cors';
 
@@ -27,9 +27,8 @@ import { formatarNumeroTelefone } from './utils/trata-telefone';
 
 
 
-
 const app = express();
-const port = 3333;
+const port = process.env.PORT || '3333';
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -146,13 +145,24 @@ app.get('/download', async (req: Request, res: Response) => {
         if(globalState.getClientCondition() == 'inicial'){
             const command = getCommand(commandName);
             if (command) {
+                console.log("Command>>>>", command);
+                console.log("Command>>>>", commandName);
                 const response = command.execute(args);
-                console.log("To>>>>", To);
-                console.log("From>>>>", From);
-                //await sendInteractiveMessage(From, To);
-                sendMessage(To, From, response);
+                if(commandName == '8'){
+                    await sendListPickerMessage(To, From);
+                    sendMessage(To, From, '\u{1F63A} Vamos la!! \u{2600}');
+                }else{
+                    console.log("To>>>>", To);
+                    console.log("From>>>>", From);
+                    //await sendListPickerMessage(From, To);
+                    sendMessage(To, From, response);
+                }
+               
             } else {
-                sendMessage(To, From, '\u{1F63A} Olá, \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
+                
+                await sendListPickerMessage(To, From);
+                 //sendMessage(To, From, '\u{1F63A} Olá, \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
+                sendMessage(To, From, '\u{1F63A} Vamos la!! \u{2600}');
             }
         }else if(globalState.getClientCondition() == 'despesas' || globalState.getClientCondition() == 'despesas_2' || globalState.getClientCondition() == 'despesas_1'){
             console.log('-----despesas-----');
