@@ -1,12 +1,12 @@
 import { Message } from "../../domain/entities/message";
-import { MessageTextRepositoryInterface } from "../../domain/repository/message-text-repository.interface";
+//import { MessageTextRepositoryInterface } from "../../domain/repository/message-text-repository.interface";
 import SummarizeServiceInterface from "../../domain/service/summarize.service.interface";
 import { MessageDTO } from "../../DTO/message.dto";
 
 export class SummarizeMessageUseCase {
     constructor(
         private summarizationService: SummarizeServiceInterface,
-        private messageRepository: MessageTextRepositoryInterface,
+        //private messageRepository: MessageTextRepositoryInterface,
     ){}
 
     async execute(messageData: MessageDTO): Promise<string | undefined> {
@@ -33,14 +33,14 @@ export class SummarizeMessageUseCase {
        
         console.log("summerize-message-usecase>>>>>>>>>>>>>>>>>requisição recebida", newMessage.body);
 
-        this.messageRepository.add(newMessage);
+        //this.messageRepository.add(newMessage);
         console.log("summerize-message-usecase>>>>>>>>>>>>>>>>>adicionada a memoria");
 
         
         
        if (newMessage.body.length > 10) {
             const summarizedText = await this.summarizationService.summarize(newMessage.body);
-            this.messageRepository.update(newMessage.smsMessageSid, newMessage);
+           // this.messageRepository.update(newMessage.smsMessageSid, newMessage);
             return summarizedText;
         }
         

@@ -46,11 +46,11 @@ export class TranscribeMessageUseCase {
         if (transcription.length > 10) {
             const summarizedTranscription = await this.summarizationService.summarize(transcription);
             newMessage.setTranscriptionText(summarizedTranscription);
-            this.messageRepository.update(newMessage.smsMessageSid, newMessage);
+            //this.messageRepository.update(newMessage.smsMessageSid, newMessage);
             return summarizedTranscription;
         }
         newMessage.setTranscriptionText(transcription);
-        this.messageRepository.update(newMessage.smsMessageSid, newMessage);
+        //this.messageRepository.update(newMessage.smsMessageSid, newMessage);
 
         return  transcription;
 

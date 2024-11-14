@@ -1,3 +1,4 @@
+"use strict";
 /*import { MessageText } from "../../domain/entities/message-text";
 
 export class MessageTextMemoryRepository {
@@ -17,4 +18,4 @@ export class MessageTextMemoryRepository {
         this.messages[messageIndex] = updateMessage;
 
     }
-}*/
+}*/ 

@@ -11,7 +11,7 @@ import { SummarizeService } from '../../infra/integrations/summarize.service';
 import { TranscribeMessageUseCase } from '../../usecase/transcribe-message/transcribe-message.usecase';
 import { TranscribeMessageController } from '../../modules/transcribe/transcribe.repository';
 import { MessageMemoryRepository } from '../../infra/memory/message-memory.repository';
-import { MessageTextMemoryRepository } from '../../infra/memory/message-text-memory.repository';
+//import { MessageTextMemoryRepository } from '../../infra/memory/message-text-memory.repository';
 import { SummarizeMessageUseCase } from '../../usecase/message-text/summerize-message.usecase';
 import { Auth } from '../../infra/auth/auth';
 import { authMiddleware } from '../../infra/auth/auth.middleware';
