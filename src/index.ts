@@ -21,10 +21,11 @@ import { getCommand } from './commandManager';
 import { sendMessage,sendInteractiveMessage, sendListPickerMessage } from './infra/integrations/twilio';
 import { Relatorios } from './modules/relatorios/relatorios-simples.controller';
 import { RelatoriosTotal } from './modules/relatorios/relatorios-total.controller';
-
+import { Meta } from './modules/metas/metas.controller';
 import cors from 'cors';
 
 import { formatarNumeroTelefone } from './utils/trata-telefone';
+
 
 
 
@@ -55,6 +56,7 @@ const globalState = GlobalState.getInstance();
 const authUsercase = new Auth();
 const newRelatorio = new Relatorios();
 const newRelatorioTotal = new RelatoriosTotal();
+const newMeta = new Meta();
 
 
 
@@ -184,6 +186,9 @@ app.get('/download', async (req: Request, res: Response) => {
         }else if(globalState.getClientCondition() == 'conta' || globalState.getClientCondition() == 'conta_1' || globalState.getClientCondition() == 'conta_2'){
             console.log('-----conta-----');
             await NewConta.whatsapp(req, res);
+        }else if(globalState.getClientCondition() == 'meta' || globalState.getClientCondition() == 'meta_1' || globalState.getClientCondition() == 'meta_2'){
+            console.log('-----meta-----');
+            await newMeta.whatsappMeta(req, res);
         }else{
             globalState.setClientCondition('inicial');
             sendMessage(To, From, "Desculpe não entendi  mensagem");

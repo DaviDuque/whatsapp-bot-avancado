@@ -56,6 +56,35 @@ addCommand({
 
 addCommand({
     name: '4',
+    description: '\u{1F4F1}Digite \u{0034}\u{FE0F}\u{20E3} para cadastrar um *relatório*',
+    execute: () => {
+        globalState.setClientCondition("relatorio");
+        return `Para buscar um relatório, digite ou fale os detalhes:
+*Nome da cartão*
+*tipo*
+*banco*
+*limite*
+*saldo*
+`;
+    },
+});
+
+addCommand({
+    name: '5',
+    description: '\u{1F3E6}Digite \u{0035}\u{FE0F}\u{20E3} para cadastrar uma *Meta*',
+    execute: () => {
+        globalState.setClientCondition("meta");
+        return `Para definir um meta, digite ou fale os detalhes:
+                *Nome da meta*
+                *valor_objetivo*
+                *valor_atual*
+                *data_limite*
+`;
+    },
+});
+
+addCommand({
+    name: '6',
     description: '\u{1F4F1}Digite \u{0034}\u{FE0F}\u{20E3} para cadastrar um *cartão*',
     execute: () => {
         globalState.setClientCondition("cartao");
@@ -70,7 +99,7 @@ addCommand({
 });
 
 addCommand({
-    name: '5',
+    name: '7',
     description: '\u{1F3E6}Digite \u{0035}\u{FE0F}\u{20E3} para cadastrar uma *conta bancária*',
     execute: () => {
         globalState.setClientCondition("conta");

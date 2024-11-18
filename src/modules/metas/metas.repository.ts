@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 export const cadastrarMeta = async (id_cliente: string, descricao: string, valor_objetivo: number, valor_atual: number, data_limite: string) => {
     try {
         //const newDate: string = dayjs(data_despesa).format('YYYY-MM-DD HH:mm:ss');
-        const query = 'INSERT INTO cartoes (id_cliente, descricao, tipo, banco, limite, saldo) VALUES (?, ?, ?, ?, ?, ?)';
+        const query = 'INSERT INTO metas_financeiras (id_cliente, descricao, valor_objetivo, valor_atual, data_limite) VALUES (?, ?, ?, ?, ?)';
         const values = [
             id_cliente,
             descricao.trim(),
@@ -24,10 +24,6 @@ export const cadastrarMeta = async (id_cliente: string, descricao: string, valor
 
 
 
-`metas_financeiras`.`descricao`,
-`metas_financeiras`.`valor_objetivo`,
-`metas_financeiras`.`valor_atual`,
-`metas_financeiras`.`data_limite`,
 
 
 

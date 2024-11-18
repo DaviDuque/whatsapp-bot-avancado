@@ -207,13 +207,12 @@ export class SummarizeServiceConta implements SummarizeServiceInterface {
 
 export class SummarizeServiceMeta implements SummarizeServiceInterface {
     private temperature = 0.7;
-    private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
-    [<conta>, <tipo>, <banco>, <limite> <saldo>]', 
-    onde "cartão" seja do tipo string, "tipo" seja tipo string, "banco" seja do tipo string, "limite" seja do tipo float: 10,00,  "saldo" seja do tipo float: 10,00.
-    caso os dados 
-    não sejam identificados retorne null para cada um deles em sua devida posição no array. "conta" representa o nome de uma conta bancario. 
-    Para "tipo" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Poupança", "Conta corrente", "N/A"]. Texto: `;
+    private prompt = `considere o texto enviado para extrair um array a partir do texto fornecido sempre no formato: 
+    [<meta/entrada>, <valor Objetivo>, <valor atual>,  <data limite>]', 
+    onde "meta" seja do tipo string, "valor atual" seja tipo float: 10,00, "valor objetivo" seja tipo float: 10,00,
+    "data limite" seja tipo date:YYYY-MM-DD. os dados podem vir em formatos diferentes, coloque no formato correto. caso os dados  
+    não sejam identificados retorne null para cada um deles que não for identificado em sua devida posição no array. "meta" representa capital o nome do dinheiro que a pessoa quer juntar. 
+     Texto: `;
 
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';

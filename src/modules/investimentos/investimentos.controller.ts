@@ -106,7 +106,7 @@ await sendConfirmMessage(To, From);
 
 if (estadoAtual == 'confirmacao_dados') {
    
-    if (Body.toUpperCase() === 'S') {
+    if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
 
         let dados = globalState.getMensagem();
       
@@ -143,7 +143,7 @@ if (estadoAtual == 'confirmacao_dados') {
         } else {
             await sendMessage(To, From, "\u{274C}Erro: dados do investimento ou cliente não estão disponíveis.");
         }
-    } else if (Body.toUpperCase() === 'N') {
+    } else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {
         await sendMessage(To, From, "\u{1F534} Por favor, envie novamente os detalhes do investimento.");
         await atualizarEstado(From, "aguardando_dados");
     } else {

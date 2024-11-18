@@ -15,7 +15,7 @@ import dayjs from 'dayjs';
 import { GlobalState } from '../../infra/states/global-state';
 
 export class Meta {
-    whatsapp = async (req: Request, res: Response) => {
+    whatsappMeta = async (req: Request, res: Response) => {
         const summarizeServiceMeta = new SummarizeServiceMeta();
         const { SmsMessageSid, MediaContentType0, NumMedia, Body, To, From, MediaUrl0 } = req.body;
         const globalState = GlobalState.getInstance();
@@ -77,15 +77,20 @@ export class Meta {
             
             const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
             if (!Transcribe) return;
-
+            console.log("transcribe---->", Transcribe);
             const response = await summarizeServiceMeta.summarize(Transcribe);
-            console.log("transcribe---->", response);
+            console.log("summarize---->", response);
 
             
             let [descricao, valor_objetivo, valor_atual, data_limite] = response.split(',');
             console.log("testeeeeee", descricao, valor_objetivo, valor_atual, data_limite);
 
-            const limiteValor = parseFloat(data_limite);
+            const datStr = data_limite.replace(/["'\[\]\(\)]/g, ''); 
+            console.log("datattttttttttttttt", datStr);
+            let limiteValor: string = dayjs(data_limite).format('YYYY-MM-DD');
+            console.log("datattttttttttttttt", limiteValor);
+          
+            //const limiteValor = parseFloat(data_limite);
             const ValorAtual = parseFloat(valor_atual);
             const ValorObjetivo = parseFloat(valor_objetivo);
             if (!cliente) { return undefined; }
@@ -93,23 +98,27 @@ export class Meta {
             globalState.setMensagem(`${response}`);
 
             try {
-                const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
+                const newDescricao = descricao.replace(/["'\[\]\(\)]/g, ''); 
+                console.log("descricao>>>", !validarDescricao(descricao));
+                console.log("valor atual>>>>", !validarValorTotal(ValorAtual));
+                console.log("valor objetivo>>>>", !validarValorTotal(ValorObjetivo));
+                console.log("descricao null>>>>", descricao == null);
 
                 
-                if (!validarDescricao(descricao) || !validarValorTotal(ValorAtual) || !validarValorTotal(ValorObjetivo) || descricao == null) {
+                if (!validarDescricao(newDescricao) || !validarValorTotal(ValorAtual) || !validarValorTotal(ValorObjetivo) || descricao == null) {
                     await sendMessage(To, From, "Desculpe não entendi, forneça os dados corretos do meta. Você pode digitar ou falar");
                 } else {
                     globalState.setClientCondition("meta_1");
                     // Solicitar confirmação dos dados
                     const confirmationMessage = `
 Por favor, confirme os dados abaixo:\n
+*Valor Objetivo:* ${ValorObjetivo}
 *Meta:* ${newDescricao.trim()}
 *Valor Atual:* ${ValorAtual}
-*Banco:* ${ValorObjetivo}
-*Data Limite:*  ${limiteValor}\n
-É correto? Responda com 'S' para sim ou 'N' para não.`;
+*Data Limite:*  ${limiteValor}`;
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
-                    await sendMessage(To, From, confirmationMessage);
+                    await sendInteractiveMessage(To, From, 'Meta');  
+                    //await sendMessage(To, From, confirmationMessage);
                     
                 }
             } catch (error) {
@@ -128,13 +137,18 @@ Por favor, confirme os dados abaixo:\n
         let [descricao, valor_objetivo, valor_atual, data_limite] = dados.split(',');
 
         
-            if (Body.toUpperCase() === 'S') {
+            if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
 
                 if(cliente){
                     try {
+
+                        const limiteValor = data_limite.replace(/["'\[\]\(\)]/g, ''); 
+                        //console.log("33datattttttttttttttt", datStr);
+                        //let limiteValor: string = dayjs(data_limite).format('YYYY-MM-DD');
+                         console.log("33datattttttttttttttt", limiteValor);
                
                 const newDescricao = descricao!.replace(/["'\[\]\(\)]/g, '');
-                const limiteValor = data_limite;
+                //const limiteValor = data_limite;
                 const ValorAtual = parseFloat(valor_atual);
                 const ValorObjetivo = parseFloat(valor_objetivo);
                 
@@ -144,14 +158,14 @@ Por favor, confirme os dados abaixo:\n
 
               
 
-                const resultado = await cadastrarMetaController(cliente, newDescricao, ValorAtual, ValorObjetivo, limiteValor);
+                const resultado = await cadastrarMetaController(cliente, newDescricao, ValorObjetivo, ValorAtual, limiteValor);
                 console.log("*****************:", resultado);
                 
                 await sendMessage(To, From, `
 *Meta cadastrado com sucesso!* 
 *Meta:* ${newDescricao.trim()}
+*Valor Objetivo:* ${ValorObjetivo}
 *Valor Atual:* ${ValorAtual}
-*Banco:* ${ValorObjetivo}
 *Data Limite:*  ${limiteValor}\n
 \u{1F4A1}Para cadastrar outra meta digite *5* ou voltar digite *8*.`);
                 
@@ -163,7 +177,7 @@ Por favor, confirme os dados abaixo:\n
                     }
                 }
                 
-            } else if (Body.toUpperCase() === 'N') {
+            } else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {
                 // Se o usuário não confirmar, voltar ao estado anterior
                 await sendMessage(To, From, "Cadastro de meta cancelado. Você pode tentar novamente.");
                 await atualizarEstado(From, "aguardando_dados");
