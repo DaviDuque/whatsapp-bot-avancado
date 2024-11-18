@@ -20,6 +20,8 @@ import { GlobalState } from './infra/states/global-state';
 import { getCommand } from './commandManager';
 import { sendMessage,sendInteractiveMessage, sendListPickerMessage } from './infra/integrations/twilio';
 import { Relatorios } from './modules/relatorios/relatorios-simples.controller';
+import { RelatoriosTotal } from './modules/relatorios/relatorios-total.controller';
+
 import cors from 'cors';
 
 import { formatarNumeroTelefone } from './utils/trata-telefone';
@@ -52,6 +54,7 @@ const NewConta = new Conta();
 const globalState = GlobalState.getInstance();
 const authUsercase = new Auth();
 const newRelatorio = new Relatorios();
+const newRelatorioTotal = new RelatoriosTotal();
 
 
 
@@ -63,6 +66,8 @@ app.post('/login', authUsercase.login);
 app.post('/register', authMiddleware, authUsercase.register);
 app.post('/refresh-token', authUsercase.refreshToken);
 app.post('/relatorio-simples', newRelatorio.RelatorioSimples);
+app.post('/relatorio-total', newRelatorioTotal.RelatorioTotal);
+
 app.get('/relatorio-clientes', newRelatorioClientes.buscar);
 app.get('/user/:id_usuario', authUsercase.user);
 
