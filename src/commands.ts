@@ -104,11 +104,11 @@ addCommand({
     execute: () => {
         globalState.setClientCondition("conta");
         return `\u{1F4B6}Para cadastrar uma conta bancária, digite ou fale os detalhes:
-*Nome da cartão*
-*tipo*
-*banco*
-*limite*
-*saldo*
+*Nome da conta*
+*Tipo*
+*Banco*
+*Limite*
+*Saldo*
 `;
     },
 });

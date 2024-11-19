@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { Request, Response } from 'express';
-import { sendMessage, sendConfirmMessage } from '../../infra/integrations/twilio';
+import { sendMessage, sendConfirmPadraoMessage } from '../../infra/integrations/twilio';
 import '../../commands';
 import { formatToBRL , formatWithRegex} from '../../utils/formata-dinheiro';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
@@ -89,7 +89,7 @@ export class Cartao {
                     globalState.setClientCondition("cartao_1");
                     const dadosMsg = ` \u{1F4B5}Cartão: *${newNomeCartao.trim()}*, *Tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite:${formatLimiteValor}*, *Saldo:${formatSaldoValor}*`
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
-                    await sendConfirmMessage(To, From, dadosMsg); 
+                    sendConfirmPadraoMessage(To, From, dadosMsg); 
                 }
             } catch (error) {
                 console.log("Erro em aguardando dados", error);
