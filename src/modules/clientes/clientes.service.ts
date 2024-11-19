@@ -6,11 +6,9 @@ import { Request, Response } from 'express';
 export const processarCliente = async (cliente: Cliente): Promise<string> => {
     try {
         const clienteExiste = await verificarClientePorTelefone(formatarNumeroTelefone(cliente.telefone.replace(/^whatsapp:/, '')));
-
         if (clienteExiste) {
             return 'Cliente já cadastrado.';
         } else {
-            console.log("chegou na service", cliente);
             await cadastrarCliente(cliente);
             return 'Cliente cadastrado com sucesso.';
         }
@@ -24,7 +22,6 @@ export const processarCliente = async (cliente: Cliente): Promise<string> => {
 
 export const cadastrarClientePainelController = async (req: Request, res: Response) => {
     const cliente = req.body;
-    console.log("cadastrar cliente", cliente);
     try {
         const resultado = await processarCliente(cliente);
         res.status(200).json({ message: resultado });
@@ -35,7 +32,6 @@ export const cadastrarClientePainelController = async (req: Request, res: Respon
 
 
 export const cadastrarClienteController = async (cliente:any) => {
-    console.log("cadastrar cliente", cliente);
     try {
         const resultado = await processarCliente(cliente);
         return resultado;

@@ -127,7 +127,31 @@ export async function sendConfirmMessage( To: string, From: string, dados: strin
   }
 }
 
-//HX56d5469870327f13b001efc754af58e0
+export async function sendConfirmPadraoMessage( To: string, From: string, dados: string) {
+  console.log(`>>>>>>>>>>>>>TO: ${To}`);
+  console.log(`>>>>>>>>>>>>>FROM: ${From}`);
+  console.log(`>>>>>>>>>>>>>dados: ${dados}`);
+  try {
+      const message = await client.messages.create({
+          contentSid: "HX56d5469870327f13b001efc754af58e0",
+          contentVariables: JSON.stringify({
+            detalhe_dados: dados 
+          }),
+          from: To,
+          messagingServiceSid: "MGd3e5ec8692cb6c7983621534eccf6d6f",
+          to: From,
+   
+        });
+      
+        console.log(message.body);
+        console.log(`Mensagem enviada com sucesso! SID: ${message.sid}`);
+  } catch (error) {
+    console.error('Erro ao enviar a mensagem:', error);
+
+
+  }
+}
+
 
 
 
