@@ -98,7 +98,7 @@ app.get('/download', async (req: Request, res: Response) => {
  app.post('/whatsapp', async (req: Request, res: Response) => {
     const { From, To, Body } = req.body;
     console.log("reqbody>>>", Body);
-    if(!Body) return undefined;
+    //if(!Body) return undefined;
     const [commandName, ...args] = Body.split(' ');
     console.log("req...........",req.body);
 
@@ -182,7 +182,7 @@ app.get('/download', async (req: Request, res: Response) => {
             await newInvestimentos.processarMensagemInvestimentos(req, res);
         }else if(globalState.getClientCondition() == 'cartao' || globalState.getClientCondition() == 'cartao_1' || globalState.getClientCondition() == 'cartao_2'){
             console.log('-----cartao-----');
-            await NewCartao.whatsapp(req, res);
+            await NewCartao.whatsappCartao(req, res);
         }else if(globalState.getClientCondition() == 'conta' || globalState.getClientCondition() == 'conta_1' || globalState.getClientCondition() == 'conta_2'){
             console.log('-----conta-----');
             await NewConta.whatsapp(req, res);

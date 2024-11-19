@@ -88,7 +88,7 @@ addCommand({
     description: '\u{1F4F1}Digite \u{0034}\u{FE0F}\u{20E3} para cadastrar um *cartão*',
     execute: () => {
         globalState.setClientCondition("cartao");
-        return `Para cadastrar um cartão, digite ou fale os detalhes:
+        return `\u{1F4B6}Para cadastrar um cartão, digite ou fale os detalhes:
 *Nome da cartão*
 *tipo*
 *banco*
@@ -103,7 +103,7 @@ addCommand({
     description: '\u{1F3E6}Digite \u{0035}\u{FE0F}\u{20E3} para cadastrar uma *conta bancária*',
     execute: () => {
         globalState.setClientCondition("conta");
-        return `Para cadastrar uma conta bancária, digite ou fale os detalhes:
+        return `\u{1F4B6}Para cadastrar uma conta bancária, digite ou fale os detalhes:
 *Nome da cartão*
 *tipo*
 *banco*

@@ -142,13 +142,16 @@ export class SummarizeServiceInvestimentos implements SummarizeServiceInterface 
 
 export class SummarizeServiceCartao implements SummarizeServiceInterface {
     private temperature = 0.7;
-    private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
-    [<cartão>, <tipo>, <banco>, <limite> <saldo>]', 
-    onde "cartão" seja do tipo string, "tipo" seja tipo string, "banco" seja do tipo string, "limite" seja do tipo float: 10,00,  "saldo" seja do tipo float: 10,00.
-    caso os dados 
-    não sejam identificados retorne null para cada um deles em sua devida posição no array. "cartão" representa o nome de um cartao bancario. 
-    Para "tipo" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Cartão de Crédito", "Cartão de débito", "Cartão Pré Pago", "N/A"]. Texto: `;
+    private prompt = `Recebendo os dados de entrada em diversos formatos, podendo ser texto simples, nomes de variáveis e informações exatas, extraia um array a partir do texto fornecido sempre no formato: [<cartão>, <tipo>, <banco>, <limite> <saldo>]'. As informções podem vir fora de ordem ou ordenado. Caso venham desordenadas, ordene conforme [<cartão>, <tipo>, <banco>, <limite> <saldo>].
+    
+    Os atributos tem as seguinte caracteristicas de saída:
+    -cartão: Representa o nome de um cartao bancário e deve ser do tipo string.
+    -tipo: deve ser do tipo string e necessariamente deve estar em uma categoria no qual encaixe em uma das o pções, sendo "N/A" quando não identificado. Opções["Cartão de Crédito", "Cartão de débito", "Cartão Pré Pago", "N/A"].
+    -banco: deve ser do tipo string.
+    -limite:deve ser do tipo float: 10.00.
+    -saldo:deve do tipo float: 10.00.
+    
+ Texto: `;
 
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';

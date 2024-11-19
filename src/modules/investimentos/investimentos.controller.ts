@@ -96,8 +96,10 @@ export class Investimentos {
 \u{1F4B0} *Valor:* ${valor}
 \u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')}
 Responda com 'S' para confirmar ou 'N' para corrigir os dados.`); */
+//const dadosMsg = [newDescricao.trim(), valor, dayjs(dataString).format('DD-MM-YYYY')];
+const dadosMsg = ` \u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${valor}*, *Data:${dayjs(dataString).format('DD-MM-YYYY')}*`
 
-await sendConfirmMessage(To, From); 
+await sendConfirmMessage(To, From, dadosMsg); 
         }
     } catch (error) {
         await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar o investimento. Por favor, tente novamente.");

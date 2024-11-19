@@ -102,14 +102,15 @@ export async function sendListPickerMessage( To: string, From: string) {
     }
 }
 
-export async function sendConfirmMessage( To: string, From: string) {
+export async function sendConfirmMessage( To: string, From: string, dados: string) {
   console.log(`>>>>>>>>>>>>>TO: ${To}`);
   console.log(`>>>>>>>>>>>>>FROM: ${From}`);
+  console.log(`>>>>>>>>>>>>>dados: ${dados}`);
   try {
       const message = await client.messages.create({
           contentSid: "HXbebfe4b67fd1a35c2c6179a2d1f858e1",
           contentVariables: JSON.stringify({
-            detalhe_investimento: ` \u{1F4B5}Investimento: *Títulos*, *Valor:1500,00*, *Data:20/10/2024*`, 
+            detalhe_investimento: dados 
           }),
           from: To,
           messagingServiceSid: "MGd3e5ec8692cb6c7983621534eccf6d6f",

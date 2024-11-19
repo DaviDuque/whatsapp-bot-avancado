@@ -1,6 +1,4 @@
 import { connection } from '../../infra/database/mysql-connection';
-import dayjs from 'dayjs';
-
 
 export const verificarCartaoPorCliente = async (cliente_id: number) => {
     try {
@@ -18,37 +16,32 @@ export const verificarCartaoPorCliente = async (cliente_id: number) => {
     }
 };
 
-export const cadastrarCartao = async (id_cliente: string, nome_cartao: string, tipo: string, banco: string,  limite?: number, saldo?: number) => {
+export const cadastrarCartao = async (
+    id_cliente: string,
+    nome_cartao: string,
+    tipo: string,
+    banco: string,
+    limite?: number,
+    saldo?: number
+): Promise<{ sucesso: boolean; mensagem: string }> => {
     try {
-        //const newDate: string = dayjs(data_despesa).format('YYYY-MM-DD HH:mm:ss');
         const query = 'INSERT INTO cartoes (id_cliente, nome_cartao, tipo, banco, limite, saldo) VALUES (?, ?, ?, ?, ?, ?)';
         const values = [
             id_cliente,
             nome_cartao.trim(),
             tipo.trim(),
             banco.trim(),
-            limite,
-            saldo
+            limite || null,
+            saldo || null
         ];
+
         await connection.execute(query, values);
-    } catch (error) {
+
+        return { sucesso: true, mensagem: 'Cartão cadastrado com sucesso.' };
+    } catch (error: any) {
         console.error('Erro ao cadastrar cartão:', error);
-        throw error;
+        return { sucesso: false, mensagem: `Erro ao cadastrar cartão: ${error.message}` };
     }
-};
-
-
-
-export const verificarEstadoCartao = async (from: string) => {
-    // Implementar lógica para verificar o estado atual do cadastro
-};
-
-export const atualizarEstadoCartao = async (from: string, estado: string) => {
-    // Implementar lógica para atualizar o estado do cadastro
-};
-
-export const limparEstadoCartao = async (from: string) => {
-    // Implementar lógica para limpar o estado do cadastro
 };
 
 
