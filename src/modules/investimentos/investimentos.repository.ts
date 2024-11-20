@@ -16,7 +16,6 @@ export const ListarInvestimentosPorCliente = async (id_cliente: string, startDat
          WHERE id_cliente = ? and data_investimento BETWEEN ? AND ?`,  
            [id_cliente, startDate, endDate]
        );
-       console.log("rows", rows);
             return  rows;
     }catch (error) {
         console.error('Erro ao verificar despesa:', error);

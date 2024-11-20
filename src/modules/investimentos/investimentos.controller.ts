@@ -91,15 +91,8 @@ export class Investimentos {
             investimentoDados = { descricao: newDescricao, valor, dataString, categoria: newCategoria };
             await atualizarEstado(From, "confirmacao_dados");
             globalState.setClientCondition("investimentos_1");
-            /*await sendMessage(To, From, `Por favor, confirme os dados do investimento: 
-\u{1F4B5} *Investimento:* ${newDescricao.trim()}
-\u{1F4B0} *Valor:* ${valor}
-\u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')}
-Responda com 'S' para confirmar ou 'N' para corrigir os dados.`); */
-//const dadosMsg = [newDescricao.trim(), valor, dayjs(dataString).format('DD-MM-YYYY')];
-const dadosMsg = ` \u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${valor}*, *Data:${dayjs(dataString).format('DD-MM-YYYY')}*`
-
-await sendConfirmMessage(To, From, dadosMsg); 
+            const dadosMsg = ` \u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${valor}*, *Data:${dayjs(dataString).format('DD-MM-YYYY')}*`
+            await sendConfirmMessage(To, From, dadosMsg); 
         }
     } catch (error) {
         await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar o investimento. Por favor, tente novamente.");
@@ -136,10 +129,12 @@ if (estadoAtual == 'confirmacao_dados') {
 \u{1F4B5} *Investimento:* ${newDescricao.trim()}
 \u{1F4B0} *Valor:* ${valor}
 \u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')}\n
-\u{1F4A1} Para cadastrar outro investimento digite '3' ou voltar digite '8'.`);
+\u{1F4A1} Para cadastrar outro investimento digite *3* \n para voltar digite *8* ou para sair digite *9*`);
                 await limparEstado(From);
                 globalState.setClientCondition("inicial");
             } catch (error) {
+                await limparEstado(From);
+                globalState.setClientCondition("inicial");
                 await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar o investimento. Por favor, tente novamente.");
             }
         } else {
@@ -149,7 +144,7 @@ if (estadoAtual == 'confirmacao_dados') {
         await sendMessage(To, From, "\u{1F534} Por favor, envie novamente os detalhes do investimento.");
         await atualizarEstado(From, "aguardando_dados");
     } else {
-        await sendMessage(To, From, "\u{1F914} Não reconheci seu comando. Responda com 'S' para confirmar ou 'N' para corrigir os dados.");
+        await sendMessage(To, From, "\u{1F914} Não reconheci seu comando. Responda com 'Sim' para confirmar ou 'Não' para corrigir os dados.");
     }
 }
     }
