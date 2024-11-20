@@ -77,11 +77,12 @@ addCommand({
     description: '\u{1F3E6}Digite \u{0035}\u{FE0F}\u{20E3} para cadastrar uma *Meta*',
     execute: () => {
         globalState.setClientCondition("meta");
-        return `Para definir um meta, digite ou fale os detalhes:
-                *Nome da meta*
-                *valor_objetivo*
-                *valor_atual*
-                *data_limite*
+        return `
+\u{1F4B7}Para cadastrar uma meta, digite ou fale os detalhes:
+*Nome da meta*
+*valor_objetivo*
+*valor_atual*
+*data_limite*
 `;
     },
 });
