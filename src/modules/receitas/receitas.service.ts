@@ -1,6 +1,5 @@
 // receitas.service.ts
 import { connection } from '../../infra/database/mysql-connection';
-import { Receita } from  '../../types/types';
 import dayjs from 'dayjs';
 
 // Função para cadastrar uma nova receita

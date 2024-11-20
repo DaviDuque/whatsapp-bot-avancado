@@ -35,7 +35,10 @@ addCommand({
     description: '\u{1F60E}Digite \u{0032}\u{FE0F}\u{20E3} para Entrada de *receita*',
     execute: () => {
         globalState.setClientCondition("receitas");
-        return '\u{1F44D} Para cadastrar uma receita, envie os detalhes como: nome da receita, data, dia, categoria';
+        return `\u{1F4B5}Para cadastrar uma receita, digite ou fale os detalhes como: 
+*Nome da receita*
+*Valor*
+*Data*`;
     },
 });
 

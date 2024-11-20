@@ -4,6 +4,7 @@ dotenv.config();
 import { Request, Response } from 'express';
 import { sendMessage,sendInteractiveMessage } from '../../infra/integrations/twilio';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
+import {formatWithRegex} from '../../utils/formata-dinheiro';
 import { cadastrarReceitaService } from './receitas.service';
 import { validarDescricao, validarValor, validarData } from '../../utils/validation';
 import { criarClientePorTelefone } from '../clientes/clientes.repository';
@@ -20,7 +21,6 @@ export class Receitas {
         const globalState = GlobalState.getInstance();
         const mensagem = globalState.getMensagem();
         const condicao = globalState.getClientCondition();
-
         const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
          
         if(condicao == "receitas"){
@@ -32,11 +32,15 @@ export class Receitas {
        
         if((estadoAtual == 'aguardando_continuacao' && Body =='N') || (estadoAtual == 'aguardando_continuacao' && Body =='n') ){
             globalState.setClientCondition("inicial");
-            await sendMessage(To, From, "Digite 8 para ver o menu");
+            await sendMessage(To, From, "\u{1F522}Digite *8* para ver o menu");
         }
 
         if((estadoAtual == 'aguardando_continuacao' && Body =='S') || (estadoAtual == 'aguardando_continuacao' && Body =='s') ){
-            await sendMessage(To, From, "Para cadastrar uma receita, digite ou fale os detalhes como: nome da receita, data, dia, onde foi");
+            await sendMessage(To, From, `\u{1F4B5}Para cadastrar uma receita, digite ou fale os detalhes como: 
+*Nome da receita*
+*Valor*
+*Data*
+`);
             await atualizarEstado(From, "aguardando_dados");
         }
 
@@ -51,8 +55,11 @@ export class Receitas {
 
         if (!estadoAtual) {
             await atualizarEstado(From, 'aguardando_dados');
-            await sendMessage(To, From, 'Para cadastrar uma receita, envie os detalhes como: nome da receita, data, dia, categoria:');
-
+            await sendMessage(To, From, `\u{1F4B5}Para cadastrar uma receita, digite ou fale os detalhes como: 
+                *Nome da receita*
+                *Valor*
+                *Data*
+                `);
         }
 
         if (estadoAtual === 'aguardando_dados') {
@@ -74,26 +81,20 @@ export class Receitas {
                 const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
 
                 if (!validarDescricao(descricao) || !validarValor(valor) || !validarData(dataString)) {
-                    await sendMessage(To, From, "Desculpe não entendi, forneça os dados corretos da receita. Você pode digitar ou falar");
-
+                    await sendMessage(To, From, "\u{26A0}Desculpe não entendi, forneça os dados corretos da receita. Você pode digitar ou falar");
                 } else {
                     globalState.setClientCondition("receitas_1");
                     const confirmationMessage =`Por favor, confirme os dados abaixo:\n 
 \u{1F4B5} *Receita:* ${newDescricao.trim()}
-\u{1F4B0} *Valor:* ${valor}
+\u{1F4B0} *Valor:* ${formatWithRegex(valor)}
 \u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')} \n
 `;
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
                     await sendMessage(To, From, confirmationMessage);
                     await sendInteractiveMessage(To, From, 'Receita'); 
-
-
-
-                    
-                    //await sendMessage(To, From, confirmationMessage);
                 }
             } catch (error) {
-                await sendMessage(To, From, "Houve um erro ao cadastrar a receita. Por favor, tente novamente.");
+                await sendMessage(To, From, "\u{26A0}Houve um erro ao cadastrar a receita. Por favor, tente novamente.");
             }
         }
 
@@ -114,31 +115,30 @@ export class Receitas {
     
                     const newDescricao = descricao!.replace(/["'\[\]\(\)]/g, '');
                     const newCategoria = categoria!.replace(/["'\[\]\(\)]/g, '');
-         
                     const valor = parseFloat(valorStr);
-    
                     const resultado = await cadastrarReceitaService(cliente, newDescricao, valor, dataString, newCategoria);
-                    console.log("*****************:", resultado);
                     
                     await sendMessage(To, From, `Receita cadastrada com sucesso \u{1F60E}! 
-    \u{1F4B5} Receita: ${newDescricao}
-    \u{1F4B0} Valor: ${valor}
-    \u{231A} Data: ${dayjs(dataString).format('DD-MM-YYYY')}
-    \u{1F4A1}Para cadastrar outra receita digite *2* ou voltar digite *8*.`);
+\u{1F4B5} Receita: ${newDescricao}
+\u{1F4B0} Valor: ${formatWithRegex(valor)}
+\u{231A} Data: ${dayjs(dataString).format('DD-MM-YYYY')}
+\u{1F4A1}Para cadastrar outra receita digite *2* ou para voltar digite *8* ou ainda para sair digite *9*`);
                     
                     await limparEstado(From);
                     globalState.setClientCondition("inicial");
                             
                         } catch (error) {
-                            await sendMessage(To, From, "Houve um erro ao cadastrar a receita. Por favor, tente novamente.");
+                            await limparEstado(From);
+                            globalState.setClientCondition("inicial");
+                            await sendMessage(To, From, "\u{26A0}Houve um erro ao cadastrar a receita. Por favor, tente novamente.");
                         }
                     }
                     
                 } else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {
-                    await sendMessage(To, From, "Cadastro de receita cancelado. Você pode tentar novamente.");
+                    await sendMessage(To, From, "\u{274C}Cadastro de receita cancelado. Você pode tentar novamente.");
                     await atualizarEstado(From, "aguardando_dados");
                 } else {
-                    await sendMessage(To, From, "Não reconheci sua resposta. Por favor, responda com 'S' para sim ou 'N' para não.");
+                    await sendMessage(To, From, "\u{274C}Não reconheci sua resposta. Por favor, responda com *Sim*  ou *Não*");
                 }
             }
     };

@@ -4,6 +4,7 @@ dotenv.config();
 import { Request, Response } from 'express';
 import { sendMessage,sendConfirmMessage } from '../../infra/integrations/twilio';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
+import {formatWithRegex} from '../../utils/formata-dinheiro';
 import { cadastrarInvestimentoService } from './investimentos.service';
 import { validarDescricao, validarValor, validarData } from '../../utils/validation';
 import { criarClientePorTelefone } from '../clientes/clientes.repository';
@@ -91,7 +92,7 @@ export class Investimentos {
             investimentoDados = { descricao: newDescricao, valor, dataString, categoria: newCategoria };
             await atualizarEstado(From, "confirmacao_dados");
             globalState.setClientCondition("investimentos_1");
-            const dadosMsg = ` \u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${valor}*, *Data:${dayjs(dataString).format('DD-MM-YYYY')}*`
+            const dadosMsg = ` \u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${formatWithRegex(valor)}*, *Data:${dayjs(dataString).format('DD-MM-YYYY')}*`
             await sendConfirmMessage(To, From, dadosMsg); 
         }
     } catch (error) {
@@ -127,7 +128,7 @@ if (estadoAtual == 'confirmacao_dados') {
                 );
                 await sendMessage(To, From, `Investimento cadastrado com sucesso\u{1F60E}  \n
 \u{1F4B5} *Investimento:* ${newDescricao.trim()}
-\u{1F4B0} *Valor:* ${valor}
+\u{1F4B0} *Valor:* ${formatWithRegex(valor)}
 \u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')}\n
 \u{1F4A1} Para cadastrar outro investimento digite *3* \n para voltar digite *8* ou para sair digite *9*`);
                 await limparEstado(From);
