@@ -47,7 +47,8 @@ export class SummarizeServiceDespesas implements SummarizeServiceInterface {
     não seja identificado retorne null para cada um deles em sua devida posição no array. "Despesa" representa algo comprado, adiquirido ou utilizado. caso "parcelado" 
     não seja identificado no texto, retorne o default "null". 
     Para "categoria" localize em qual das o pções melhor se encaixa, 
-    opções["Mercado", "Veiculos", "Pets", "Contas_residência", "imóveis", "Lazer", "restaurante", "Shopping", "Transporte", "internet", "viajens", "hotéis", "N/A"]. Texto: `;
+    opções["Mercado", "Veiculos", "Pets", "Contas_residência", "imóveis", "Lazer", "restaurante", "Shopping", "Transporte", "internet", "viajens", "hotéis", "N/A"]. Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
+    Texto: `
 
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';
@@ -81,7 +82,8 @@ export class SummarizeServiceReceitas implements SummarizeServiceInterface {
     "data" seja tipo date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja tipo string. caso os dados "data" e "valor"  
     não seja identificado retorne null para cada um deles em sua devida posição no array. "receita" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
     Para "categoria" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Salário", "Rendimentos", "Ações", "Aluguel", "imóveis", "N/A", "Extra", "Vendas", "Pensão", "Herança", "Previdência"]. Texto: `;
+    opções["Salário", "Rendimentos", "Ações", "Aluguel", "imóveis", "N/A", "Extra", "Vendas", "Pensão", "Herança", "Previdência"]. Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
+     Texto: `;
 
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';

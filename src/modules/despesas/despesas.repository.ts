@@ -5,8 +5,6 @@ import dayjs from 'dayjs';
 export const verificarDespesaPorCliente = async (id_cliente: number) => {
     try {
         const [rows]: any = await connection.query('SELECT * FROM despesas WHERE id_cliente = ?', [id_cliente]);
-
-        // Verificando se a consulta retornou algum resultado
         if (Array.isArray(rows) && rows.length > 0) {
             return true;
         }
@@ -54,20 +52,6 @@ export const cadastrarDespesa = async (id_cliente: string, descricao: string, va
         console.error('Erro ao cadastrar receita:', error);
         throw error;
     }
-};
-
-
-
-export const verificarEstadoDespesa = async (from: string) => {
-    // Implementar lógica para verificar o estado atual do cadastro
-};
-
-export const atualizarEstadoDespesa = async (from: string, estado: string) => {
-    // Implementar lógica para atualizar o estado do cadastro
-};
-
-export const limparEstadoDespesa = async (from: string) => {
-    // Implementar lógica para limpar o estado do cadastro
 };
 
 

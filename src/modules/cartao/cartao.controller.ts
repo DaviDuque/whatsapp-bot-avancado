@@ -3,7 +3,7 @@ dotenv.config();
 import { Request, Response } from 'express';
 import { sendMessage, sendConfirmPadraoMessage } from '../../infra/integrations/twilio';
 import '../../commands';
-import { formatToBRL , formatWithRegex} from '../../utils/formata-dinheiro';
+import { formatWithRegex} from '../../utils/formata-dinheiro';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
 import { cadastrarCartao } from './cartao.repository';
 import { validarDescricao, validarValorTotal} from '../../utils/validation';

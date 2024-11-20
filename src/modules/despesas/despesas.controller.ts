@@ -1,10 +1,11 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { Request, Response } from 'express';
-import { sendMessage, sendInteractiveMessage } from '../../infra/integrations/twilio';
+import { sendMessage, sendConfirmPadraoMessage } from '../../infra/integrations/twilio';
+import { formatWithRegex} from '../../utils/formata-dinheiro';
 import '../../commands';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
-import { cadastrarDespesaController } from './despesas.service';
+import { cadastrarDespesa } from './despesas.repository';
 import { validarDescricao, validarValor, validarData } from '../../utils/validation';
 import { criarClientePorTelefone } from '../clientes/clientes.repository';
 import { verificarEstado, atualizarEstado, limparEstado,  verificarClienteEstado } from '../../infra/states/states';
@@ -18,22 +19,19 @@ export class Despesas {
         const summarizeServiceDespesas = new SummarizeServiceDespesas();
         const { SmsMessageSid, MediaContentType0, NumMedia, Body, To, From, MediaUrl0 } = req.body;
         const globalState = GlobalState.getInstance();
-        const mensagem = globalState.getMensagem();
         const condicao = globalState.getClientCondition();
 
         const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-        console.log("PostbackData>>>>>>", Body);
         if(condicao == "despesas"){
-        await atualizarEstado(From, "aguardando_dados");
+           await atualizarEstado(From, "aguardando_dados");
         }
 
         const cliente = verificarClienteEstado(cliente_id);
         const estadoAtual = await verificarEstado(From);
-
     
         if((estadoAtual == 'aguardando_continuacao' && Body =='N') || (estadoAtual == 'aguardando_continuacao' && Body =='n') ){
                 globalState.setClientCondition("inicial");
-                await sendMessage(To, From, "Digite 8 para ver o menu");
+                await sendMessage(To, From, "\u{1F44D}Digite *8* para ver o menu");
         }
 
         if((estadoAtual == 'aguardando_continuacao' && Body =='S') || (estadoAtual == 'aguardando_continuacao' && Body =='s') ){
@@ -44,8 +42,7 @@ export class Despesas {
 *Valor*
 *dia*
 *Parcelado?* S/N
-`
-                );
+` );
                 await atualizarEstado(From, "aguardando_dados");
         }
 
@@ -54,8 +51,8 @@ export class Despesas {
                 && Body !='n' 
                 && Body !='S' 
                 && Body !='s'
-              ){
-                await sendMessage(To, From, "Não reconheci seu comando,Para cadastrar outra despesa digite 'S' ou voltar digite 'N'.");
+            ){
+            await sendMessage(To, From, "\u{26A0}Não reconheci seu comando,Para cadastrar outra despesa digite 'S' ou voltar digite 'N'.");
         }
 
         if (!estadoAtual) {
@@ -70,8 +67,6 @@ export class Despesas {
         }
 
         if (estadoAtual === "aguardando_dados") {
-            
-
             const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
             if (!Transcribe) return;
             const response = await summarizeServiceDespesas.summarize(Transcribe);
@@ -91,17 +86,9 @@ export class Despesas {
                     await sendMessage(To, From, "\u{26A0} Desculpe não entendi, forneça os dados corretos da despesa. Muita atenção ao VALOR, Você pode digitar ou falar");
                 } else {
                     globalState.setClientCondition("despesas_1");
-                    const confirmationMessage = `
-Por favor, confirme os dados abaixo:\n
-*Despesa:* ${newDescricao.trim()}
-*Valor:* ${valor}
-*Data:* ${dayjs(dataString).format('DD-MM-YYYY')}\n
-É correto? Responda com 'S' para sim ou 'N' para não.`;
-                    await atualizarEstado(From, "aguardando_confirmacao_dados");
-                   //await sendMessage(To, From, confirmationMessage); 
-                   await sendInteractiveMessage(To, From, 'Despesa');  
-                   //return 0;
-                   //return res.json({ message: "não deu"});
+                   const dadosMsg = ` \u{1F4B8}Despesa: *${newDescricao.trim()}*, *Valor:${formatWithRegex(valor)}*, *Data:${dayjs(dataString).format('DD-MM-YYYY')}*`
+                   await atualizarEstado(From, "aguardando_confirmacao_dados");
+                   sendConfirmPadraoMessage(To, From, dadosMsg); 
                 }
             } catch (error) {
                 await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
@@ -127,21 +114,22 @@ Por favor, confirme os dados abaixo:\n
                 const newParcelado = parcelado!.replace(/["'\[\]\(\)]/g, '');
                 const valor = parseFloat(valorStr);
 
-                const resultado = await cadastrarDespesaController(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
-                console.log("*****************:", resultado);
+                const resultado = await cadastrarDespesa(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
                 
                 await sendMessage(To, From, `
 *Despesa cadastrada com sucesso!* 
 \u{1F4B8} *Despesa:* ${newDescricao.trim()}
-\u{1F4B4} *Valor:* ${valor} 
+\u{1F4B4} *Valor:* ${formatWithRegex(valor)} 
 \u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')} \n
-\u{1F4A1} Para cadastrar outra despesa digite *1* ou voltar digite *8*.`);
+\u{1F4A1}Para cadastrar nova despesa digite *1*\ n para voltar ao menu digite *8* \n e para sair digite *9*`);
                 
                 await limparEstado(From);
                 globalState.setClientCondition("inicial");
                 
                         
                     } catch (error) {
+                        await limparEstado(From);
+                        globalState.setClientCondition("inicial");
                         await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
                     }
                 }
@@ -151,7 +139,7 @@ Por favor, confirme os dados abaixo:\n
                 await atualizarEstado(From, "aguardando_dados");
             } else {
                 await atualizarEstado(From, "aguardando_dados");
-                await sendMessage(To, From, "\u{274C} Não reconheci sua resposta. Por favor, responda com 'S' para sim ou 'N' para não.");
+                await sendMessage(To, From, "\u{274C} Não reconheci sua resposta. Por favor, responda com 'Sim' para sim ou 'Não' para não.");
             }
         }
 
