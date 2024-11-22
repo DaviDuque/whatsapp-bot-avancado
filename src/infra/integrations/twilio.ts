@@ -107,7 +107,8 @@ export async function sendConfirmPadraoMessage( To: string, From: string, dados:
 // Serviço para enviar o arquivo via WhatsApp
 export const sendFileViaWhatsApp = async ( From: string, To: string, filename: string) => {
   try {
-    const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
+    //const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
+    const fileUrl = 'http://vanessafonsecaoficial.com/api/file/relatorio_financeiro_11116_20241122.xlsx';
  console.log("dados...", To, From, fileUrl)
   const message = await client.messages.create({
     from: From,
