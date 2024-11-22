@@ -117,7 +117,7 @@ export class Despesas {
 \u{1F4B8} *Despesa:* ${newDescricao.trim()}
 \u{1F4B4} *Valor:* ${formatWithRegex(valor)} 
 \u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')} \n
-\u{1F4A1}Para cadastrar nova despesa digite *1*\ n para voltar ao menu digite *8* \n e para sair digite *9*`);
+\u{1F4A1}Para cadastrar nova despesa digite *1* \n para voltar ao menu digite *8* \n e para sair digite *9*`);
                 
                 await limparEstado(From);
                 globalState.setClientCondition("inicial");
