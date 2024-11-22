@@ -105,7 +105,7 @@ export async function sendConfirmPadraoMessage( To: string, From: string, dados:
 }
 
 // Serviço para enviar o arquivo via WhatsApp
-export const sendFileViaWhatsApp = async (To: string, From: string, filename: string) => {
+export const sendFileViaWhatsApp = async ( From: string, To: string, filename: string) => {
   try {
     const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
  console.log("dados...", To, From, fileUrl)
