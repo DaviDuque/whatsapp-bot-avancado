@@ -118,13 +118,19 @@ function sendConfirmPadraoMessage(To, From, dados) {
     });
 }
 // Serviço para enviar o arquivo via WhatsApp
-const sendFileViaWhatsApp = (to, from, filename) => __awaiter(void 0, void 0, void 0, function* () {
-    const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
-    const message = yield client.messages.create({
-        from,
-        to,
-        mediaUrl: [fileUrl],
-    });
-    return message.sid; // Retorna o SID da mensagem enviada
+const sendFileViaWhatsApp = (To, From, filename) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
+        console.log("dados...", To, From, fileUrl);
+        const message = yield client.messages.create({
+            from: From,
+            to: To,
+            mediaUrl: [fileUrl],
+        });
+        return message.sid; // Retorna o SID da mensagem enviada
+    }
+    catch (error) {
+        console.error('Erro ao enviar a mensagem:', error);
+    }
 });
 exports.sendFileViaWhatsApp = sendFileViaWhatsApp;

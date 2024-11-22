@@ -105,16 +105,20 @@ export async function sendConfirmPadraoMessage( To: string, From: string, dados:
 }
 
 // Serviço para enviar o arquivo via WhatsApp
-export const sendFileViaWhatsApp = async (to: string, from: string, filename: string): Promise<string> => {
-  const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
-
+export const sendFileViaWhatsApp = async (To: string, From: string, filename: string) => {
+  try {
+    const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
+ console.log("dados...", To, From, fileUrl)
   const message = await client.messages.create({
-    from,
-    to,
+    from: From,
+    to: To,
     mediaUrl: [fileUrl],
   });
 
   return message.sid; // Retorna o SID da mensagem enviada
+} catch (error) {
+  console.error('Erro ao enviar a mensagem:', error);
+}
 };
 
 

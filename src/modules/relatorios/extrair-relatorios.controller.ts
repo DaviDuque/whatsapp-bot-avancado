@@ -204,6 +204,7 @@ export class Relatorios {
             const dataExtra = new Date();
 
             if (fileName && filePath) {
+                console.log(">>>>>>>>>>>filename", fileName);
                 await sendMessage(To, From, `
 \u{1F4B9} Segue seu relatório! 
 *Data extração:* ${dayjs(dataExtra).format('DD-MM-YYYY')}, 
