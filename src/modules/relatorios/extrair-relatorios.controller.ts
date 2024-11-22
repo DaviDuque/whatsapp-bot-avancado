@@ -204,7 +204,7 @@ export class Relatorios {
             const dataExtra = new Date();
 
             if (fileName && filePath) {
-                await sendFileViaWhatsApp(From, To, fileName);  
+                await sendFileViaWhatsApp(To, From, fileName);  
                 console.log(">>>>>>>>>>>filename", fileName);
                 /*await sendMessage(To, From, `
 \u{1F4B9} Segue seu relatório! 
