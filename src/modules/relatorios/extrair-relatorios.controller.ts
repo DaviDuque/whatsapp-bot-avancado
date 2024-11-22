@@ -213,7 +213,7 @@ export class Relatorios {
 *Data Final:*  ${dayjs(datStrFim).format('DD-MM-YYYY')}`);*/
 //*Arquivo:*  ${fileName}
 //, \n \u{1F4A1}Caso queira extrai outro relatório digite *4* ou para voltar digite *8* e para sair digite *9*`);
-                await sendFileViaWhatsApp(From, To, fileName);  
+                await sendFileViaWhatsApp(To, From, fileName);  
                 
                 await sendMessage(To, From, `
 \u{1F4B9} Segue seu relatório completo! 
