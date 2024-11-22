@@ -205,14 +205,14 @@ export class Relatorios {
 
             if (fileName && filePath) {
                 console.log(">>>>>>>>>>>filename", fileName);
-                await sendMessage(To, From, `
+                /*await sendMessage(To, From, `
 \u{1F4B9} Segue seu relatório! 
 *Data extração:* ${dayjs(dataExtra).format('DD-MM-YYYY')}, 
 *Data Inicial:*  ${dayjs(datStrIni).format('DD-MM-YYYY')}, 
-*Data Final:*  ${dayjs(datStrFim).format('DD-MM-YYYY')}`);
+*Data Final:*  ${dayjs(datStrFim).format('DD-MM-YYYY')}`);*/
 //*Arquivo:*  ${fileName}
 //, \n \u{1F4A1}Caso queira extrai outro relatório digite *4* ou para voltar digite *8* e para sair digite *9*`);
-                await sendFileViaWhatsApp(To, From, fileName);    
+                await sendFileViaWhatsApp(From, To, fileName);    
                 await limparEstado(From);
                 globalState.setClientCondition("inicial");  
                     }else{
