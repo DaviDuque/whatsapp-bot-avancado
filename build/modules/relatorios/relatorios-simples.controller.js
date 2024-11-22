@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Relatorios = void 0;
+exports.RelatoriosSimples = void 0;
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 const relatorios_service_1 = require("./relatorios.service");
@@ -43,7 +43,7 @@ const relatorios_service_2 = require("./relatorios.service");
 const relatorios_service_3 = require("./relatorios.service");
 const relatorios_repository_1 = require("./relatorios.repository");
 const dayjs_1 = __importDefault(require("dayjs"));
-class Relatorios {
+class RelatoriosSimples {
     constructor() {
         this.RelatorioSimples = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
@@ -83,4 +83,4 @@ class Relatorios {
         };
     }
 }
-exports.Relatorios = Relatorios;
+exports.RelatoriosSimples = RelatoriosSimples;

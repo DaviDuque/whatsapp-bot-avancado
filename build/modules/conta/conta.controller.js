@@ -38,8 +38,9 @@ dotenv.config();
 const twilio_1 = require("../../infra/integrations/twilio");
 require("../../commands");
 const trata_telefone_1 = require("../../utils/trata-telefone");
-const conta_service_1 = require("./conta.service");
+const conta_repository_1 = require("./conta.repository");
 const validation_1 = require("../../utils/validation");
+const formata_dinheiro_1 = require("../../utils/formata-dinheiro");
 const clientes_repository_1 = require("../clientes/clientes.repository");
 const states_1 = require("../../infra/states/states");
 const transcribe_controler_1 = require("../transcribe/transcribe.controler");
@@ -53,7 +54,6 @@ class Conta {
             const globalState = global_state_1.GlobalState.getInstance();
             const mensagem = globalState.getMensagem();
             const condicao = globalState.getClientCondition();
-            console.log("variavel global--->", mensagem);
             const cliente_id = yield (0, clientes_repository_1.criarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
             if (condicao == "conta") {
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
@@ -62,27 +62,10 @@ class Conta {
             const estadoAtual = yield (0, states_1.verificarEstado)(From);
             if ((estadoAtual == 'aguardando_continuacao' && Body == 'N') || (estadoAtual == 'aguardando_continuacao' && Body == 'n')) {
                 globalState.setClientCondition("inicial");
-                yield (0, twilio_1.sendMessage)(To, From, "Digite 8 para ver o menu");
+                yield (0, twilio_1.sendMessage)(To, From, "\u{1F4F1} Digite \u{0038}\u{FE0F}\u{20E3} para ver o menu");
             }
             if ((estadoAtual == 'aguardando_continuacao' && Body == 'S') || (estadoAtual == 'aguardando_continuacao' && Body == 's')) {
-                yield (0, twilio_1.sendMessage)(To, From, `Para cadastrar uma conta bancária, digite ou fale os detalhes:
-                *Nome da conta*
-                *tipo:* Corrente/poupança
-                *banco*
-                *limite*
-                *saldo*
-                     `);
-                yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
-            }
-            if (estadoAtual == 'aguardando_continuacao'
-                && Body != 'N'
-                && Body != 'n'
-                && Body != 'S'
-                && Body != 's') {
-                yield (0, twilio_1.sendMessage)(To, From, "Não reconheci seu comando,Para cadastrar outra conta digite 'S' ou voltar digite 'N'.");
-            }
-            if (!estadoAtual) {
-                yield (0, twilio_1.sendMessage)(To, From, `Para cadastrar uma conta bancária, digite ou fale os detalhes:
+                yield (0, twilio_1.sendMessage)(To, From, `\u{1F3E6} Para cadastrar uma conta bancária, digite ou fale os detalhes:
 *Nome da conta*
 *tipo:* Corrente/poupança
 *banco*
@@ -91,16 +74,29 @@ class Conta {
                      `);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
             }
+            if (estadoAtual == 'aguardando_continuacao'
+                && Body != 'N'
+                && Body != 'n'
+                && Body != 'S'
+                && Body != 's') {
+                yield (0, twilio_1.sendMessage)(To, From, "\u{26A0}Não reconheci seu comando,Para cadastrar outra conta digite 'S' ou voltar digite 'N'.");
+            }
+            if (!estadoAtual) {
+                yield (0, twilio_1.sendMessage)(To, From, `\u{1F3E6} Para cadastrar uma conta bancária, digite ou fale os detalhes:
+*Nome da conta*
+*Tipo:* Corrente/poupança
+*Banco*
+*Limite*
+*Saldo*
+                     `);
+                yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
+            }
             if (estadoAtual === "aguardando_dados") {
                 const Transcribe = yield (0, transcribe_controler_1.transcribe)(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
                 if (!Transcribe)
                     return;
                 const response = yield summarizeServiceConta.summarize(Transcribe);
-                console.log("transcribe---->", response);
                 let [nome_conta, tipo, banco, limite, saldo] = response.split(',');
-                console.log("testeeeeee", nome_conta, tipo, banco, limite, saldo);
-                //let dataString: string = dayjs(dataStr).format('YYYY-MM-DD');
-                //if (dataString === 'Invalid Date') { dataString = dayjs().format('YYYY-MM-DD'); }
                 const limiteValor = parseFloat(limite);
                 const saldoValor = parseFloat(saldo);
                 if (!cliente) {
@@ -112,77 +108,68 @@ class Conta {
                     const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                     const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
                     if (!(0, validation_1.validarDescricao)(nome_conta) || !(0, validation_1.validarValorTotal)(limiteValor) || !(0, validation_1.validarValorTotal)(saldoValor) || newNomeConta == null) {
-                        yield (0, twilio_1.sendMessage)(To, From, "Desculpe não entendi, forneça os dados corretos da conta. Você pode digitar ou falar");
+                        yield (0, twilio_1.sendMessage)(To, From, "\u{26A0}Desculpe não entendi, forneça os dados corretos da conta. Você pode digitar ou falar");
                     }
                     else {
                         globalState.setClientCondition("conta_1");
-                        // Solicitar confirmação dos dados
-                        const confirmationMessage = `
-Por favor, confirme os dados abaixo:\n
-*Conta:* ${newNomeConta.trim()}
-*tipo:* ${newTipo.trim()}
-*Banco:* ${newBanco.trim()}
-*Limite:*  ${limiteValor}
-*Saldo:* ${saldoValor} \n
-É correto? Responda com 'S' para sim ou 'N' para não.`;
+                        const formatLimiteValor = (0, formata_dinheiro_1.formatWithRegex)(limiteValor);
+                        const formatSaldoValor = (0, formata_dinheiro_1.formatWithRegex)(saldoValor);
                         yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
-                        yield (0, twilio_1.sendMessage)(To, From, confirmationMessage);
+                        const dadosMsg = ` \u{1F4B5}Conta: *${newNomeConta.trim()}*, *tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite:${formatLimiteValor}*, *Saldo:${formatSaldoValor}*`;
+                        (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }
                 }
                 catch (error) {
-                    console.log("999999", error);
-                    yield (0, twilio_1.sendMessage)(To, From, "Houve um erro ao cadastrar a conta. Por favor, tente novamente.");
+                    console.log("erro cadastro contas", error);
+                    yield (0, twilio_1.sendMessage)(To, From, "\u{274C}Houve um erro ao cadastrar a conta. Por favor, tente novamente.");
                 }
             }
             if (estadoAtual === 'aguardando_confirmacao_dados') {
                 let dados = globalState.getMensagem();
-                console.log(">>>>>>>>>", dados);
                 if (!dados)
                     return null;
                 let [nome_conta, tipo, banco, limite, saldo] = dados.split(',');
-                if (Body.toUpperCase() === 'S') {
+                if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
                     if (cliente) {
                         try {
-                            //let dataString: string = dayjs( dataStr!).format('YYYY-MM-DD');
-                            //console.log("data formatada 111", dataString);
-                            //if (dataString == 'Invalid Date') { dataString = dayjs().format('YYYY-MM-DD') }
-                            //console.log("data formatada 2222", dataString);
                             const newNomeConta = nome_conta.replace(/["'\[\]\(\)]/g, '');
                             const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                             const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
                             const limiteValor = parseFloat(limite);
                             const saldoValor = parseFloat(saldo);
-                            console.log(">>>>>>>>>", dados);
-                            console.log(">>>>>>>>>", newNomeConta);
-                            console.log(">>>>>>>>>", newTipo);
-                            console.log(">>>>>>>>>", newBanco);
-                            console.log(">>>>>>>>>", limiteValor);
-                            console.log(">>>>>>>>>", saldoValor);
-                            const resultado = yield (0, conta_service_1.cadastrarContaController)(cliente, newNomeConta, newTipo, newBanco, limiteValor, saldoValor);
-                            console.log("*****************:", resultado);
-                            yield (0, twilio_1.sendMessage)(To, From, `
+                            const formatLimiteValor = (0, formata_dinheiro_1.formatWithRegex)(limiteValor);
+                            const formatSaldoValor = (0, formata_dinheiro_1.formatWithRegex)(saldoValor);
+                            const resultado = yield (0, conta_repository_1.cadastrarConta)(cliente, newNomeConta, newTipo, newBanco, limiteValor, saldoValor);
+                            if (resultado === null || resultado === void 0 ? void 0 : resultado.sucesso) {
+                                yield (0, twilio_1.sendMessage)(To, From, `
 *Conta cadastrada com sucesso!* 
 *Conta:* ${newNomeConta.trim()}
-*tipo:* ${newTipo.trim()}
+*Tipo:* ${newTipo.trim()}
 *Banco:* ${newBanco.trim()}
-*Limite:*  ${limiteValor}
-*Saldo:* ${saldoValor} \n
-\u{1F4A1}Para cadastrar outra Conta digite *5* ou voltar digite *8*.`);
-                            yield (0, states_1.limparEstado)(From);
-                            globalState.setClientCondition("inicial");
+*Limite:*  ${formatLimiteValor}
+*Saldo:* ${formatSaldoValor} \n
+\u{1F4A1}Para cadastrar outra Conta digite *7*, para voltar digite *8* ou para sair digite *9*`);
+                                yield (0, states_1.limparEstado)(From);
+                                globalState.setClientCondition("inicial");
+                            }
+                            else {
+                                console.error("erro ao salvar conta", resultado);
+                                yield (0, states_1.limparEstado)(From);
+                                globalState.setClientCondition("inicial");
+                                yield (0, twilio_1.sendMessage)(To, From, "\u{274C}Houve um erro ao cadastrar a conta. Para tentar novamente digite *6* ou para sair digite *9*.");
+                            }
                         }
                         catch (error) {
-                            yield (0, twilio_1.sendMessage)(To, From, "Houve um erro ao cadastrar a conta. Por favor, tente novamente.");
+                            yield (0, twilio_1.sendMessage)(To, From, "\u{274C}Houve um erro ao cadastrar a conta. Por favor, tente novamente.");
                         }
                     }
                 }
-                else if (Body.toUpperCase() === 'N') {
-                    // Se o usuário não confirmar, voltar ao estado anterior
-                    yield (0, twilio_1.sendMessage)(To, From, "Cadastro de conta cancelado. Você pode tentar novamente.");
+                else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {
+                    yield (0, twilio_1.sendMessage)(To, From, "\u{274C}Cadastro de conta cancelado. Você pode tentar novamente.");
                     yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
                 }
                 else {
-                    yield (0, twilio_1.sendMessage)(To, From, "Não reconheci sua resposta. Por favor, responda com 'S' para sim ou 'N' para não.");
+                    yield (0, twilio_1.sendMessage)(To, From, "\u{26A0} Não reconheci sua resposta. Por favor, responda com 'Sim' para sim ou 'Não' para não.");
                 }
             }
         });

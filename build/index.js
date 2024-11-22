@@ -55,7 +55,11 @@ const summarize_service_1 = require("./infra/integrations/summarize.service");
 const global_state_1 = require("./infra/states/global-state");
 const commandManager_1 = require("./commandManager");
 const twilio_1 = require("./infra/integrations/twilio");
+const extrair_relatorios_controller_1 = require("./modules/relatorios/extrair-relatorios.controller");
 const relatorios_simples_controller_1 = require("./modules/relatorios/relatorios-simples.controller");
+const relatorios_total_controller_1 = require("./modules/relatorios/relatorios-total.controller");
+const arquivos_controller_1 = require("./modules/arquivos/arquivos.controller");
+const metas_controller_1 = require("./modules/metas/metas.controller");
 const cors_1 = __importDefault(require("cors"));
 const trata_telefone_1 = require("./utils/trata-telefone");
 const app = (0, express_1.default)();
@@ -78,16 +82,22 @@ const NewCartao = new cartao_controller_1.Cartao();
 const NewConta = new conta_controller_1.Conta();
 const globalState = global_state_1.GlobalState.getInstance();
 const authUsercase = new auth_1.Auth();
-const newRelatorio = new relatorios_simples_controller_1.Relatorios();
+const newRelatorio = new extrair_relatorios_controller_1.Relatorios();
+const newRelatorioSimples = new relatorios_simples_controller_1.RelatoriosSimples();
+const newRelatorioTotal = new relatorios_total_controller_1.RelatoriosTotal();
+const newMeta = new metas_controller_1.Meta();
 app.get('/', (req, res) => {
     res.send('gelo seco');
 });
 app.post('/login', authUsercase.login);
 app.post('/register', auth_middleware_1.authMiddleware, authUsercase.register);
 app.post('/refresh-token', authUsercase.refreshToken);
-app.post('/relatorio-simples', newRelatorio.RelatorioSimples);
+app.post('/relatorio-simples', newRelatorioSimples.RelatorioSimples);
+app.post('/relatorio-total', newRelatorioTotal.RelatorioTotal);
 app.get('/relatorio-clientes', newRelatorioClientes.buscar);
 app.get('/user/:id_usuario', authUsercase.user);
+app.get('/file/:filename', arquivos_controller_1.getFile); // Endpoint para servir o arquivo
+app.post('/send-whatsapp', arquivos_controller_1.sendWhatsAppFile);
 app.get('/download', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const serviceAudio = new audio_service_1.AudioService();
@@ -107,12 +117,12 @@ app.get('/download', (req, res) => __awaiter(void 0, void 0, void 0, function* (
 app.post('/whatsapp', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { From, To, Body } = req.body;
     console.log("reqbody>>>", Body);
-    if (!Body)
-        return undefined;
+    //if(!Body) return undefined;
     const [commandName, ...args] = Body.split(' ');
     console.log("req...........", req.body);
     // Verificar se o cliente já está cadastrado
     const clienteCadastrado = yield (0, clientes_repository_1.verificarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
+    //const clienteCadastrado = true;
     console.log("cliente index...........", clienteCadastrado);
     if (!clienteCadastrado) {
         console.log("cliente index 2...........", clienteCadastrado);
@@ -123,6 +133,7 @@ app.post('/whatsapp', (req, res) => __awaiter(void 0, void 0, void 0, function* 
     if (clienteCadastrado) {
         const cliente = globalState.getClientId();
         if (!cliente) {
+            console.log("entruuuuuuuuuuu");
             const cliente_id = yield (0, clientes_repository_1.criarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
             globalState.setClientId(cliente_id);
             globalState.setClientCondition("inicial");
@@ -185,13 +196,21 @@ app.post('/whatsapp', (req, res) => __awaiter(void 0, void 0, void 0, function* 
             console.log('-----investimentos-----');
             yield newInvestimentos.processarMensagemInvestimentos(req, res);
         }
+        else if (globalState.getClientCondition() == 'relatorio' || globalState.getClientCondition() == 'relatorio_1' || globalState.getClientCondition() == 'relatorio_2') {
+            console.log('-----relatorio-----');
+            yield newRelatorio.whatsappRelatorio(req, res);
+        }
         else if (globalState.getClientCondition() == 'cartao' || globalState.getClientCondition() == 'cartao_1' || globalState.getClientCondition() == 'cartao_2') {
             console.log('-----cartao-----');
-            yield NewCartao.whatsapp(req, res);
+            yield NewCartao.whatsappCartao(req, res);
         }
         else if (globalState.getClientCondition() == 'conta' || globalState.getClientCondition() == 'conta_1' || globalState.getClientCondition() == 'conta_2') {
             console.log('-----conta-----');
             yield NewConta.whatsapp(req, res);
+        }
+        else if (globalState.getClientCondition() == 'meta' || globalState.getClientCondition() == 'meta_1' || globalState.getClientCondition() == 'meta_2') {
+            console.log('-----meta-----');
+            yield newMeta.whatsappMeta(req, res);
         }
         else {
             globalState.setClientCondition('inicial');

@@ -47,7 +47,6 @@ const validation_1 = require("../../utils/validation");
 const transcribe_controler_1 = require("../transcribe/transcribe.controler");
 const verifica_tipo_msg_1 = require("../../utils/verifica-tipo-msg");
 const states_1 = require("../../infra/states/states");
-// Armazenamento temporário para os dados do cliente em processo de cadastro
 const dadosClientesTemporarios = {};
 class Clientes {
     constructor() {
@@ -58,7 +57,6 @@ class Clientes {
             const clienteCadastrado = yield (0, clientes_repository_1.verificarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
             if (!clienteCadastrado) {
                 const estadoAtual = yield (0, states_1.verificarEstado)(From);
-                //const estadoAtual = verificarEstadoCliente(From);
                 if (!dadosClientesTemporarios[From]) {
                     dadosClientesTemporarios[From] = {
                         id_endereco: 1,
@@ -66,72 +64,73 @@ class Clientes {
                         codigo_indicacao: null
                     };
                 }
-                console.log("estado -------", estadoAtual);
                 const novoCliente = dadosClientesTemporarios[From];
                 novoCliente.telefone = (0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, ''));
                 novoCliente.codigo_proprio = (0, gera_codigo_1.generateRandomCode)(12, novoCliente.telefone.slice(-5));
                 if (!estadoAtual) {
-                    console.log("!!estado  -------", estadoAtual);
                     (0, states_1.atualizarEstado)(From, 'aguardando_nome');
-                    (0, twilio_1.sendMessage)(To, From, 'Por favor, envie seu nome para continuar o cadastro.');
+                    (0, twilio_1.sendMessage)(To, From, '*Ola!* \u{1F495}Seja bem vindo a seu controle financeiro inteligente. \u{1F914}Vi aqui que você ainda não cadastrou. Por favor, envie seu *nome* para iniciar o cadastro. \u{1F44D}Você pode falar ou digitar');
                 }
                 else if (estadoAtual === 'aguardando_nome') {
                     const Transcribe = yield (0, transcribe_controler_1.transcribe)(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
                     if (!Transcribe)
                         return;
-                    const nome = Transcribe; // Captura o nome transcrito
-                    if ((0, validation_1.validarNome)(nome)) { // Valida o nome
-                        novoCliente.nome = nome; // Armazena o nome
+                    const nome = Transcribe;
+                    if ((0, validation_1.validarNome)(nome)) {
+                        novoCliente.nome = nome;
                         (0, states_1.atualizarEstado)(From, 'confirmar_nome');
-                        (0, twilio_1.sendMessage)(To, From, `Seu nome é ${nome}, está correto? (Sim/Não)`);
+                        let dadosMsg = `\u{1F49C} Seu nome é ${nome}, está correto?`;
+                        (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }
                     else {
-                        (0, twilio_1.sendMessage)(To, From, 'Nome inválido, por favor envie novamente.');
+                        (0, twilio_1.sendMessage)(To, From, '\u{274C}Nome inválido, por favor envie novamente. Você pode falar ou digitar');
                     }
                 }
                 else if (estadoAtual === 'confirmar_nome') {
                     if (Body.trim().toLowerCase() === 'sim') {
                         (0, states_1.atualizarEstado)(From, 'aguardando_email');
-                        (0, twilio_1.sendMessage)(To, From, 'Perfeito! Agora, envie seu email.');
+                        (0, twilio_1.sendMessage)(To, From, '\u{1F60E} Perfeito! Agora, envie seu *email*.');
                     }
                     else {
                         (0, states_1.atualizarEstado)(From, 'aguardando_nome');
-                        (0, twilio_1.sendMessage)(To, From, 'Por favor, envie seu nome novamente.');
+                        (0, twilio_1.sendMessage)(To, From, '\u{1F534}Por favor, envie seu *nome* novamente.');
                     }
                 }
                 else if (estadoAtual === 'aguardando_email') {
                     const Transcribe = yield (0, transcribe_controler_1.transcribe)(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
                     if (!Transcribe)
                         return;
-                    const email = Transcribe; // Captura o email transcrito
-                    if ((0, validation_1.validarEmail)(email)) { // Valida o email
-                        novoCliente.email = email; // Armazena o email
+                    const email = Transcribe;
+                    if ((0, validation_1.validarEmail)(email)) {
+                        novoCliente.email = email;
                         (0, states_1.atualizarEstado)(From, 'confirmar_email');
-                        (0, twilio_1.sendMessage)(To, From, `Seu email é ${email}, está correto? (Sim/Não)`);
+                        let dadosMsg = `Seu \u{1F4BB} *email* \u{1F4BB} é ${email}, está correto?`;
+                        (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }
                     else {
-                        (0, twilio_1.sendMessage)(To, From, 'Email inválido, por favor envie novamente.');
+                        (0, twilio_1.sendMessage)(To, From, '\u{274C}Email inválido, por favor envie novamente.');
                     }
                 }
                 else if (estadoAtual === 'confirmar_email') {
                     if (Body.trim().toLowerCase() === 'sim') {
                         (0, states_1.atualizarEstado)(From, 'aguardando_cpf');
-                        (0, twilio_1.sendMessage)(To, From, 'Perfeito! Agora, envie seu CPF.');
+                        (0, twilio_1.sendMessage)(To, From, '\u{1F60E}Perfeito! Agora, envie seu *CPF*.');
                     }
                     else {
                         (0, states_1.atualizarEstado)(From, 'aguardando_email');
-                        (0, twilio_1.sendMessage)(To, From, 'Por favor, envie seu email novamente.');
+                        (0, twilio_1.sendMessage)(To, From, '\u{26A0}Por favor, envie seu *email* novamente.');
                     }
                 }
                 else if (estadoAtual === 'aguardando_cpf') {
-                    const cpf = Body; // Captura o CPF enviado
-                    if ((0, validation_1.validarCpfCnpj)(cpf)) { // Valida o CPF
-                        novoCliente.cpf = cpf; // Armazena o CPF
+                    const cpf = Body;
+                    if ((0, validation_1.validarCpfCnpj)(cpf)) {
+                        novoCliente.cpf = cpf.replace(/[^\w\s]/g, "");
                         (0, states_1.atualizarEstado)(From, 'confirmar_cpf');
-                        (0, twilio_1.sendMessage)(To, From, `Seu CPF é ${cpf}, está correto? (Sim/Não)`);
+                        let dadosMsg = `Seu \u{1F522} *CPF* \u{1F522} é ${cpf}, está correto?`;
+                        (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }
                     else {
-                        (0, twilio_1.sendMessage)(To, From, 'CPF inválido, por favor envie novamente.');
+                        (0, twilio_1.sendMessage)(To, From, '\u{274C} CPF inválido, por favor envie novamente.');
                     }
                 }
                 else if (estadoAtual === 'confirmar_cpf') {
@@ -140,21 +139,21 @@ class Clientes {
                             const cadastro = yield (0, clientes_service_1.cadastrarClienteController)(novoCliente);
                             if (typeof cadastro === 'object' && 'error' in cadastro) {
                                 (0, states_1.atualizarEstado)(From, 'aguardando_nome');
-                                (0, twilio_1.sendMessage)(To, From, 'Erro no cadastro. Tente novamente.');
+                                (0, twilio_1.sendMessage)(To, From, '\u{274C}Erro no cadastro. Tente novamente.');
                             }
                             else {
                                 (0, states_1.limparEstado)(From);
-                                (0, twilio_1.sendMessage)(To, From, 'Cadastro realizado com sucesso!');
+                                (0, twilio_1.sendMessage)(To, From, '\u{1F64C}Cadastro realizado com sucesso!');
                             }
                         }
                         catch (error) {
                             (0, states_1.atualizarEstado)(From, 'aguardando_nome');
-                            (0, twilio_1.sendMessage)(To, From, 'Erro no cadastro. Tente novamente.');
+                            (0, twilio_1.sendMessage)(To, From, '\u{274C}Erro no cadastro. Tente novamente.');
                         }
                     }
                     else {
                         (0, states_1.atualizarEstado)(From, 'aguardando_cpf');
-                        (0, twilio_1.sendMessage)(To, From, 'Por favor, envie seu CPF novamente.');
+                        (0, twilio_1.sendMessage)(To, From, '\u{26A0}Por favor, envie seu CPF novamente.');
                     }
                 }
             }

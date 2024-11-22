@@ -20,7 +20,6 @@ const processarCliente = (cliente) => __awaiter(void 0, void 0, void 0, function
             return 'Cliente já cadastrado.';
         }
         else {
-            console.log("chegou na service", cliente);
             yield (0, clientes_repository_1.cadastrarCliente)(cliente);
             return 'Cliente cadastrado com sucesso.';
         }
@@ -33,7 +32,6 @@ const processarCliente = (cliente) => __awaiter(void 0, void 0, void 0, function
 exports.processarCliente = processarCliente;
 const cadastrarClientePainelController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const cliente = req.body;
-    console.log("cadastrar cliente", cliente);
     try {
         const resultado = yield (0, exports.processarCliente)(cliente);
         res.status(200).json({ message: resultado });
@@ -44,7 +42,6 @@ const cadastrarClientePainelController = (req, res) => __awaiter(void 0, void 0,
 });
 exports.cadastrarClientePainelController = cadastrarClientePainelController;
 const cadastrarClienteController = (cliente) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("cadastrar cliente", cliente);
     try {
         const resultado = yield (0, exports.processarCliente)(cliente);
         return resultado;

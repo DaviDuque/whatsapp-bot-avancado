@@ -41,6 +41,7 @@ const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 const twilio_1 = require("../../infra/integrations/twilio");
 const trata_telefone_1 = require("../../utils/trata-telefone");
+const formata_dinheiro_1 = require("../../utils/formata-dinheiro");
 const investimentos_service_1 = require("./investimentos.service");
 const validation_1 = require("../../utils/validation");
 const clientes_repository_1 = require("../clientes/clientes.repository");
@@ -117,12 +118,8 @@ class Investimentos {
                         investimentoDados = { descricao: newDescricao, valor, dataString, categoria: newCategoria };
                         yield (0, states_1.atualizarEstado)(From, "confirmacao_dados");
                         globalState.setClientCondition("investimentos_1");
-                        /*await sendMessage(To, From, `Por favor, confirme os dados do investimento:
-            \u{1F4B5} *Investimento:* ${newDescricao.trim()}
-            \u{1F4B0} *Valor:* ${valor}
-            \u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')}
-            Responda com 'S' para confirmar ou 'N' para corrigir os dados.`); */
-                        yield (0, twilio_1.sendConfirmMessage)(To, From);
+                        const dadosMsg = ` \u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${(0, formata_dinheiro_1.formatWithRegex)(valor)}*, *Data:${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}*`;
+                        yield (0, twilio_1.sendConfirmMessage)(To, From, dadosMsg);
                     }
                 }
                 catch (error) {
@@ -130,7 +127,7 @@ class Investimentos {
                 }
             }
             if (estadoAtual == 'confirmacao_dados') {
-                if (Body.toUpperCase() === 'S') {
+                if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
                     let dados = globalState.getMensagem();
                     if (!dados)
                         return null;
@@ -147,13 +144,15 @@ class Investimentos {
                             const resultado = yield (0, investimentos_service_1.cadastrarInvestimentoService)(cliente, newDescricao, valor, dataString, newCategoria);
                             yield (0, twilio_1.sendMessage)(To, From, `Investimento cadastrado com sucesso\u{1F60E}  \n
 \u{1F4B5} *Investimento:* ${newDescricao.trim()}
-\u{1F4B0} *Valor:* ${valor}
+\u{1F4B0} *Valor:* ${(0, formata_dinheiro_1.formatWithRegex)(valor)}
 \u{231A} *Data:* ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}\n
-\u{1F4A1} Para cadastrar outro investimento digite '3' ou voltar digite '8'.`);
+\u{1F4A1} Para cadastrar outro investimento digite *3* \n para voltar digite *8* ou para sair digite *9*`);
                             yield (0, states_1.limparEstado)(From);
                             globalState.setClientCondition("inicial");
                         }
                         catch (error) {
+                            yield (0, states_1.limparEstado)(From);
+                            globalState.setClientCondition("inicial");
                             yield (0, twilio_1.sendMessage)(To, From, "\u{274C} Houve um erro ao cadastrar o investimento. Por favor, tente novamente.");
                         }
                     }
@@ -161,12 +160,12 @@ class Investimentos {
                         yield (0, twilio_1.sendMessage)(To, From, "\u{274C}Erro: dados do investimento ou cliente não estão disponíveis.");
                     }
                 }
-                else if (Body.toUpperCase() === 'N') {
+                else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {
                     yield (0, twilio_1.sendMessage)(To, From, "\u{1F534} Por favor, envie novamente os detalhes do investimento.");
                     yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
                 }
                 else {
-                    yield (0, twilio_1.sendMessage)(To, From, "\u{1F914} Não reconheci seu comando. Responda com 'S' para confirmar ou 'N' para corrigir os dados.");
+                    yield (0, twilio_1.sendMessage)(To, From, "\u{1F914} Não reconheci seu comando. Responda com 'Sim' para confirmar ou 'Não' para corrigir os dados.");
                 }
             }
         });

@@ -9,12 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.limparEstadoConta = exports.atualizarEstadoConta = exports.verificarEstadoConta = exports.cadastrarConta = exports.verificarContaPorCliente = void 0;
+exports.cadastrarConta = exports.verificarContaPorCliente = void 0;
 const mysql_connection_1 = require("../../infra/database/mysql-connection");
 const verificarContaPorCliente = (cliente_id) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const [rows] = yield mysql_connection_1.connection.query('SELECT * FROM contas WHERE cliente_id = ?', [cliente_id]);
-        // Verificando se a consulta retornou algum resultado
         if (Array.isArray(rows) && rows.length > 0) {
             return true;
         }
@@ -28,33 +27,21 @@ const verificarContaPorCliente = (cliente_id) => __awaiter(void 0, void 0, void 
 exports.verificarContaPorCliente = verificarContaPorCliente;
 const cadastrarConta = (id_cliente, nome_conta, tipo, banco, limite, saldo) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        //const newDate: string = dayjs(data_despesa).format('YYYY-MM-DD HH:mm:ss');
         const query = 'INSERT INTO contas (id_cliente, nome_conta, tipo, banco, limite, saldo) VALUES (?, ?, ?, ?, ?, ?)';
         const values = [
             id_cliente,
             nome_conta.trim(),
             tipo.trim(),
             banco.trim(),
-            limite,
-            saldo
+            limite || null,
+            saldo || null
         ];
         yield mysql_connection_1.connection.execute(query, values);
+        return { sucesso: true, mensagem: 'Conta cadastrado com sucesso.' };
     }
     catch (error) {
         console.error('Erro ao cadastrar conta:', error);
-        throw error;
+        return { sucesso: false, mensagem: `Erro ao cadastrar conta: ${error.message}` };
     }
 });
 exports.cadastrarConta = cadastrarConta;
-const verificarEstadoConta = (from) => __awaiter(void 0, void 0, void 0, function* () {
-    // Implementar lógica para verificar o estado atual do cadastro
-});
-exports.verificarEstadoConta = verificarEstadoConta;
-const atualizarEstadoConta = (from, estado) => __awaiter(void 0, void 0, void 0, function* () {
-    // Implementar lógica para atualizar o estado do cadastro
-});
-exports.atualizarEstadoConta = atualizarEstadoConta;
-const limparEstadoConta = (from) => __awaiter(void 0, void 0, void 0, function* () {
-    // Implementar lógica para limpar o estado do cadastro
-});
-exports.limparEstadoConta = limparEstadoConta;

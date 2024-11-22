@@ -39,9 +39,10 @@ exports.Despesas = void 0;
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 const twilio_1 = require("../../infra/integrations/twilio");
+const formata_dinheiro_1 = require("../../utils/formata-dinheiro");
 require("../../commands");
 const trata_telefone_1 = require("../../utils/trata-telefone");
-const despesas_service_1 = require("./despesas.service");
+const despesas_repository_1 = require("./despesas.repository");
 const validation_1 = require("../../utils/validation");
 const clientes_repository_1 = require("../clientes/clientes.repository");
 const states_1 = require("../../infra/states/states");
@@ -55,10 +56,8 @@ class Despesas {
             const summarizeServiceDespesas = new summarize_service_1.SummarizeServiceDespesas();
             const { SmsMessageSid, MediaContentType0, NumMedia, Body, To, From, MediaUrl0 } = req.body;
             const globalState = global_state_1.GlobalState.getInstance();
-            const mensagem = globalState.getMensagem();
             const condicao = globalState.getClientCondition();
             const cliente_id = yield (0, clientes_repository_1.criarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
-            console.log("PostbackData>>>>>>", Body);
             if (condicao == "despesas") {
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
             }
@@ -66,7 +65,7 @@ class Despesas {
             const estadoAtual = yield (0, states_1.verificarEstado)(From);
             if ((estadoAtual == 'aguardando_continuacao' && Body == 'N') || (estadoAtual == 'aguardando_continuacao' && Body == 'n')) {
                 globalState.setClientCondition("inicial");
-                yield (0, twilio_1.sendMessage)(To, From, "Digite 8 para ver o menu");
+                yield (0, twilio_1.sendMessage)(To, From, "\u{1F44D}Digite *8* para ver o menu");
             }
             if ((estadoAtual == 'aguardando_continuacao' && Body == 'S') || (estadoAtual == 'aguardando_continuacao' && Body == 's')) {
                 yield (0, twilio_1.sendMessage)(To, From, `\u{1F44D} Para cadastrar uma despesa, digite ou fale os detalhes: 
@@ -83,14 +82,13 @@ class Despesas {
                 && Body != 'n'
                 && Body != 'S'
                 && Body != 's') {
-                yield (0, twilio_1.sendMessage)(To, From, "Não reconheci seu comando,Para cadastrar outra despesa digite 'S' ou voltar digite 'N'.");
+                yield (0, twilio_1.sendMessage)(To, From, "\u{26A0}Não reconheci seu comando,Para cadastrar outra despesa digite 'S' ou voltar digite 'N'.");
             }
             if (!estadoAtual) {
                 yield (0, twilio_1.sendMessage)(To, From, `\u{1F44D} Para cadastrar uma despesa, digite ou fale os detalhes: 
 *Nome da despesa*
 *data* 
 *Valor*
-*dia*
 *Parcelado?* S/N
 `);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
@@ -117,21 +115,13 @@ class Despesas {
                     }
                     else {
                         globalState.setClientCondition("despesas_1");
-                        const confirmationMessage = `
-Por favor, confirme os dados abaixo:\n
-*Despesa:* ${newDescricao.trim()}
-*Valor:* ${valor}
-*Data:* ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}\n
-É correto? Responda com 'S' para sim ou 'N' para não.`;
+                        const dadosMsg = ` \u{1F4B8}Despesa: *${newDescricao.trim()}*, *Valor:${(0, formata_dinheiro_1.formatWithRegex)(valor)}*, *Data:${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}*`;
                         yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
-                        //await sendMessage(To, From, confirmationMessage); 
-                        yield (0, twilio_1.sendInteractiveMessage)(To, From, 'Despesa');
-                        //return 0;
-                        //return res.json({ message: "não deu"});
+                        (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }
                 }
                 catch (error) {
-                    yield (0, twilio_1.sendMessage)(To, From, "\u{274C} Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
+                    yield (0, twilio_1.sendMessage)(To, From, "\u{274C} AHouve um erro ao cadastrar a despesa. Por favor, tente novamente.");
                 }
             }
             if (estadoAtual === 'aguardando_confirmacao_dados') {
@@ -150,19 +140,20 @@ Por favor, confirme os dados abaixo:\n
                             const newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
                             const newParcelado = parcelado.replace(/["'\[\]\(\)]/g, '');
                             const valor = parseFloat(valorStr);
-                            const resultado = yield (0, despesas_service_1.cadastrarDespesaController)(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
-                            console.log("*****************:", resultado);
+                            const resultado = yield (0, despesas_repository_1.cadastrarDespesa)(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
                             yield (0, twilio_1.sendMessage)(To, From, `
 *Despesa cadastrada com sucesso!* 
 \u{1F4B8} *Despesa:* ${newDescricao.trim()}
-\u{1F4B4} *Valor:* ${valor} 
+\u{1F4B4} *Valor:* ${(0, formata_dinheiro_1.formatWithRegex)(valor)} 
 \u{231A} *Data:* ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')} \n
-\u{1F4A1} Para cadastrar outra despesa digite *1* ou voltar digite *8*.`);
+\u{1F4A1}Para cadastrar nova despesa digite *1* \n para voltar ao menu digite *8* \n e para sair digite *9*`);
                             yield (0, states_1.limparEstado)(From);
                             globalState.setClientCondition("inicial");
                         }
                         catch (error) {
-                            yield (0, twilio_1.sendMessage)(To, From, "\u{274C} Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
+                            yield (0, states_1.limparEstado)(From);
+                            globalState.setClientCondition("inicial");
+                            yield (0, twilio_1.sendMessage)(To, From, "\u{274C} BHouve um erro ao cadastrar a despesa. Por favor, tente novamente.");
                         }
                     }
                 }
@@ -172,7 +163,7 @@ Por favor, confirme os dados abaixo:\n
                 }
                 else {
                     yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
-                    yield (0, twilio_1.sendMessage)(To, From, "\u{274C} Não reconheci sua resposta. Por favor, responda com 'S' para sim ou 'N' para não.");
+                    yield (0, twilio_1.sendMessage)(To, From, "\u{274C} Não reconheci sua resposta. Por favor, responda com 'Sim' para sim ou 'Não' para não.");
                 }
             }
         });

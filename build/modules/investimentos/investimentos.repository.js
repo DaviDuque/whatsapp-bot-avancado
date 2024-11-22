@@ -23,7 +23,6 @@ const ListarInvestimentosPorCliente = (id_cliente, startDate, endDate) => __awai
         const [rows] = yield mysql_connection_1.connection.query(`SELECT 'investimentos' AS Investimentos, id_cliente, descricao, valor, data_investimento AS data, tipo 
          FROM investimentos 
          WHERE id_cliente = ? and data_investimento BETWEEN ? AND ?`, [id_cliente, startDate, endDate]);
-        console.log("rows", rows);
         return rows;
     }
     catch (error) {

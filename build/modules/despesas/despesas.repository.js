@@ -12,13 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.limparEstadoDespesa = exports.atualizarEstadoDespesa = exports.verificarEstadoDespesa = exports.cadastrarDespesa = exports.ListarDespesaPorCliente = exports.verificarDespesaPorCliente = void 0;
+exports.cadastrarDespesa = exports.ListarDespesaPorCliente = exports.verificarDespesaPorCliente = void 0;
 const mysql_connection_1 = require("../../infra/database/mysql-connection");
 const dayjs_1 = __importDefault(require("dayjs"));
 const verificarDespesaPorCliente = (id_cliente) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const [rows] = yield mysql_connection_1.connection.query('SELECT * FROM despesas WHERE id_cliente = ?', [id_cliente]);
-        // Verificando se a consulta retornou algum resultado
         if (Array.isArray(rows) && rows.length > 0) {
             return true;
         }
@@ -64,15 +63,3 @@ const cadastrarDespesa = (id_cliente, descricao, valor, data_despesa, categoria,
     }
 });
 exports.cadastrarDespesa = cadastrarDespesa;
-const verificarEstadoDespesa = (from) => __awaiter(void 0, void 0, void 0, function* () {
-    // Implementar lógica para verificar o estado atual do cadastro
-});
-exports.verificarEstadoDespesa = verificarEstadoDespesa;
-const atualizarEstadoDespesa = (from, estado) => __awaiter(void 0, void 0, void 0, function* () {
-    // Implementar lógica para atualizar o estado do cadastro
-});
-exports.atualizarEstadoDespesa = atualizarEstadoDespesa;
-const limparEstadoDespesa = (from) => __awaiter(void 0, void 0, void 0, function* () {
-    // Implementar lógica para limpar o estado do cadastro
-});
-exports.limparEstadoDespesa = limparEstadoDespesa;

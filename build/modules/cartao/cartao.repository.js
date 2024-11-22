@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.limparEstadoCartao = exports.atualizarEstadoCartao = exports.verificarEstadoCartao = exports.cadastrarCartao = exports.verificarCartaoPorCliente = void 0;
+exports.cadastrarCartao = exports.verificarCartaoPorCliente = void 0;
 const mysql_connection_1 = require("../../infra/database/mysql-connection");
 const verificarCartaoPorCliente = (cliente_id) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -28,33 +28,21 @@ const verificarCartaoPorCliente = (cliente_id) => __awaiter(void 0, void 0, void
 exports.verificarCartaoPorCliente = verificarCartaoPorCliente;
 const cadastrarCartao = (id_cliente, nome_cartao, tipo, banco, limite, saldo) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        //const newDate: string = dayjs(data_despesa).format('YYYY-MM-DD HH:mm:ss');
         const query = 'INSERT INTO cartoes (id_cliente, nome_cartao, tipo, banco, limite, saldo) VALUES (?, ?, ?, ?, ?, ?)';
         const values = [
             id_cliente,
             nome_cartao.trim(),
             tipo.trim(),
             banco.trim(),
-            limite,
-            saldo
+            limite || null,
+            saldo || null
         ];
         yield mysql_connection_1.connection.execute(query, values);
+        return { sucesso: true, mensagem: 'Cartão cadastrado com sucesso.' };
     }
     catch (error) {
         console.error('Erro ao cadastrar cartão:', error);
-        throw error;
+        return { sucesso: false, mensagem: `Erro ao cadastrar cartão: ${error.message}` };
     }
 });
 exports.cadastrarCartao = cadastrarCartao;
-const verificarEstadoCartao = (from) => __awaiter(void 0, void 0, void 0, function* () {
-    // Implementar lógica para verificar o estado atual do cadastro
-});
-exports.verificarEstadoCartao = verificarEstadoCartao;
-const atualizarEstadoCartao = (from, estado) => __awaiter(void 0, void 0, void 0, function* () {
-    // Implementar lógica para atualizar o estado do cadastro
-});
-exports.atualizarEstadoCartao = atualizarEstadoCartao;
-const limparEstadoCartao = (from) => __awaiter(void 0, void 0, void 0, function* () {
-    // Implementar lógica para limpar o estado do cadastro
-});
-exports.limparEstadoCartao = limparEstadoCartao;

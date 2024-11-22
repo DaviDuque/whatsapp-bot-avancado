@@ -41,6 +41,7 @@ const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 const twilio_1 = require("../../infra/integrations/twilio");
 const trata_telefone_1 = require("../../utils/trata-telefone");
+const formata_dinheiro_1 = require("../../utils/formata-dinheiro");
 const receitas_service_1 = require("./receitas.service");
 const validation_1 = require("../../utils/validation");
 const clientes_repository_1 = require("../clientes/clientes.repository");
@@ -65,10 +66,14 @@ class Receitas {
             const estadoAtual = yield (0, states_1.verificarEstado)(From);
             if ((estadoAtual == 'aguardando_continuacao' && Body == 'N') || (estadoAtual == 'aguardando_continuacao' && Body == 'n')) {
                 globalState.setClientCondition("inicial");
-                yield (0, twilio_1.sendMessage)(To, From, "Digite 8 para ver o menu");
+                yield (0, twilio_1.sendMessage)(To, From, "\u{1F522}Digite *8* para ver o menu");
             }
             if ((estadoAtual == 'aguardando_continuacao' && Body == 'S') || (estadoAtual == 'aguardando_continuacao' && Body == 's')) {
-                yield (0, twilio_1.sendMessage)(To, From, "Para cadastrar uma receita, digite ou fale os detalhes como: nome da receita, data, dia, onde foi");
+                yield (0, twilio_1.sendMessage)(To, From, `\u{1F4B5}Para cadastrar uma receita, digite ou fale os detalhes como: 
+*Nome da receita*
+*Valor*
+*Data*
+`);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
             }
             if (estadoAtual == 'aguardando_continuacao'
@@ -80,7 +85,11 @@ class Receitas {
             }
             if (!estadoAtual) {
                 yield (0, states_1.atualizarEstado)(From, 'aguardando_dados');
-                yield (0, twilio_1.sendMessage)(To, From, 'Para cadastrar uma receita, envie os detalhes como: nome da receita, data, dia, categoria:');
+                yield (0, twilio_1.sendMessage)(To, From, `\u{1F4B5}Para cadastrar uma receita, digite ou fale os detalhes como: 
+                *Nome da receita*
+                *Valor*
+                *Data*
+                `);
             }
             if (estadoAtual === 'aguardando_dados') {
                 const Transcribe = yield (0, transcribe_controler_1.transcribe)(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
@@ -100,23 +109,22 @@ class Receitas {
                 try {
                     const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
                     if (!(0, validation_1.validarDescricao)(descricao) || !(0, validation_1.validarValor)(valor) || !(0, validation_1.validarData)(dataString)) {
-                        yield (0, twilio_1.sendMessage)(To, From, "Desculpe não entendi, forneça os dados corretos da receita. Você pode digitar ou falar");
+                        yield (0, twilio_1.sendMessage)(To, From, "\u{26A0}Desculpe não entendi, forneça os dados corretos da receita. Você pode digitar ou falar");
                     }
                     else {
                         globalState.setClientCondition("receitas_1");
                         const confirmationMessage = `Por favor, confirme os dados abaixo:\n 
 \u{1F4B5} *Receita:* ${newDescricao.trim()}
-\u{1F4B0} *Valor:* ${valor}
+\u{1F4B0} *Valor:* ${(0, formata_dinheiro_1.formatWithRegex)(valor)}
 \u{231A} *Data:* ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')} \n
 `;
                         yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
                         yield (0, twilio_1.sendMessage)(To, From, confirmationMessage);
                         yield (0, twilio_1.sendInteractiveMessage)(To, From, 'Receita');
-                        //await sendMessage(To, From, confirmationMessage);
                     }
                 }
                 catch (error) {
-                    yield (0, twilio_1.sendMessage)(To, From, "Houve um erro ao cadastrar a receita. Por favor, tente novamente.");
+                    yield (0, twilio_1.sendMessage)(To, From, "\u{26A0}Houve um erro ao cadastrar a receita. Por favor, tente novamente.");
                 }
             }
             if (estadoAtual === 'aguardando_confirmacao_dados') {
@@ -135,26 +143,27 @@ class Receitas {
                             const newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
                             const valor = parseFloat(valorStr);
                             const resultado = yield (0, receitas_service_1.cadastrarReceitaService)(cliente, newDescricao, valor, dataString, newCategoria);
-                            console.log("*****************:", resultado);
                             yield (0, twilio_1.sendMessage)(To, From, `Receita cadastrada com sucesso \u{1F60E}! 
-    \u{1F4B5} Receita: ${newDescricao}
-    \u{1F4B0} Valor: ${valor}
-    \u{231A} Data: ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}
-    \u{1F4A1}Para cadastrar outra receita digite *2* ou voltar digite *8*.`);
+\u{1F4B5} Receita: ${newDescricao}
+\u{1F4B0} Valor: ${(0, formata_dinheiro_1.formatWithRegex)(valor)}
+\u{231A} Data: ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}
+\u{1F4A1}Para cadastrar outra receita digite *2* ou para voltar digite *8* ou ainda para sair digite *9*`);
                             yield (0, states_1.limparEstado)(From);
                             globalState.setClientCondition("inicial");
                         }
                         catch (error) {
-                            yield (0, twilio_1.sendMessage)(To, From, "Houve um erro ao cadastrar a receita. Por favor, tente novamente.");
+                            yield (0, states_1.limparEstado)(From);
+                            globalState.setClientCondition("inicial");
+                            yield (0, twilio_1.sendMessage)(To, From, "\u{26A0}Houve um erro ao cadastrar a receita. Por favor, tente novamente.");
                         }
                     }
                 }
                 else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {
-                    yield (0, twilio_1.sendMessage)(To, From, "Cadastro de receita cancelado. Você pode tentar novamente.");
+                    yield (0, twilio_1.sendMessage)(To, From, "\u{274C}Cadastro de receita cancelado. Você pode tentar novamente.");
                     yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
                 }
                 else {
-                    yield (0, twilio_1.sendMessage)(To, From, "Não reconheci sua resposta. Por favor, responda com 'S' para sim ou 'N' para não.");
+                    yield (0, twilio_1.sendMessage)(To, From, "\u{274C}Não reconheci sua resposta. Por favor, responda com *Sim*  ou *Não*");
                 }
             }
         });
