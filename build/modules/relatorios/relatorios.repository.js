@@ -30,7 +30,7 @@ function saveReportToDatabase(id_cliente, reportType, periodo_inicio, periodo_fi
 // Função para gerar o arquivo CSV e salvá-lo no diretório especificado
 function generateCSVFile(csvContent, fileName) {
     return __awaiter(this, void 0, void 0, function* () {
-        const bucketDir = path_1.default.resolve(__dirname, '../../bucket');
+        const bucketDir = path_1.default.resolve(__dirname, '../../../bucket');
         const filePath = path_1.default.join(bucketDir, `${fileName}.csv`);
         // Certifique-se de que o diretório existe; se não, crie-o
         yield fs_1.promises.mkdir(bucketDir, { recursive: true });
