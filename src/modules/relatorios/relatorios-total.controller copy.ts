@@ -74,7 +74,7 @@ export class RelatoriosTotal {
 
             // Salva o arquivo XLSX
             const fileName = `relatorio_financeiro_${id_cliente}_${dayjs().format("YYYYMMDD")}.xlsx`;
-            const filePath = `./src/bucket/${fileName}`;
+            const filePath = `./bucket/${fileName}`;
             XLSX.writeFile(workbook, filePath);
 
             // Salva o relatório no banco

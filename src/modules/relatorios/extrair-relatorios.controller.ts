@@ -185,11 +185,11 @@ export class Relatorios {
             
             // Salva o arquivo XLSX
             const fileName = `relatorio_financeiro_1111${id_cliente}_${dayjs().format("YYYYMMDD")}.xlsx`;
-            const filePath = path.join("./src/bucket", fileName);
+            const filePath = path.join("./bucket", fileName);
             
             // Certifique-se de que o diretório existe
-            if (!fs.existsSync("./src/bucket")) {
-                fs.mkdirSync("./src/bucket", { recursive: true });
+            if (!fs.existsSync("./bucket")) {
+                fs.mkdirSync("./bucket", { recursive: true });
             }
             
             XLSX.writeFile(workbook, filePath);

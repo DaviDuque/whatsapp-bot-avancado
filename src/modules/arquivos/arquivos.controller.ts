@@ -6,7 +6,7 @@ import { error } from 'console';
 // Controller para servir o arquivo
 export const getFile = (req: Request, res: Response) => {
   const { filename } = req.params;
-  const filePath = path.join(__dirname, '../../bucket', filename);
+  const filePath = path.join(__dirname, '../../../bucket', filename);
   console.log(">>>>>>>>>>>>>erro filepath", filePath);
   res.sendFile(filePath, (err) => {
     if (err) {

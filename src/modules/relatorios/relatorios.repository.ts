@@ -20,7 +20,7 @@ export async function saveReportToDatabase(id_cliente: number, reportType: strin
 
 // Função para gerar o arquivo CSV e salvá-lo no diretório especificado
 export async function generateCSVFile(csvContent: string, fileName: string): Promise<string> {
-    const bucketDir = path.resolve(__dirname, '../../bucket');
+    const bucketDir = path.resolve(__dirname, '../../../bucket');
     const filePath = path.join(bucketDir, `${fileName}.csv`);
 
     // Certifique-se de que o diretório existe; se não, crie-o
