@@ -10,7 +10,7 @@ import { saveReportToDatabase, generateCSVFile } from './relatorios.repository';
 import dayjs from 'dayjs';
 
 
-export class Relatorios {
+export class RelatoriosSimples {
     RelatorioSimples = async (req: Request, res: Response) => {
 
 

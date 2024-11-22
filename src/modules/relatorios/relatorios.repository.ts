@@ -11,7 +11,7 @@ const dataCompleta = `${ano}-${mes}-${dia}`
 
 
 
-export async function saveReportToDatabase(id_cliente: number, reportType: string, periodo_inicio: string, periodo_fim: string, reportContent: string, ): Promise<void> {
+export async function saveReportToDatabase(id_cliente: number, reportType: string, periodo_inicio: string, periodo_fim: string, reportContent: string): Promise<void> {
     await connection.query(
         `INSERT INTO relatorios (id_cliente, tipo, periodo_inicio, periodo_fim, data_geracao, relatorio) VALUES (?, ?, ?, ?, ?, ?)`,
         [id_cliente, reportType, periodo_inicio, periodo_fim, dataCompleta, reportContent]

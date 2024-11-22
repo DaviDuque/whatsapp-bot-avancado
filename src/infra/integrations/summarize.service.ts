@@ -40,12 +40,14 @@ export class SummarizeService implements SummarizeServiceInterface {
 export class SummarizeServiceDespesas implements SummarizeServiceInterface {
     private temperature = 0.7;
     private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
-    [<receita/entrada>, <valor>, <data>, <categaria>]', 
-    onde "receita" seja do tipo string, "valor" seja tipo float: 10,00, 
-    "data" seja tipo date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja tipo string. caso os dados "data" e "valor"  
-    não seja identificado retorne null para cada um deles em sua devida posição no array. "receita" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
-    Para "categoria" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Salário", "Rendimentos", "Ações", "Aluguel", "imóveis", "N/A", "Extra", "Vendas", "Pensão", "Herança", "Previdência"]. Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo. 
+    [<Despesa/gasto>, <valor>, <data da despesa>, <categaria>, <parcelado>]', 
+    onde "Despesa" seja do tipo string com o nome da despesa(Alimentos, serviços, cursos, etc), "valor" seja float: 10,00, 
+    "data da despesa" seja date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja string, 
+    e "parcelado" seja char(1) sim(s) ou não(n). caso os dados "data da despesa" e "valor"  
+    não seja identificado retorne null para cada um deles em sua devida posição no array. "Despesa" representa algo comprado, adiquirido ou utilizado. caso "parcelado" 
+    não seja identificado no texto, retorne o default "null". 
+    Para "categoria" localize em qual das o pções melhor se encaixa, 
+    opções["Mercado", "Veiculos", "Pets", "Contas_residência", "imóveis", "Lazer", "restaurante", "Shopping", "Transporte", "internet", "viajens", "hotéis", "N/A"]. Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
     Texto: `
 
     private openai: OpenAI;
@@ -218,6 +220,42 @@ export class SummarizeServiceMeta implements SummarizeServiceInterface {
     onde "meta" seja do tipo string, "valor atual" seja tipo float: 10,00, "valor objetivo" seja tipo float: 10,00,
     "data limite" seja tipo date:YYYY-MM-DD. os dados podem vir em formatos diferentes, coloque no formato correto. caso os dados  
     não sejam identificados retorne null para cada um deles que não for identificado em sua devida posição no array. "meta" representa capital o nome do dinheiro que a pessoa quer juntar. 
+     Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
+     Texto: `;
+
+    private openai: OpenAI;
+    private model = 'gpt-3.5-turbo';
+
+    constructor(){
+        this.openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+        });
+    }
+
+    async summarize(text:string): Promise<string> {
+        const response = await this.openai.chat.completions.create({
+            messages: [{ role: 'user', content: `${this.prompt} ${text}`}],
+            model: this.model,
+            temperature: this.temperature,
+        });
+        if(!response.choices[0].message.content){
+            throw new Error('Não foi possível resumir o texto') ;
+        }
+        return response.choices[0].message.content;
+    }
+}
+
+
+export class SummarizeServiceRelatorio implements SummarizeServiceInterface {
+    private temperature = 0.7;
+    private prompt = `considere o texto enviado para extrair um array a partir do texto fornecido sempre no formato: 
+    [<data inicial>, <data final>]', 
+    onde:
+    "data inicial" seja tipo date:YYYY-MM-DD e data final" seja tipo date:YYYY-MM-DD.  e se data inicial for "hoje" ou "atual" retorne ${dataCompleta},
+     caso data final ou data inicial seja em outro formato como tempo corrido, realize o cálculo, exemplo: se data inicial é hoje, logo é ${dataCompleta}, 
+     se data final é daqui um mês, logo data final é ${dataCompleta} + 1 mês ou mais 30 dias (se for 21 de dezembro, sera 21 de janeiro). 
+     Os dados podem vir em formatos diferentes, coloque no formato correto. caso os dados  
+    não sejam identificados retorne null para cada um deles que não for identificado em sua devida posição no array.
      Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
      Texto: `;
 

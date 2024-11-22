@@ -19,16 +19,11 @@ addCommand({
 *Nome da despesa*
 *data* 
 *Valor*
-*dia*
-*Parcelado?* S/N`;
+*Parcelado?* S/N
+`;
     },
 });
 
-/*addCommand({
-    name: '1',
-    description: 'Digite 1 para \u{1F648} Entrada de gastos',
-    execute: () => 'Ainda não consigo processar essa requisição, mas estamos trabalhando nisso ;) \n \u{2600} Digite 8 para voltar ao menu. \n \u{1F525} Digite 9 para sair.'
-});*/
 
 addCommand({
     name: '2',
@@ -62,12 +57,9 @@ addCommand({
     description: '\u{1F4F1}Digite \u{0034}\u{FE0F}\u{20E3} para cadastrar um *relatório*',
     execute: () => {
         globalState.setClientCondition("relatorio");
-        return `Para buscar um relatório, digite ou fale os detalhes:
-*Nome da cartão*
-*tipo*
-*banco*
-*limite*
-*saldo*
+        return `\u{1F4CB}Para buscar um relatório, digite ou fale os detalhes:
+*Data inicial*
+*Data final*
 `;
     },
 });
@@ -117,18 +109,6 @@ addCommand({
     },
 });
 
-/*addCommand({
-    name: '3',
-    description: 'Digite 3 para \u{1F947} Resumo do dia',
-    execute: () => 'Ainda não consigo processar essa requisição, mas estamos trabalhando nisso ;) \n \u{2600} Digite 8 para voltar ao menu. \n \u{1F525} Digite 9 para sair.'
-});
-
-addCommand({
-    name: '4',
-    description: 'Digite 4 para \u{1F3C6} Resumo do mês',
-    execute: () => 'Ainda não consigo processar essa requisição, mas estamos trabalhando nisso ;) \n \u{2600} Digite 8 para voltar ao menu. \n \u{1F525} Digite 9 para sair.'
-});*/
-
 
 addCommand({
     name: '8',
@@ -146,25 +126,3 @@ addCommand({
     execute: () => '\u{1F60A} Obrigado, sigo a disposição'
 });
 
-
-/*addCommand({
-    name: 'ping',
-    description: 'Responde com "pong"',
-    execute: () => 'pong'
-});
-
-addCommand({
-    name: 'echo',
-    description: 'Repete a Msg que foi enviada',
-    execute: (args: string[]) => (args.join(' ')),
-});
-
-addCommand({
-    name: 'help',
-    description: 'Lista todos os comandos disponíveis',
-    execute: () => {
-        return listCommands().map(
-            command => `${command.name}:${command.description}`
-        ).join('\n');
-    },
-});*/

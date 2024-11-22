@@ -19,7 +19,9 @@ import { SummarizeServiceDespesas } from './infra/integrations/summarize.service
 import { GlobalState } from './infra/states/global-state';
 import { getCommand } from './commandManager';
 import { sendMessage,sendInteractiveMessage, sendListPickerMessage } from './infra/integrations/twilio';
-import { Relatorios } from './modules/relatorios/relatorios-simples.controller';
+//import { Relatorios } from './modules/relatorios/relatorios.controller';
+import { Relatorios } from './modules/relatorios/extrair-relatorios.controller';
+import { RelatoriosSimples } from './modules/relatorios/relatorios-simples.controller';
 import { RelatoriosTotal } from './modules/relatorios/relatorios-total.controller';
 import { Meta } from './modules/metas/metas.controller';
 import cors from 'cors';
@@ -55,6 +57,7 @@ const NewConta = new Conta();
 const globalState = GlobalState.getInstance();
 const authUsercase = new Auth();
 const newRelatorio = new Relatorios();
+const newRelatorioSimples = new RelatoriosSimples();
 const newRelatorioTotal = new RelatoriosTotal();
 const newMeta = new Meta();
 
@@ -67,7 +70,7 @@ app.get('/', (req: Request, res: Response) => {
 app.post('/login', authUsercase.login);
 app.post('/register', authMiddleware, authUsercase.register);
 app.post('/refresh-token', authUsercase.refreshToken);
-app.post('/relatorio-simples', newRelatorio.RelatorioSimples);
+app.post('/relatorio-simples', newRelatorioSimples.RelatorioSimples);
 app.post('/relatorio-total', newRelatorioTotal.RelatorioTotal);
 
 app.get('/relatorio-clientes', newRelatorioClientes.buscar);
@@ -104,7 +107,7 @@ app.get('/download', async (req: Request, res: Response) => {
 
     // Verificar se o cliente já está cadastrado
     const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-
+    //const clienteCadastrado = true;
     console.log("cliente index...........",clienteCadastrado);
     
     if (!clienteCadastrado) {
@@ -118,6 +121,7 @@ app.get('/download', async (req: Request, res: Response) => {
     if(clienteCadastrado){
         const cliente = globalState.getClientId();
         if(!cliente){
+            console.log("entruuuuuuuuuuu");
             const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
             globalState.setClientId(cliente_id);
             globalState.setClientCondition("inicial");
@@ -180,10 +184,14 @@ app.get('/download', async (req: Request, res: Response) => {
         }else if(globalState.getClientCondition() == 'investimentos' || globalState.getClientCondition() == 'investimentos_1' || globalState.getClientCondition() == 'investimentos_2'){
             console.log('-----investimentos-----');
             await newInvestimentos.processarMensagemInvestimentos(req, res);
+        }else if(globalState.getClientCondition() == 'relatorio' || globalState.getClientCondition() == 'relatorio_1' || globalState.getClientCondition() == 'relatorio_2'){
+            console.log('-----relatorio-----');
+            await newRelatorio.whatsappRelatorio(req, res);
         }else if(globalState.getClientCondition() == 'cartao' || globalState.getClientCondition() == 'cartao_1' || globalState.getClientCondition() == 'cartao_2'){
             console.log('-----cartao-----');
             await NewCartao.whatsappCartao(req, res);
         }else if(globalState.getClientCondition() == 'conta' || globalState.getClientCondition() == 'conta_1' || globalState.getClientCondition() == 'conta_2'){
+            
             console.log('-----conta-----');
             await NewConta.whatsapp(req, res);
         }else if(globalState.getClientCondition() == 'meta' || globalState.getClientCondition() == 'meta_1' || globalState.getClientCondition() == 'meta_2'){

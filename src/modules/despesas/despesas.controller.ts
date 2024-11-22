@@ -60,7 +60,6 @@ export class Despesas {
 *Nome da despesa*
 *data* 
 *Valor*
-*dia*
 *Parcelado?* S/N
 `);
             await atualizarEstado(From, "aguardando_dados");
@@ -91,7 +90,7 @@ export class Despesas {
                    sendConfirmPadraoMessage(To, From, dadosMsg); 
                 }
             } catch (error) {
-                await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
+                await sendMessage(To, From, "\u{274C} AHouve um erro ao cadastrar a despesa. Por favor, tente novamente.");
             }
         }
 
@@ -102,7 +101,6 @@ export class Despesas {
         let [descricao, valorStr, dataStr, categoria, parcelado] = dados.split(',');
         
             if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
-
                 if(cliente){
                     try {
                         let dataString: string = dayjs( dataStr!).format('YYYY-MM-DD');
@@ -113,9 +111,7 @@ export class Despesas {
                 const newCategoria = categoria!.replace(/["'\[\]\(\)]/g, '');
                 const newParcelado = parcelado!.replace(/["'\[\]\(\)]/g, '');
                 const valor = parseFloat(valorStr);
-
                 const resultado = await cadastrarDespesa(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
-                
                 await sendMessage(To, From, `
 *Despesa cadastrada com sucesso!* 
 \u{1F4B8} *Despesa:* ${newDescricao.trim()}
@@ -130,7 +126,7 @@ export class Despesas {
                     } catch (error) {
                         await limparEstado(From);
                         globalState.setClientCondition("inicial");
-                        await sendMessage(To, From, "\u{274C} Houve um erro ao cadastrar a despesa. Por favor, tente novamente.");
+                        await sendMessage(To, From, "\u{274C} BHouve um erro ao cadastrar a despesa. Por favor, tente novamente.");
                     }
                 }
                 

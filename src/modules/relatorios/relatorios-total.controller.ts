@@ -117,6 +117,7 @@ export class RelatoriosTotal {
 
             return res.status(200).json({
                 message: "Relatório gerado com sucesso.",
+                fileName,
                 filePath,
             });
         } catch (error) {
