@@ -18,11 +18,11 @@ import { AudioService } from './infra/integrations/audio.service';
 import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
 import { GlobalState } from './infra/states/global-state';
 import { getCommand } from './commandManager';
-import { sendMessage,sendInteractiveMessage, sendListPickerMessage } from './infra/integrations/twilio';
-//import { Relatorios } from './modules/relatorios/relatorios.controller';
+import { sendMessage, sendListPickerMessage } from './infra/integrations/twilio';
 import { Relatorios } from './modules/relatorios/extrair-relatorios.controller';
 import { RelatoriosSimples } from './modules/relatorios/relatorios-simples.controller';
 import { RelatoriosTotal } from './modules/relatorios/relatorios-total.controller';
+import { getFile, sendWhatsAppFile } from './modules/arquivos/arquivos.controller';
 import { Meta } from './modules/metas/metas.controller';
 import cors from 'cors';
 
@@ -75,6 +75,9 @@ app.post('/relatorio-total', newRelatorioTotal.RelatorioTotal);
 
 app.get('/relatorio-clientes', newRelatorioClientes.buscar);
 app.get('/user/:id_usuario', authUsercase.user);
+
+app.get('/file/:filename', getFile); // Endpoint para servir o arquivo
+app.post('/send-whatsapp', sendWhatsAppFile);
 
 
 

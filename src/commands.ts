@@ -7,7 +7,7 @@ const cliente = globalState.getClientId();
 addCommand({
     name: '',
     description: '\u{1F44B} Escolha uma opção abaixo \u{1F4BB}',
-    execute: () => 'Ainda não consigo processar essa requisição, mas estamos trabalhando nisso ;) \n \u{2600} Digite 1 para voltar ao menu. \n \u{1F525} Digite 2 para sair.'
+    execute: () => 'Ainda não consigo processar essa requisição, mas estamos trabalhando nisso. \n \u{2600} Digite 8 para voltar ao menu. \n \u{1F525} Digite 9 para sair.'
 });
 
 addCommand({

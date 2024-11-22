@@ -13,6 +13,7 @@ import { criarClientePorTelefone } from '../clientes/clientes.repository';
 import { verificarEstado, atualizarEstado, limparEstado,  verificarClienteEstado } from '../../infra/states/states';
 import { transcribe } from '../transcribe/transcribe.controler';
 import { SummarizeServiceRelatorio } from '../../infra/integrations/summarize.service';
+import { sendFileViaWhatsApp } from '../../infra/integrations/twilio';
 import dayjs from 'dayjs';
 import { GlobalState } from '../../infra/states/global-state';
 
@@ -207,21 +208,21 @@ export class Relatorios {
 \u{1F4B9} Segue seu relatório! 
 *Data extração:* ${dayjs(dataExtra).format('DD-MM-YYYY')}, 
 *Data Inicial:*  ${dayjs(datStrIni).format('DD-MM-YYYY')}, 
-*Data Final:*  ${dayjs(datStrFim).format('DD-MM-YYYY')},
-*Arquivo:*  ${filePath}, \n
-\u{1F4A1}Caso queira extrai outro relatório digite *4* ou para voltar digite *8* e para sair digite *9*`);
-                    
+*Data Final:*  ${dayjs(datStrFim).format('DD-MM-YYYY')}`);
+//*Arquivo:*  ${fileName}
+//, \n \u{1F4A1}Caso queira extrai outro relatório digite *4* ou para voltar digite *8* e para sair digite *9*`);
+                await sendFileViaWhatsApp(To, From, fileName);    
                 await limparEstado(From);
                 globalState.setClientCondition("inicial");  
                     }else{
                         await limparEstado(From);
                         globalState.setClientCondition("inicial");
-                        await sendMessage(To, From, "\u{274C}99Houve um erro ao extrair o relatório. Por favor, tente novamente.");
+                        await sendMessage(To, From, "\u{274C}Houve um erro 9 ao extrair o relatório. Por favor, tente novamente.");
                     }
                         } catch (error) {
                             await limparEstado(From);
                             globalState.setClientCondition("inicial");
-                            await sendMessage(To, From, "\u{274C}88Houve um erro ao extrair o relatório. Por favor, tente novamente.");
+                            await sendMessage(To, From, "\u{274C}Houve um erro 8 ao extrair o relatório. Por favor, tente novamente.");
                         }
                     }
                 } else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {

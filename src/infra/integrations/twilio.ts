@@ -1,7 +1,9 @@
 import { AnyAaaaRecord } from "dns";
+import path from 'path';
 import { Twilio } from "twilio";
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
+const URL = process.env.FILE_URL;
 //const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
 
 if (!accountSid || !authToken) {
@@ -101,6 +103,19 @@ export async function sendConfirmPadraoMessage( To: string, From: string, dados:
     console.error('Erro ao enviar a mensagem:', error);
   }
 }
+
+// Serviço para enviar o arquivo via WhatsApp
+export const sendFileViaWhatsApp = async (to: string, from: string, filename: string): Promise<string> => {
+  const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
+
+  const message = await client.messages.create({
+    from,
+    to,
+    mediaUrl: [fileUrl],
+  });
+
+  return message.sid; // Retorna o SID da mensagem enviada
+};
 
 
 
