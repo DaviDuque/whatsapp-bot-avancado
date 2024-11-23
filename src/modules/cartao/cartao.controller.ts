@@ -37,10 +37,10 @@ export class Cartao {
             await sendMessage(To, From, 
             `\u{1F4B6}Para cadastrar um cartão, digite ou fale os detalhes:
 *Nome da cartão*
-*tipo*
-*banco*
-*limite*
-*saldo*`);
+*Tipo débito ou crédito* 
+*Banco*
+*Limite total*
+*Limite disponível*`);
             await atualizarEstado(From, "aguardando_dados");
         }
 
@@ -56,10 +56,10 @@ export class Cartao {
         if (!estadoAtual) {
             await sendMessage(To, From, `\u{1F4B6}Para cadastrar um cartão, digite ou fale os detalhes:
 *Nome da cartão*
-*tipo*
-*banco*
-*limite*
-*saldo* `);
+*Tipo débito ou crédito* 
+*Banco*
+*Limite total*
+*Limite disponível*`);
             await atualizarEstado(From, "aguardando_dados");
         }
 
@@ -68,9 +68,9 @@ export class Cartao {
             if (!Transcribe) return;
 
             const response = await summarizeServiceCartao.summarize(Transcribe);
-            let [nome_cartao, tipo, banco, limite, saldo] = response.split(',');
-            const limiteValor = parseFloat(limite);
-            const saldoValor = parseFloat(saldo);
+            let [nome_cartao, tipo, banco, limite_total, limite_disponivel] = response.split(',');
+            const limiteValor = parseFloat(limite_total);
+            const disponivelValor = parseFloat(limite_disponivel);
 
             if (!cliente) { return undefined; }
 
@@ -81,13 +81,13 @@ export class Cartao {
                 const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                 const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
                 
-                if (!validarDescricao(nome_cartao) || !validarValorTotal(limiteValor) || !validarValorTotal(saldoValor) || newNomeCartao == null) {
+                if (!validarDescricao(nome_cartao) || !validarValorTotal(limiteValor) || !validarValorTotal(disponivelValor) || newNomeCartao == null) {
                     await sendMessage(To, From, "Desculpe não entendi, forneça os dados corretos do cartão. Você pode digitar ou falar");
                 } else {
                     const formatLimiteValor = formatWithRegex(limiteValor);
-                    const formatSaldoValor = formatWithRegex(saldoValor);
+                    const formatDisponivelValor = formatWithRegex(disponivelValor);
                     globalState.setClientCondition("cartao_1");
-                    const dadosMsg = ` \u{1F4B5}Cartão: *${newNomeCartao.trim()}*, *Tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite:${formatLimiteValor}*, *Saldo:${formatSaldoValor}*`
+                    const dadosMsg = ` \u{1F4B5}Cartão: *${newNomeCartao.trim()}*, *Tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite Total:${formatLimiteValor}*, *Limite Disponível:${formatDisponivelValor}*`
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
                     sendConfirmPadraoMessage(To, From, dadosMsg); 
                 }
@@ -102,7 +102,7 @@ export class Cartao {
         let dados = globalState.getMensagem();
         if(!dados)return null
         
-        let [nome_cartao, tipo, banco, limite, saldo] = dados.split(',');
+        let [nome_cartao, tipo, banco, limite_total, limite_diponivel] = dados.split(',');
 
         if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim')  {
             if(cliente){
@@ -110,18 +110,18 @@ export class Cartao {
                     const newNomeCartao = nome_cartao!.replace(/["'\[\]\(\)]/g, '');
                     const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                     const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
-                    const limiteValor = parseFloat(limite);
-                    const saldoValor = parseFloat(saldo);
-                    const resultado = await cadastrarCartao(cliente, newNomeCartao, newTipo, newBanco, limiteValor, saldoValor);
+                    const limiteValor = parseFloat(limite_total);
+                    const disponivelValor = parseFloat(limite_diponivel);
+                    const resultado = await cadastrarCartao(cliente, newNomeCartao, newTipo, newBanco, limiteValor, disponivelValor);
                     
                     if (resultado?.sucesso) {
                         await sendMessage(To, From, `
                         *Cartão cadastrado com sucesso!* 
 \u{1F4B6} *Cartão:* ${newNomeCartao.trim()}
-\u{1F4F1} *tipo:* ${newTipo.trim()}
+\u{1F4F1} *Tipo:* ${newTipo.trim()}
 \u{1F3E6} *Banco:* ${newBanco.trim()}
-\u{1F4B5} *Limite:*  ${formatWithRegex(limiteValor)}
-\u{1FA99} *Saldo:* ${formatWithRegex(saldoValor)} \n
+\u{1F4B5} *Limite total:*  ${formatWithRegex(limiteValor)}
+\u{1FA99} *Limite disponível:* ${formatWithRegex(disponivelValor)} \n
 \u{1F4A1}Para cadastrar outro cartão digite *6*, para voltar digite *8*, ou para sair digite *9*`);
                                             
                         await limparEstado(From);

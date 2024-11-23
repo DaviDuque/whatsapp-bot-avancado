@@ -43,17 +43,17 @@ const ListarDespesaPorCliente = (id_cliente, startDate, endDate) => __awaiter(vo
     }
 });
 exports.ListarDespesaPorCliente = ListarDespesaPorCliente;
-const cadastrarDespesa = (id_cliente, descricao, valor, data_despesa, categoria, parcelado) => __awaiter(void 0, void 0, void 0, function* () {
+const cadastrarDespesa = (id_cliente, descricao, valor, data_despesa, categoria, metodo_pagamento) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const newDate = (0, dayjs_1.default)(data_despesa).format('YYYY-MM-DD HH:mm:ss');
-        const query = 'INSERT INTO despesas (id_cliente, descricao, valor, data_despesa, categoria, parcelado) VALUES (?, ?, ?, ?, ?, ?)';
+        const query = 'INSERT INTO despesas (id_cliente, descricao, valor, data_despesa, categoria, metodo_pagamento) VALUES (?, ?, ?, ?, ?, ?)';
         const values = [
             id_cliente,
             descricao.trim(),
             valor,
             newDate,
             categoria ? categoria.trim() : null,
-            parcelado ? parcelado.trim() : 'n'
+            metodo_pagamento ? metodo_pagamento.trim() : 'n/a'
         ];
         yield mysql_connection_1.connection.execute(query, values);
     }

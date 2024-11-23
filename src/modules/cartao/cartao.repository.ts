@@ -21,18 +21,18 @@ export const cadastrarCartao = async (
     nome_cartao: string,
     tipo: string,
     banco: string,
-    limite?: number,
-    saldo?: number
+    limite_total?: number,
+    limite_disponivel?: number
 ): Promise<{ sucesso: boolean; mensagem: string }> => {
     try {
-        const query = 'INSERT INTO cartoes (id_cliente, nome_cartao, tipo, banco, limite, saldo) VALUES (?, ?, ?, ?, ?, ?)';
+        const query = 'INSERT INTO cartoes (id_cliente, nome_cartao, tipo, banco, limite_total, limite_disponivel) VALUES (?, ?, ?, ?, ?, ?)';
         const values = [
             id_cliente,
             nome_cartao.trim(),
             tipo.trim(),
             banco.trim(),
-            limite || null,
-            saldo || null
+            limite_total || null,
+            limite_disponivel || null
         ];
 
         await connection.execute(query, values);

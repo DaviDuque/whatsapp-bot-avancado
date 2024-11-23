@@ -18,7 +18,7 @@ const cliente = globalState.getClientId();
 *Nome da despesa*
 *data* 
 *Valor*
-*Parcelado?* S/N
+*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX)
 `;
     },
 });
@@ -78,11 +78,10 @@ const cliente = globalState.getClientId();
         globalState.setClientCondition("cartao");
         return `\u{1F4B6}Para cadastrar um cartão, digite ou fale os detalhes:
 *Nome da cartão*
-*tipo*
-*banco*
-*limite*
-*saldo*
-`;
+*Tipo débito ou crédito* 
+*Banco*
+*Limite total*
+*Limite disponível*`;
     },
 });
 (0, commandManager_1.addCommand)({

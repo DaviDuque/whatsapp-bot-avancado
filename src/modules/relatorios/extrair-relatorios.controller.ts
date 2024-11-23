@@ -24,6 +24,7 @@ export class Relatorios {
         const globalState = GlobalState.getInstance();
         const condicao = globalState.getClientCondition();
         const id_cliente = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
+        const URL = process.env.FILE_URL;
         if(condicao == "relatorio"){
             await atualizarEstado(From, "aguardando_dados");
         }
@@ -81,7 +82,7 @@ export class Relatorios {
                 globalState.setClientCondition("relatorio_1");
                 await atualizarEstado(From, "aguardando_confirmacao_dados");
 
-                const dadosMsg = ` \u{1F4B5}Relatório a extrair: *Data inicial:${dayjs(datStrIni).format('DD-MM-YYYY')}* , *Data final:${dayjs(datStrFim).format('DD-MM-YYYY')}*`
+                const dadosMsg = ` \u{1F4B5}Relatório a extrair periodo: *Inicial:${dayjs(datStrIni).format('DD-MM-YYYY')}* , *Final:${dayjs(datStrFim).format('DD-MM-YYYY')}*`
                 sendConfirmPadraoMessage(To, From, dadosMsg);
             }
         } catch (error) {
@@ -204,20 +205,15 @@ export class Relatorios {
             const dataExtra = new Date();
 
             if (fileName && filePath) {
-                //await sendFileViaWhatsApp(To, From, fileName);  
-                console.log(">>>>>>>>>>>filename", fileName);
-                /*await sendMessage(To, From, `
+
+                await sendMessage(To, From, `
 \u{1F4B9} Segue seu relatório! 
 *Data extração:* ${dayjs(dataExtra).format('DD-MM-YYYY')}, 
 *Data Inicial:*  ${dayjs(datStrIni).format('DD-MM-YYYY')}, 
-*Data Final:*  ${dayjs(datStrFim).format('DD-MM-YYYY')}`);*/
-//*Arquivo:*  ${fileName}
-//, \n \u{1F4A1}Caso queira extrai outro relatório digite *4* ou para voltar digite *8* e para sair digite *9*`);
-                //await sendFileViaWhatsApp(To, From, fileName);  
-                await sendFileViaWhatsApp(To, From, fileName);
-
-                
-                
+*Data Final:*  ${dayjs(datStrFim).format('DD-MM-YYYY')},
+*Arquivo:*  ${URL}/file/${fileName} \n
+\u{1F4A1} Caso queira extrai outro relatório digite *4* ou para voltar digite *8* e para sair digite *9*`);
+     
                 await limparEstado(From);
                 globalState.setClientCondition("inicial");  
                     }else{

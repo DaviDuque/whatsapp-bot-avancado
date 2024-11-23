@@ -120,9 +120,7 @@ function sendConfirmPadraoMessage(To, From, dados) {
 // Serviço para enviar o arquivo via WhatsApp
 const sendFileViaWhatsApp = (From, To, filename) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        //const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
-        const fileUrl = 'http://vanessafonsecaoficial.com/api/file/teste.txt';
-        console.log("dados...", To, From, fileUrl);
+        const fileUrl = `${URL}/file/${filename}`; // URL do arquivo
         const message = yield client.messages.create({
             from: From,
             to: To,

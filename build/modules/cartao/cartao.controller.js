@@ -66,10 +66,10 @@ class Cartao {
             if ((estadoAtual == 'aguardando_continuacao' && Body == 'S') || (estadoAtual == 'aguardando_continuacao' && Body == 's')) {
                 yield (0, twilio_1.sendMessage)(To, From, `\u{1F4B6}Para cadastrar um cartão, digite ou fale os detalhes:
 *Nome da cartão*
-*tipo*
-*banco*
-*limite*
-*saldo*`);
+*Tipo débito ou crédito* 
+*Banco*
+*Limite total*
+*Limite disponível*`);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
             }
             if (estadoAtual == 'aguardando_continuacao'
@@ -82,10 +82,10 @@ class Cartao {
             if (!estadoAtual) {
                 yield (0, twilio_1.sendMessage)(To, From, `\u{1F4B6}Para cadastrar um cartão, digite ou fale os detalhes:
 *Nome da cartão*
-*tipo*
-*banco*
-*limite*
-*saldo* `);
+*Tipo débito ou crédito* 
+*Banco*
+*Limite total*
+*Limite disponível*`);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
             }
             if (estadoAtual === "aguardando_dados") {
@@ -93,9 +93,9 @@ class Cartao {
                 if (!Transcribe)
                     return;
                 const response = yield summarizeServiceCartao.summarize(Transcribe);
-                let [nome_cartao, tipo, banco, limite, saldo] = response.split(',');
-                const limiteValor = parseFloat(limite);
-                const saldoValor = parseFloat(saldo);
+                let [nome_cartao, tipo, banco, limite_total, limite_disponivel] = response.split(',');
+                const limiteValor = parseFloat(limite_total);
+                const disponivelValor = parseFloat(limite_disponivel);
                 if (!cliente) {
                     return undefined;
                 }
@@ -104,14 +104,14 @@ class Cartao {
                     const newNomeCartao = nome_cartao.replace(/["'\[\]\(\)]/g, '');
                     const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                     const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
-                    if (!(0, validation_1.validarDescricao)(nome_cartao) || !(0, validation_1.validarValorTotal)(limiteValor) || !(0, validation_1.validarValorTotal)(saldoValor) || newNomeCartao == null) {
+                    if (!(0, validation_1.validarDescricao)(nome_cartao) || !(0, validation_1.validarValorTotal)(limiteValor) || !(0, validation_1.validarValorTotal)(disponivelValor) || newNomeCartao == null) {
                         yield (0, twilio_1.sendMessage)(To, From, "Desculpe não entendi, forneça os dados corretos do cartão. Você pode digitar ou falar");
                     }
                     else {
                         const formatLimiteValor = (0, formata_dinheiro_1.formatWithRegex)(limiteValor);
-                        const formatSaldoValor = (0, formata_dinheiro_1.formatWithRegex)(saldoValor);
+                        const formatDisponivelValor = (0, formata_dinheiro_1.formatWithRegex)(disponivelValor);
                         globalState.setClientCondition("cartao_1");
-                        const dadosMsg = ` \u{1F4B5}Cartão: *${newNomeCartao.trim()}*, *Tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite:${formatLimiteValor}*, *Saldo:${formatSaldoValor}*`;
+                        const dadosMsg = ` \u{1F4B5}Cartão: *${newNomeCartao.trim()}*, *Tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite Total:${formatLimiteValor}*, *Limite Disponível:${formatDisponivelValor}*`;
                         yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
                         (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }
@@ -125,24 +125,24 @@ class Cartao {
                 let dados = globalState.getMensagem();
                 if (!dados)
                     return null;
-                let [nome_cartao, tipo, banco, limite, saldo] = dados.split(',');
+                let [nome_cartao, tipo, banco, limite_total, limite_diponivel] = dados.split(',');
                 if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
                     if (cliente) {
                         try {
                             const newNomeCartao = nome_cartao.replace(/["'\[\]\(\)]/g, '');
                             const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                             const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
-                            const limiteValor = parseFloat(limite);
-                            const saldoValor = parseFloat(saldo);
-                            const resultado = yield (0, cartao_repository_1.cadastrarCartao)(cliente, newNomeCartao, newTipo, newBanco, limiteValor, saldoValor);
+                            const limiteValor = parseFloat(limite_total);
+                            const disponivelValor = parseFloat(limite_diponivel);
+                            const resultado = yield (0, cartao_repository_1.cadastrarCartao)(cliente, newNomeCartao, newTipo, newBanco, limiteValor, disponivelValor);
                             if (resultado === null || resultado === void 0 ? void 0 : resultado.sucesso) {
                                 yield (0, twilio_1.sendMessage)(To, From, `
                         *Cartão cadastrado com sucesso!* 
 \u{1F4B6} *Cartão:* ${newNomeCartao.trim()}
-\u{1F4F1} *tipo:* ${newTipo.trim()}
+\u{1F4F1} *Tipo:* ${newTipo.trim()}
 \u{1F3E6} *Banco:* ${newBanco.trim()}
-\u{1F4B5} *Limite:*  ${(0, formata_dinheiro_1.formatWithRegex)(limiteValor)}
-\u{1FA99} *Saldo:* ${(0, formata_dinheiro_1.formatWithRegex)(saldoValor)} \n
+\u{1F4B5} *Limite total:*  ${(0, formata_dinheiro_1.formatWithRegex)(limiteValor)}
+\u{1FA99} *Limite disponível:* ${(0, formata_dinheiro_1.formatWithRegex)(disponivelValor)} \n
 \u{1F4A1}Para cadastrar outro cartão digite *6*, para voltar digite *8*, ou para sair digite *9*`);
                                 yield (0, states_1.limparEstado)(From);
                                 globalState.setClientCondition("inicial");

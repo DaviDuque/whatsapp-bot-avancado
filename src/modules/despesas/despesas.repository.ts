@@ -35,17 +35,17 @@ export const ListarDespesaPorCliente = async (id_cliente: string, startDate: str
 
    
 
-export const cadastrarDespesa = async (id_cliente: string, descricao: string, valor: number, data_despesa: string,  categoria?: string, parcelado?: string) => {
+export const cadastrarDespesa = async (id_cliente: string, descricao: string, valor: number, data_despesa: string,  categoria?: string, metodo_pagamento?: string) => {
     try {
         const newDate: string = dayjs(data_despesa).format('YYYY-MM-DD HH:mm:ss');
-        const query = 'INSERT INTO despesas (id_cliente, descricao, valor, data_despesa, categoria, parcelado) VALUES (?, ?, ?, ?, ?, ?)';
+        const query = 'INSERT INTO despesas (id_cliente, descricao, valor, data_despesa, categoria, metodo_pagamento) VALUES (?, ?, ?, ?, ?, ?)';
         const values = [
             id_cliente,
             descricao.trim(),
             valor,
             newDate,
             categoria ? categoria.trim() : null,
-            parcelado ?parcelado.trim() : 'n'
+            metodo_pagamento ?metodo_pagamento.trim() : 'n/a'
         ];
         await connection.execute(query, values);
     } catch (error) {

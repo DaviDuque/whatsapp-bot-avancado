@@ -39,11 +39,11 @@ export class SummarizeService implements SummarizeServiceInterface {
 
 export class SummarizeServiceDespesas implements SummarizeServiceInterface {
     private temperature = 0.7;
-    private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
-    [<Despesa/gasto>, <valor>, <data da despesa>, <categaria>, <parcelado>]', 
-    onde "Despesa" seja do tipo string com o nome da despesa(Alimentos, serviços, cursos, etc), "valor" seja float: 10,00, 
+    private prompt = `extrair um array normalizando a partir do texto fornecido, adaptando e encaixando conforme descrito. sempre no formato: 
+    [<Despesa/gasto>, <valor>, <data da despesa>, <categoria>, <metodo_pagamento>]', 
+    onde "Despesa" seja do tipo string com o nome da despesa, "valor" seja float: 10.00, 
     "data da despesa" seja date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja string, 
-    e "parcelado" seja char(1) sim(s) ou não(n). caso os dados "data da despesa" e "valor"  
+    e "metodo_pagamento" seja do tipo string, normalize em uma das opções: [Crédito parcelado, Crédito a vista, Débito, PIX]. caso os dados "data da despesa" e "valor"  
     não seja identificado retorne null para cada um deles em sua devida posição no array. "Despesa" representa algo comprado, adiquirido ou utilizado. caso "parcelado" 
     não seja identificado no texto, retorne o default "null". 
     Para "categoria" localize em qual das o pções melhor se encaixa, 
@@ -144,14 +144,14 @@ export class SummarizeServiceInvestimentos implements SummarizeServiceInterface 
 
 export class SummarizeServiceCartao implements SummarizeServiceInterface {
     private temperature = 0.7;
-    private prompt = `Recebendo os dados de entrada em diversos formatos, podendo ser texto simples, nomes de variáveis e informações exatas, extraia um array a partir do texto fornecido sempre no formato: [<cartão>, <tipo>, <banco>, <limite> <saldo>]'. As informções podem vir fora de ordem ou ordenado. Caso venham desordenadas, ordene conforme [<cartão>, <tipo>, <banco>, <limite> <saldo>].
+    private prompt = `Recebendo os dados de entrada em diversos formatos, podendo ser texto simples, nomes de variáveis e informações exatas, extraia um array a partir do texto fornecido sempre no formato: [<cartão>, <tipo>, <banco>, <limite_total> <limite_disponivel>]'. As informções podem vir fora de ordem ou ordenado. Caso venham desordenadas, ordene conforme [<cartão>, <tipo>, <banco>, <limite> <saldo>].
     
     Os atributos tem as seguinte caracteristicas de saída:
     -cartão: Representa o nome de um cartao bancário e deve ser do tipo string.
     -tipo: deve ser do tipo string e necessariamente deve estar em uma categoria no qual encaixe em uma das o pções, sendo "N/A" quando não identificado. Opções["Cartão de Crédito", "Cartão de débito", "Cartão Pré Pago", "N/A"].
     -banco: deve ser do tipo string.
-    -limite:deve ser do tipo float: 10.00.
-    -saldo:deve do tipo float: 10.00.
+    -limite total:deve ser do tipo float: 10.00.
+    -limite disponível:deve do tipo float: 10.00.
     
 Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
      Texto: `;

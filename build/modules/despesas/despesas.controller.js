@@ -72,8 +72,7 @@ class Despesas {
 *Nome da despesa*
 *data* 
 *Valor*
-*dia*
-*Parcelado?* S/N
+*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX)
 `);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
             }
@@ -89,7 +88,7 @@ class Despesas {
 *Nome da despesa*
 *data* 
 *Valor*
-*Parcelado?* S/N
+*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX)
 `);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
             }
@@ -98,11 +97,13 @@ class Despesas {
                 if (!Transcribe)
                     return;
                 const response = yield summarizeServiceDespesas.summarize(Transcribe);
-                let [descricao, valorStr, dataStr, categoria, parcelado] = response.split(',');
+                console.log(">>>>>>summerize", response);
+                let [descricao, valorStr, dataStr, categoria, metodo_pagamento] = response.split(',');
                 let dataString = (0, dayjs_1.default)(dataStr).format('YYYY-MM-DD');
                 if (dataString === 'Invalid Date') {
                     dataString = (0, dayjs_1.default)().format('YYYY-MM-DD');
                 }
+                console.log(">>>>>>tese", descricao, valorStr, dataStr, categoria, metodo_pagamento);
                 const valor = parseFloat(valorStr);
                 if (!cliente) {
                     return undefined;
@@ -110,12 +111,17 @@ class Despesas {
                 globalState.setMensagem(`${response}`);
                 try {
                     const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
+                    const newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
+                    const newMetodo = metodo_pagamento.replace(/["'\[\]\(\)]/g, '');
+                    console.log(">>>>>>tese", newDescricao, newCategoria, newMetodo);
                     if (!(0, validation_1.validarDescricao)(descricao) || !(0, validation_1.validarValor)(valor) || !(0, validation_1.validarData)(dataString) || newDescricao == null) {
+                        console.log(">>>>>>errrooo", newDescricao, newCategoria, newMetodo);
                         yield (0, twilio_1.sendMessage)(To, From, "\u{26A0} Desculpe não entendi, forneça os dados corretos da despesa. Muita atenção ao VALOR, Você pode digitar ou falar");
                     }
                     else {
+                        console.log(">>>>>>acerto", newDescricao, newCategoria, newMetodo);
                         globalState.setClientCondition("despesas_1");
-                        const dadosMsg = ` \u{1F4B8}Despesa: *${newDescricao.trim()}*, *Valor:${(0, formata_dinheiro_1.formatWithRegex)(valor)}*, *Data:${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}*`;
+                        const dadosMsg = ` \u{1F4B8}Despesa: *${newDescricao.trim()}*, *Valor:${(0, formata_dinheiro_1.formatWithRegex)(valor)}*, *Data:${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}* , ${newCategoria}, ${newMetodo}`;
                         yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
                         (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }
@@ -128,7 +134,8 @@ class Despesas {
                 let dados = globalState.getMensagem();
                 if (!dados)
                     return null;
-                let [descricao, valorStr, dataStr, categoria, parcelado] = dados.split(',');
+                let [descricao, valorStr, dataStr, categoria, metodo_pagamento] = dados.split(',');
+                console.log(">>>>>>", descricao, valorStr, dataStr, categoria, metodo_pagamento);
                 if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
                     if (cliente) {
                         try {
@@ -138,14 +145,16 @@ class Despesas {
                             }
                             const newDescricao = descricao.replace(/["'\[\]\(\)]/g, '');
                             const newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
-                            const newParcelado = parcelado.replace(/["'\[\]\(\)]/g, '');
+                            const newMetodo = metodo_pagamento.replace(/["'\[\]\(\)]/g, '');
                             const valor = parseFloat(valorStr);
-                            const resultado = yield (0, despesas_repository_1.cadastrarDespesa)(cliente, newDescricao, valor, dataString, newCategoria, newParcelado);
+                            const resultado = yield (0, despesas_repository_1.cadastrarDespesa)(cliente, newDescricao, valor, dataString, newCategoria, newMetodo);
                             yield (0, twilio_1.sendMessage)(To, From, `
 *Despesa cadastrada com sucesso!* 
 \u{1F4B8} *Despesa:* ${newDescricao.trim()}
 \u{1F4B4} *Valor:* ${(0, formata_dinheiro_1.formatWithRegex)(valor)} 
-\u{231A} *Data:* ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')} \n
+\u{231A} *Data:* ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')},
+\u{1F4C4} *Categoria:* ${newCategoria.trim()},
+\u{1F5F3} *Método de pagamento:* ${newMetodo.trim()} \n
 \u{1F4A1}Para cadastrar nova despesa digite *1* \n para voltar ao menu digite *8* \n e para sair digite *9*`);
                             yield (0, states_1.limparEstado)(From);
                             globalState.setClientCondition("inicial");
