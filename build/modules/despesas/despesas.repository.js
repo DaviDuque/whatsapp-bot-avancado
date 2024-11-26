@@ -30,6 +30,7 @@ const verificarDespesaPorCliente = (id_cliente) => __awaiter(void 0, void 0, voi
 });
 exports.verificarDespesaPorCliente = verificarDespesaPorCliente;
 const ListarDespesaPorCliente = (id_cliente, startDate, endDate) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("listar despesas", id_cliente, startDate, endDate);
     try {
         const [rows] = yield mysql_connection_1.connection.query(`SELECT 'despesas' AS despesas, id_cliente, descricao, valor, data_despesa AS data, categoria 
             FROM despesas 

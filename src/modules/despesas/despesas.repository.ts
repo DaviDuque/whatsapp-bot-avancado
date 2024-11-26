@@ -17,6 +17,7 @@ export const verificarDespesaPorCliente = async (id_cliente: number) => {
 };
 
 export const ListarDespesaPorCliente = async (id_cliente: string, startDate: string, endDate: string) => {
+    console.log("listar despesas", id_cliente, startDate, endDate);
     try {
         const [rows]: any = await connection.query( `SELECT 'despesas' AS despesas, id_cliente, descricao, valor, data_despesa AS data, categoria 
             FROM despesas 

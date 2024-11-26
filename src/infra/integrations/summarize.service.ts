@@ -254,7 +254,7 @@ export class SummarizeServiceRelatorio implements SummarizeServiceInterface {
     "data inicial" seja tipo date:YYYY-MM-DD e data final" seja tipo date:YYYY-MM-DD.  e se data inicial for "hoje" ou "atual" retorne ${dataCompleta},
      caso data final ou data inicial seja em outro formato como tempo corrido, realize o cálculo, exemplo: se data inicial é hoje, logo é ${dataCompleta}, 
      se data final é daqui um mês, logo data final é ${dataCompleta} + 1 mês ou mais 30 dias (se for 21 de dezembro, sera 21 de janeiro). 
-     Os dados podem vir em formatos diferentes, coloque no formato correto. caso os dados  
+     Os dados podem vir em formatos diferentes, coloque no formato correto(date:YYYY-MM-DD). caso os dados  
     não sejam identificados retorne null para cada um deles que não for identificado em sua devida posição no array.
      Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
      Texto: `;
