@@ -47,6 +47,8 @@ const validation_1 = require("../../utils/validation");
 const transcribe_controler_1 = require("../transcribe/transcribe.controler");
 const verifica_tipo_msg_1 = require("../../utils/verifica-tipo-msg");
 const states_1 = require("../../infra/states/states");
+const global_state_1 = require("../../infra/states/global-state");
+const globalState = global_state_1.GlobalState.getInstance();
 const dadosClientesTemporarios = {};
 class Clientes {
     constructor() {
@@ -143,7 +145,9 @@ class Clientes {
                             }
                             else {
                                 (0, states_1.limparEstado)(From);
-                                (0, twilio_1.sendMessage)(To, From, '\u{1F64C}Cadastro realizado com sucesso!');
+                                globalState.setClientCondition("pagamentos");
+                                (0, twilio_1.sendConfirmPadraoMessage)(To, From, '\u{1F64C}Cadastro realizado com sucesso! confirme para prosseguir para o pagamento');
+                                //sendMessage(To, From, '\u{1F64C}Cadastro realizado com sucesso!');
                             }
                         }
                         catch (error) {
@@ -166,6 +170,17 @@ class Clientes {
                 else {
                     (0, twilio_1.sendMessage)(To, From, 'OPS! Não identificamos a mensagem. Envie "help" para lista de comandos.');
                 }
+            }
+        });
+        this.cadastrarCliente = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            //novoCliente.telefone = formatarNumeroTelefone(From.replace(/^whatsapp:/, ''));
+            //novoCliente.codigo_proprio = generateRandomCode(12, novoCliente.telefone.slice(-5));
+            try {
+                const cliente = yield (0, clientes_service_1.processarCliente)(req.body);
+                res.status(201).json(cliente);
+            }
+            catch (error) {
+                res.status(500).json({ error: error });
             }
         });
     }

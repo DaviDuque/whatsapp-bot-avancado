@@ -171,7 +171,7 @@ class Despesas {
                     yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
                 }
                 else {
-                    yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
+                    yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
                     yield (0, twilio_1.sendMessage)(To, From, "\u{274C} Não reconheci sua resposta. Por favor, responda com 'Sim' para sim ou 'Não' para não.");
                 }
             }

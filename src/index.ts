@@ -22,13 +22,13 @@ import { sendMessage, sendListPickerMessage } from './infra/integrations/twilio'
 import { Relatorios } from './modules/relatorios/extrair-relatorios.controller';
 import { RelatoriosSimples } from './modules/relatorios/relatorios-simples.controller';
 import { RelatoriosTotal } from './modules/relatorios/relatorios-total.controller';
+import { Pagamentos } from './modules/pagamentos/pagamentos.controller';
 import { getFile, sendWhatsAppFile } from './modules/arquivos/arquivos.controller';
 import { Meta } from './modules/metas/metas.controller';
 import cors from 'cors';
-
+//import { MercadoPagoConfig, Preference } from "mercadopago";
+import { MercadoPagoConfig, PreApproval } from "mercadopago";
 import { formatarNumeroTelefone } from './utils/trata-telefone';
-
-
 
 
 
@@ -41,12 +41,9 @@ app.use(cors({
     origin: '*', // Substitua pelo URL do seu frontend
     methods: 'GET,POST,PUT,DELETE', // Métodos permitidos
     allowedHeaders: 'Content-Type, Authorization' // Cabeçalhos permitidos
-  }));
+}));
 
 
-
-// Armazenamento temporário para os dados do cliente em processo de cadastro
-const dadosClientesTemporarios: { [key: string]: any } = {};
 const newCliente = new Clientes();
 const newRelatorioClientes = new RelatorioClientes;
 const newDespesas = new Despesas();
@@ -60,15 +57,17 @@ const newRelatorio = new Relatorios();
 const newRelatorioSimples = new RelatoriosSimples();
 const newRelatorioTotal = new RelatoriosTotal();
 const newMeta = new Meta();
-
+const newPagamento = new Pagamentos();
 
 
 app.get('/', (req: Request, res: Response) => {
-    res.send('gelo seco');
+    res.send('API ON');
 });
 
 app.post('/login', authUsercase.login);
 app.post('/register', authMiddleware, authUsercase.register);
+//modulo cliente não finalizado cadastro de cliente via API
+app.use('/clientes', newCliente.cadastrarCliente);
 app.post('/refresh-token', authUsercase.refreshToken);
 app.post('/relatorio-simples', newRelatorioSimples.RelatorioSimples);
 app.post('/relatorio-total', newRelatorioTotal.RelatorioTotal);
@@ -81,49 +80,48 @@ app.post('/send-whatsapp', sendWhatsAppFile);
 
 
 
+
 app.get('/download', async (req: Request, res: Response) => {
     try {
-     const serviceAudio = new AudioService();
- 
-     const url = process.env.AUDIO_OGG_FILE_PATH;
-     
-     if (url == undefined) {
-         res.status(400).send('url não informada')
-         return;
-     }
-     const response = await serviceAudio.download(url);
-     res.json({url: response});
+        const serviceAudio = new AudioService();
+
+        const url = process.env.AUDIO_OGG_FILE_PATH;
+
+        if (url == undefined) {
+            res.status(400).send('url não informada')
+            return;
+        }
+        const response = await serviceAudio.download(url);
+        res.json({ url: response });
     } catch (error) {
-     console.log(';;;;', error);
-       res.status(500).send(error);
+        console.log(';;;;', error);
+        res.status(500).send(error);
     }
- });
+});
 
 
 
- app.post('/whatsapp', async (req: Request, res: Response) => {
+app.post('/whatsapp', async (req: Request, res: Response) => {
     const { From, To, Body } = req.body;
     console.log("reqbody>>>", Body);
     //if(!Body) return undefined;
     const [commandName, ...args] = Body.split(' ');
-    console.log("req...........",req.body);
+    console.log("req...........", req.body);
 
     // Verificar se o cliente já está cadastrado
     const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
     //const clienteCadastrado = true;
-    console.log("cliente index...........",clienteCadastrado);
-    
-    if (!clienteCadastrado) {
-        console.log("cliente index 2...........",clienteCadastrado);
+    console.log("cliente index...........", clienteCadastrado);
 
-        //await newReceitas.processarMensagemReceita(req, res);
+    if (!clienteCadastrado) {
+        console.log("cliente index 2...........", clienteCadastrado);
+        const cliente = globalState.setClientCondition('pagamento');
         await newCliente.whatsapp(req, res);
-        //await newDespesas.whatsapp(req, res);
     }
 
-    if(clienteCadastrado){
+    if (clienteCadastrado) {
         const cliente = globalState.getClientId();
-        if(!cliente){
+        if (!cliente) {
             console.log("entruuuuuuuuuuu");
             const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
             globalState.setClientId(cliente_id);
@@ -148,7 +146,7 @@ app.get('/download', async (req: Request, res: Response) => {
             );
         }
 
-        
+
         const mensagem = globalState.getMensagem();
         console.log(`ID do cliente armazenado: ${globalState.getClientId()}`);
         console.log(`body do cliente armazenado-->: ${globalState.getMensagem()}`);
@@ -156,77 +154,84 @@ app.get('/download', async (req: Request, res: Response) => {
         console.log(`cliente condição-->: ${globalState.getClientCondition()}`)
 
         // Processar o comando
-        if(globalState.getClientCondition() == 'inicial'){
+        if (globalState.getClientCondition() == 'inicial') {
             const command = getCommand(commandName);
             if (command) {
                 console.log("Command>>>>", command);
                 console.log("Command>>>>", commandName);
                 const response = command.execute(args);
-                if(commandName == '8'){
+                if (commandName == '8') {
                     await sendListPickerMessage(To, From);
                     sendMessage(To, From, '\u{1F63A} Vamos la!! \u{2600}');
-                }else{
+                } else {
                     console.log("To>>>>", To);
                     console.log("From>>>>", From);
-                    //await sendListPickerMessage(From, To);
                     sendMessage(To, From, response);
                 }
-               
+
             } else {
-                
+
                 await sendListPickerMessage(To, From);
-                 //sendMessage(To, From, '\u{1F63A} Olá, \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
                 sendMessage(To, From, '\u{1F63A} Vamos la!! \u{2600}');
             }
-        }else if(globalState.getClientCondition() == 'despesas' || globalState.getClientCondition() == 'despesas_2' || globalState.getClientCondition() == 'despesas_1'){
+        } else if (globalState.getClientCondition() == 'despesas' || globalState.getClientCondition() == 'despesas_2' || globalState.getClientCondition() == 'despesas_1') {
             console.log('-----despesas-----');
             await newDespesas.whatsapp(req, res);
-        }else if(globalState.getClientCondition() == 'receitas' || globalState.getClientCondition() == 'receitas_2' || globalState.getClientCondition() == 'receitas_1'){
+        } else if (globalState.getClientCondition() == 'receitas' || globalState.getClientCondition() == 'receitas_2' || globalState.getClientCondition() == 'receitas_1') {
             console.log('-----receitas-----');
             await newReceitas.processarMensagemReceita(req, res);
-        }else if(globalState.getClientCondition() == 'investimentos' || globalState.getClientCondition() == 'investimentos_1' || globalState.getClientCondition() == 'investimentos_2'){
+        } else if (globalState.getClientCondition() == 'investimentos' || globalState.getClientCondition() == 'investimentos_1' || globalState.getClientCondition() == 'investimentos_2') {
             console.log('-----investimentos-----');
             await newInvestimentos.processarMensagemInvestimentos(req, res);
-        }else if(globalState.getClientCondition() == 'relatorio' || globalState.getClientCondition() == 'relatorio_1' || globalState.getClientCondition() == 'relatorio_2'){
+        } else if (globalState.getClientCondition() == 'relatorio' || globalState.getClientCondition() == 'relatorio_1' || globalState.getClientCondition() == 'relatorio_2') {
             console.log('-----relatorio-----');
             await newRelatorio.whatsappRelatorio(req, res);
-        }else if(globalState.getClientCondition() == 'cartao' || globalState.getClientCondition() == 'cartao_1' || globalState.getClientCondition() == 'cartao_2'){
+        } else if (globalState.getClientCondition() == 'cartao' || globalState.getClientCondition() == 'cartao_1' || globalState.getClientCondition() == 'cartao_2') {
             console.log('-----cartao-----');
             await NewCartao.whatsappCartao(req, res);
-        }else if(globalState.getClientCondition() == 'conta' || globalState.getClientCondition() == 'conta_1' || globalState.getClientCondition() == 'conta_2'){
-            
+        } else if (globalState.getClientCondition() == 'conta' || globalState.getClientCondition() == 'conta_1' || globalState.getClientCondition() == 'conta_2') {
+
             console.log('-----conta-----');
             await NewConta.whatsapp(req, res);
-        }else if(globalState.getClientCondition() == 'meta' || globalState.getClientCondition() == 'meta_1' || globalState.getClientCondition() == 'meta_2'){
+        } else if (globalState.getClientCondition() == 'meta' || globalState.getClientCondition() == 'meta_1' || globalState.getClientCondition() == 'meta_2') {
             console.log('-----meta-----');
             await newMeta.whatsappMeta(req, res);
-        }else{
+        } else if (globalState.getClientCondition() == 'pagamento' || globalState.getClientCondition() == 'pagamento_1' || globalState.getClientCondition() == 'pagamento_2') {
+            console.log('-----pagamento-----');
+            await newPagamento.pagamentoWhatsapp(req, res);
+        } else {
             globalState.setClientCondition('inicial');
             sendMessage(To, From, "Desculpe não entendi  mensagem");
         }
     }
-    
-    //res.send("Mensagem recebida!");
 });
-
-
 
 
 app.get('/summarize', async (req: Request, res: Response) => {
     try {
-     const summarizeServiceDespesas = new SummarizeServiceDespesas();
- 
-     const text =  `supermercado, 25,00, 10/10/2024, tsste, n`;
-     
-     const response = await summarizeServiceDespesas.summarize(text);
-     res.json({text: response});
+        const summarizeServiceDespesas = new SummarizeServiceDespesas();
+
+        const text = `supermercado, 25,00, 10/10/2024, tsste, n`;
+
+        const response = await summarizeServiceDespesas.summarize(text);
+        res.json({ text: response });
     } catch (error) {
-     console.log(';;;;', error);
-       res.status(500).send(error);
+        console.log(';;;;', error);
+        res.status(500).send(error);
     }
- });
+});
 
 
+app.post("/create-payment-link", async (req: Request, res: Response) => {
+    await newPagamento.pagamentoLink(req, res);
+});
+
+
+app.post("/create-subscription", async (req: Request, res: Response) => {
+    await newPagamento.pagamentoRecorrente(req, res);
+   
+});
+  
 
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
 

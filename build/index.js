@@ -58,6 +58,7 @@ const twilio_1 = require("./infra/integrations/twilio");
 const extrair_relatorios_controller_1 = require("./modules/relatorios/extrair-relatorios.controller");
 const relatorios_simples_controller_1 = require("./modules/relatorios/relatorios-simples.controller");
 const relatorios_total_controller_1 = require("./modules/relatorios/relatorios-total.controller");
+const pagamentos_controller_1 = require("./modules/pagamentos/pagamentos.controller");
 const arquivos_controller_1 = require("./modules/arquivos/arquivos.controller");
 const metas_controller_1 = require("./modules/metas/metas.controller");
 const cors_1 = __importDefault(require("cors"));
@@ -71,8 +72,6 @@ app.use((0, cors_1.default)({
     methods: 'GET,POST,PUT,DELETE', // Métodos permitidos
     allowedHeaders: 'Content-Type, Authorization' // Cabeçalhos permitidos
 }));
-// Armazenamento temporário para os dados do cliente em processo de cadastro
-const dadosClientesTemporarios = {};
 const newCliente = new clientes_controller_1.Clientes();
 const newRelatorioClientes = new relatorio_clientes_controller_1.RelatorioClientes;
 const newDespesas = new despesas_controller_1.Despesas();
@@ -86,11 +85,13 @@ const newRelatorio = new extrair_relatorios_controller_1.Relatorios();
 const newRelatorioSimples = new relatorios_simples_controller_1.RelatoriosSimples();
 const newRelatorioTotal = new relatorios_total_controller_1.RelatoriosTotal();
 const newMeta = new metas_controller_1.Meta();
+const newPagamento = new pagamentos_controller_1.Pagamentos();
 app.get('/', (req, res) => {
-    res.send('gelo seco');
+    res.send('API ON');
 });
 app.post('/login', authUsercase.login);
 app.post('/register', auth_middleware_1.authMiddleware, authUsercase.register);
+app.use('/clientes', newCliente.cadastrarCliente);
 app.post('/refresh-token', authUsercase.refreshToken);
 app.post('/relatorio-simples', newRelatorioSimples.RelatorioSimples);
 app.post('/relatorio-total', newRelatorioTotal.RelatorioTotal);
@@ -126,9 +127,8 @@ app.post('/whatsapp', (req, res) => __awaiter(void 0, void 0, void 0, function* 
     console.log("cliente index...........", clienteCadastrado);
     if (!clienteCadastrado) {
         console.log("cliente index 2...........", clienteCadastrado);
-        //await newReceitas.processarMensagemReceita(req, res);
+        const cliente = globalState.setClientCondition('pagamento');
         yield newCliente.whatsapp(req, res);
-        //await newDespesas.whatsapp(req, res);
     }
     if (clienteCadastrado) {
         const cliente = globalState.getClientId();
@@ -174,13 +174,11 @@ app.post('/whatsapp', (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 else {
                     console.log("To>>>>", To);
                     console.log("From>>>>", From);
-                    //await sendListPickerMessage(From, To);
                     (0, twilio_1.sendMessage)(To, From, response);
                 }
             }
             else {
                 yield (0, twilio_1.sendListPickerMessage)(To, From);
-                //sendMessage(To, From, '\u{1F63A} Olá, \u{2600} \n \u{1F3C4} Digite "8" para lista de opções. \n \u{1F525} Digite "9" para sair.');
                 (0, twilio_1.sendMessage)(To, From, '\u{1F63A} Vamos la!! \u{2600}');
             }
         }
@@ -212,12 +210,15 @@ app.post('/whatsapp', (req, res) => __awaiter(void 0, void 0, void 0, function* 
             console.log('-----meta-----');
             yield newMeta.whatsappMeta(req, res);
         }
+        else if (globalState.getClientCondition() == 'pagamento' || globalState.getClientCondition() == 'pagamento_1' || globalState.getClientCondition() == 'pagamento_2') {
+            console.log('-----pagamento-----');
+            yield newPagamento.pagamentoWhatsapp(req, res);
+        }
         else {
             globalState.setClientCondition('inicial');
             (0, twilio_1.sendMessage)(To, From, "Desculpe não entendi  mensagem");
         }
     }
-    //res.send("Mensagem recebida!");
 }));
 app.get('/summarize', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -230,5 +231,11 @@ app.get('/summarize', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         console.log(';;;;', error);
         res.status(500).send(error);
     }
+}));
+app.post("/create-payment-link", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield newPagamento.pagamentoLink(req, res);
+}));
+app.post("/create-subscription", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield newPagamento.pagamentoRecorrente(req, res);
 }));
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));

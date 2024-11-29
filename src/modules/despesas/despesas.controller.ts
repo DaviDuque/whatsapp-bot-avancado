@@ -142,7 +142,7 @@ export class Despesas {
                 await sendMessage(To, From, "\u{26A0} Sem problemas. Você pode enviar os dados novamente.");
                 await atualizarEstado(From, "aguardando_dados");
             } else {
-                await atualizarEstado(From, "aguardando_dados");
+                await atualizarEstado(From, "aguardando_confirmacao_dados");
                 await sendMessage(To, From, "\u{274C} Não reconheci sua resposta. Por favor, responda com 'Sim' para sim ou 'Não' para não.");
             }
         }

@@ -7,13 +7,15 @@ import '../../commands';
 import { getCommand } from '../../commandManager';
 import { verificarClientePorTelefone } from './clientes.repository';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
-import { cadastrarClienteController } from './clientes.service';
+import { cadastrarClienteController, processarCliente } from './clientes.service';
 import { generateRandomCode } from '../../utils/gera-codigo';
 import { validarNome, validarCpfCnpj, validarEmail } from '../../utils/validation';
 import { transcribe } from '../transcribe/transcribe.controler';
 import { verificaTipoMsg } from '../../utils/verifica-tipo-msg';
 import { verificarEstado, atualizarEstado, limparEstado } from '../../infra/states/states';
+import { GlobalState } from '../../infra/states/global-state';
 
+const globalState = GlobalState.getInstance();
 const dadosClientesTemporarios: { [key: string]: any } = {};
 
         export class Clientes {
@@ -101,7 +103,9 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                                     sendMessage(To, From, '\u{274C}Erro no cadastro. Tente novamente.');
                                 } else {
                                     limparEstado(From);
-                                    sendMessage(To, From, '\u{1F64C}Cadastro realizado com sucesso!');
+                                    globalState.setClientCondition("pagamentos");
+                                    sendConfirmPadraoMessage(To, From, '\u{1F64C}Cadastro realizado com sucesso! confirme para prosseguir para o pagamento');
+                                    //sendMessage(To, From, '\u{1F64C}Cadastro realizado com sucesso!');
                                 }
                             } catch (error) {
                                 atualizarEstado(From, 'aguardando_nome');
@@ -121,6 +125,19 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                         sendMessage(To, From, 'OPS! Não identificamos a mensagem. Envie "help" para lista de comandos.');
                     }
                 }
+            }
+
+            //cadastrarCliente não finalizado - uso na via API
+            cadastrarCliente  = async (req: Request, res: Response) => {
+                //novoCliente.telefone = formatarNumeroTelefone(From.replace(/^whatsapp:/, ''));
+                //novoCliente.codigo_proprio = generateRandomCode(12, novoCliente.telefone.slice(-5));
+                try {
+                    const cliente = await processarCliente(req.body);
+                    res.status(201).json(cliente);
+                } catch (error) {
+                    res.status(500).json({ error: error });
+                }
+
             }
         }
         
