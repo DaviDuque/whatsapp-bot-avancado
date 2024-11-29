@@ -25,6 +25,7 @@ import { RelatoriosTotal } from './modules/relatorios/relatorios-total.controlle
 import { Pagamentos } from './modules/pagamentos/pagamentos.controller';
 import { getFile, sendWhatsAppFile } from './modules/arquivos/arquivos.controller';
 import { Meta } from './modules/metas/metas.controller';
+import transacoesRoutes from './routers/transacoes.routes';
 import cors from 'cors';
 //import { MercadoPagoConfig, Preference } from "mercadopago";
 import { MercadoPagoConfig, PreApproval } from "mercadopago";
@@ -78,6 +79,8 @@ app.get('/user/:id_usuario', authUsercase.user);
 app.get('/file/:filename', getFile); // Endpoint para servir o arquivo
 app.post('/send-whatsapp', sendWhatsAppFile);
 
+
+app.use('/transacoes', transacoesRoutes);
 
 
 
@@ -231,6 +234,39 @@ app.post("/create-subscription", async (req: Request, res: Response) => {
     await newPagamento.pagamentoRecorrente(req, res);
    
 });
+
+
+app.post("/webhook", (req: Request, res: Response) => {
+    try {
+      const { type, data } = req.body;
+  
+      console.log("Webhook recebido:", req.body);
+  
+      if (type === "preapproval") {
+        const preapprovalId = data.id; // ID da assinatura enviada na notificação
+        console.log(`ID da assinatura recebida: ${preapprovalId}`);
+        console.log(`corpo da assinatura recebida>>>>>>: ${req.body}`);
+
+
+        ////////////////////////////////
+
+
+
+        ////////////////////////////////////
+  
+        // Aqui você pode implementar a lógica para salvar ou processar a notificação
+        // Exemplo: Atualizar banco de dados com o status da assinatura
+      }
+  
+      // Retornar status 200 para confirmar que a notificação foi recebida
+      res.status(200).send("Webhook recebido com sucesso!");
+    } catch (error) {
+      console.error("Erro ao processar webhook:", error);
+      res.status(500).send("Erro ao processar webhook");
+    }
+  });
+  
+
   
 
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));

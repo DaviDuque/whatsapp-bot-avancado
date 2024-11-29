@@ -172,6 +172,7 @@ class Clientes {
                 }
             }
         });
+        //cadastrarCliente não finalizado - uso na via API
         this.cadastrarCliente = (req, res) => __awaiter(this, void 0, void 0, function* () {
             //novoCliente.telefone = formatarNumeroTelefone(From.replace(/^whatsapp:/, ''));
             //novoCliente.codigo_proprio = generateRandomCode(12, novoCliente.telefone.slice(-5));

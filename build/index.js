@@ -61,6 +61,7 @@ const relatorios_total_controller_1 = require("./modules/relatorios/relatorios-t
 const pagamentos_controller_1 = require("./modules/pagamentos/pagamentos.controller");
 const arquivos_controller_1 = require("./modules/arquivos/arquivos.controller");
 const metas_controller_1 = require("./modules/metas/metas.controller");
+const transacoes_routes_1 = __importDefault(require("./routers/transacoes.routes"));
 const cors_1 = __importDefault(require("cors"));
 const trata_telefone_1 = require("./utils/trata-telefone");
 const app = (0, express_1.default)();
@@ -91,6 +92,7 @@ app.get('/', (req, res) => {
 });
 app.post('/login', authUsercase.login);
 app.post('/register', auth_middleware_1.authMiddleware, authUsercase.register);
+//modulo cliente não finalizado cadastro de cliente via API
 app.use('/clientes', newCliente.cadastrarCliente);
 app.post('/refresh-token', authUsercase.refreshToken);
 app.post('/relatorio-simples', newRelatorioSimples.RelatorioSimples);
@@ -99,6 +101,7 @@ app.get('/relatorio-clientes', newRelatorioClientes.buscar);
 app.get('/user/:id_usuario', authUsercase.user);
 app.get('/file/:filename', arquivos_controller_1.getFile); // Endpoint para servir o arquivo
 app.post('/send-whatsapp', arquivos_controller_1.sendWhatsAppFile);
+app.use('/transacoes', transacoes_routes_1.default);
 app.get('/download', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const serviceAudio = new audio_service_1.AudioService();
@@ -238,4 +241,25 @@ app.post("/create-payment-link", (req, res) => __awaiter(void 0, void 0, void 0,
 app.post("/create-subscription", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield newPagamento.pagamentoRecorrente(req, res);
 }));
+app.post("/webhook", (req, res) => {
+    try {
+        const { type, data } = req.body;
+        console.log("Webhook recebido:", req.body);
+        if (type === "preapproval") {
+            const preapprovalId = data.id; // ID da assinatura enviada na notificação
+            console.log(`ID da assinatura recebida: ${preapprovalId}`);
+            console.log(`corpo da assinatura recebida>>>>>>: ${req.body}`);
+            ////////////////////////////////
+            ////////////////////////////////////
+            // Aqui você pode implementar a lógica para salvar ou processar a notificação
+            // Exemplo: Atualizar banco de dados com o status da assinatura
+        }
+        // Retornar status 200 para confirmar que a notificação foi recebida
+        res.status(200).send("Webhook recebido com sucesso!");
+    }
+    catch (error) {
+        console.error("Erro ao processar webhook:", error);
+        res.status(500).send("Erro ao processar webhook");
+    }
+});
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buscarClientes = exports.cadastrarCliente = exports.criarClientePorTelefone = exports.verificarClientePorTelefone = void 0;
+exports.buscarClientePorTelefone = exports.buscarClientes = exports.cadastrarCliente = exports.criarClientePorTelefone = exports.verificarClientePorTelefone = void 0;
 //clientes.repository.ts
 const mysql_connection_1 = require("../../infra/database/mysql-connection");
 const trata_telefone_1 = require("../../utils/trata-telefone");
@@ -44,3 +44,12 @@ const buscarClientes = () => __awaiter(void 0, void 0, void 0, function* () {
     return response;
 });
 exports.buscarClientes = buscarClientes;
+const buscarClientePorTelefone = (telefone) => __awaiter(void 0, void 0, void 0, function* () {
+    const [rows] = yield mysql_connection_1.connection.execute('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
+    if (rows.length > 0) {
+        const From = (0, trata_telefone_1.reverterNumeroTelefone)(telefone);
+        const estadoCliente = (0, states_1.verificarClienteEstado)(rows.id_cliente);
+    }
+    return rows;
+});
+exports.buscarClientePorTelefone = buscarClientePorTelefone;

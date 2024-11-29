@@ -54,6 +54,17 @@ export const buscarClientes = async (): Promise<any> => {
 };
 
 
+export const buscarClientePorTelefone  = async (telefone: string): Promise<[]> => {
+    const [rows]: any = await connection.execute<[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
+
+    if(rows.length > 0){
+        const From = reverterNumeroTelefone(telefone);
+        const estadoCliente = verificarClienteEstado(rows.id_cliente);
+    }
+    return rows;
+};
+
+
 
 
 
