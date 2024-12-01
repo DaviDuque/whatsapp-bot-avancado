@@ -126,16 +126,21 @@ app.post('/whatsapp', (req, res) => __awaiter(void 0, void 0, void 0, function* 
     console.log("req...........", req.body);
     // Verificar se o cliente já está cadastrado
     const clienteCadastrado = yield (0, clientes_repository_1.verificarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
-    //const clienteCadastrado = true;
+    const dadosCliente = yield (0, clientes_repository_1.buscarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
     console.log("cliente index...........", clienteCadastrado);
     if (!clienteCadastrado) {
         console.log("cliente index 2...........", clienteCadastrado);
-        const cliente = globalState.setClientCondition('pagamento');
+        //const cliente = globalState.setClientCondition('pagamento');
         yield newCliente.whatsapp(req, res);
     }
     if (clienteCadastrado) {
         const cliente = globalState.getClientId();
-        if (!cliente) {
+        if (dadosCliente[0].status == 1 || dadosCliente[0].status == 2) {
+            console.log("cliente status 1..2.........", clienteCadastrado);
+            const cliente = globalState.setClientCondition('pagamento');
+            //await newPagamento.pagamentoWhatsapp(req, res);
+        }
+        if (!cliente && dadosCliente[0].status == 3) {
             console.log("entruuuuuuuuuuu");
             const cliente_id = yield (0, clientes_repository_1.criarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
             globalState.setClientId(cliente_id);

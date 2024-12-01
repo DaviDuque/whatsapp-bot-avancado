@@ -145,7 +145,7 @@ class Clientes {
                             }
                             else {
                                 (0, states_1.limparEstado)(From);
-                                globalState.setClientCondition("pagamentos");
+                                globalState.setClientCondition("pagamento");
                                 (0, twilio_1.sendConfirmPadraoMessage)(To, From, '\u{1F64C}Cadastro realizado com sucesso! confirme para prosseguir para o pagamento');
                                 //sendMessage(To, From, '\u{1F64C}Cadastro realizado com sucesso!');
                             }
