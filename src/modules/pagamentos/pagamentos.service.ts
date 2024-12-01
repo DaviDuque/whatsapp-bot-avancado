@@ -102,6 +102,15 @@ export const processaAssinatura = async (
     const preapproval = new PreApproval(client);
     try {
 
+        console.log("747>>>>>>>>>>>>>>>>>",  payer_email,
+            reason,
+            amount,
+            frequency,
+            frequency_type,
+            start_date,
+            end_date,
+            back_url);
+
         if (!payer_email || !reason || !amount || !frequency || !frequency_type || !start_date || !end_date || !back_url) {
             return { error: "Missing required fields" };
         }

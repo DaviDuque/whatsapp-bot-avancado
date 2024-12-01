@@ -17,6 +17,7 @@ dotenv.config();
 import { SummarizeServiceReceitas } from '../../infra/integrations/summarize.service';
 import { MercadoPagoConfig, Preference, PreApproval } from "mercadopago";
 import { processaAssinatura, processaPagamento } from "./pagamentos.service";
+import { TransacoesService } from '../transacoes/transacoes.service';
 
 
 export class Pagamentos {
@@ -28,7 +29,7 @@ export class Pagamentos {
     const globalState = GlobalState.getInstance();
     //const mensagem = globalState.getMensagem();
     const condicao = globalState.getClientCondition();
-    const dadosCliente: any = buscarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')))
+    const dadosCliente: any = await buscarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')))
     //const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
 
     if (condicao == "pagamento") {
@@ -36,62 +37,86 @@ export class Pagamentos {
     }
 
     const cliente = verificarClienteEstado(dadosCliente.id_cliente);
-    const email = dadosCliente.email;
+    const email = await dadosCliente[0].email;
     const estadoAtual = await verificarEstado(From);
-    
+    console.log(">>>>>>email", email);
+    console.log(">>>>>>email", dadosCliente);
 
 
     //////////////////////////////////////////////////////////////
 
     if (Body == 'Não' || Body == 'não' || Body == 'N' || Body == 'n') {
       globalState.setClientCondition("pagamento_1");
-      await sendMessage(To, From, "\u{1F522}Para usufruir da nossa consultoria automática é necessário o pagamamento");
+      await sendMessage(To, From, "\u{1F522} Para usufruir da nossa consultoria automática é necessário o pagamamento \n Enviamos uma notificação para administração. Entraremos em contato em breve");
     }
 
-    if (Body == 'Sim' || Body == 'sim' || Body == 'S' || Body == 's') {
-
-      try {
-        
-          const payer_email = email;
-          const reason = "rasão";
-          const amount= 1;
-          const frequency=12;
-          const frequency_type="amount";
-          const start_date = "";
-          const end_date="";
-          const back_url="";
-        
   
-        const response: any = await processaAssinatura(
-          payer_email,
-          reason,
-          amount,
-          frequency,
-          frequency_type,
-          start_date,
-          end_date,
-          back_url
-        );
-        console.log(">>>>>>>>>>>>>", response);
-     if(response.dtatus == 'sucesso'){
-      sendMessage(To, From, `\u{1F4B5} paghe por aqui ${response.init_point}`);
-     }else{
-      sendMessage(To, From, "Erro ao criar assinatura");
-     }
-       
-      } catch (error) {
-        sendMessage(To, From, "Erro ao criar assinatura");
+
+    else if (Body == 'Sim' || Body == 'sim' || Body == 'S' || Body == 's') {
+
+    try {
+      const dataUmAno = dayjs(new Date()).add(1, 'year').format('YYYY-MM-DD');
+
+      const payer_email = await dadosCliente[0].email;
+      const reason = "Assinatura Premium";
+      const amount = 40.00;
+      const frequency = 1;
+      const frequency_type = "months";
+      const start_date = dayjs(new Date()).toISOString();
+      const end_date = dayjs(dataUmAno).toISOString();
+      const back_url = "https://www.vanessafonsecaoficial.com/assinatura-finalizada";
+
+      console.log("data", end_date);
+      const response: any = await processaAssinatura(
+        payer_email,
+        reason,
+        amount,
+        frequency,
+        frequency_type,
+        start_date,
+        end_date,
+        back_url
+      );
+      console.log(">>>>>>>>>>>>>response", response);
+      if (response.status == 'sucesso') {
+
+        const dadosAssinatura = {
+          id_cliente: dadosCliente[0].id_cliente,
+          id_produto: 1,
+          id_tipo: "assinatura",
+          meio_pagamento: null,
+          valor: amount,
+          valor_pago: amount,
+          valor_total: amount,
+          frequencia:frequency,
+          frequencia_tipo: 1,
+          data_inicio: dayjs(start_date.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD'),
+          data_fim: dayjs(end_date.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD'),
+          id_transacao_gateway: response.id,
+          id_pagador_gateway: response.payer_id,
+          id_loja_gateway: response.collector_id,
+          id_aplicacao_gateway: response.application_id
+        };
+
+        const transacao = await TransacoesService.criarAssinatura(dadosAssinatura);
+        console.log("transacai>>>>>>>", transacao);
+
+        sendMessage(To, From, `pague por aqui ${response.init_point}`);
+      } else {
+        sendMessage(To, From, "\u{1F534} Erro ao criar assinatura, uma notificação foi enviada para o administrador, aguarde que entraremos em contato");
       }
 
-
-     /* await sendMessage(To, From, `\u{1F4B5}Para prosseguir com o pagamento favor clicar no link:\n 
-                ${response.init_point}
-            `);*/
-      //await atualizarEstado(From, "aguardando_dados");
+    } catch (error) {
+      console.log("errrrrrrrr", error);
+      sendMessage(To, From, "\u{26A0} Erro ao criar assinatura, uma notificação foi enviada para o administrador, aguarde que entraremos em contato");
     }
 
-
-  };
+  }
+    else{
+      globalState.setClientCondition("pagamento_1");
+      await sendConfirmPadraoMessage(To, From, '\u{1F44D} Deseja receber novamente o link de pagamento?');;
+    }
+}
 
 
 

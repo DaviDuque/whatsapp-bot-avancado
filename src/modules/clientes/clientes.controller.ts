@@ -103,7 +103,7 @@ const dadosClientesTemporarios: { [key: string]: any } = {};
                                     sendMessage(To, From, '\u{274C}Erro no cadastro. Tente novamente.');
                                 } else {
                                     limparEstado(From);
-                                    globalState.setClientCondition("pagamentos");
+                                    globalState.setClientCondition("pagamento");
                                     sendConfirmPadraoMessage(To, From, '\u{1F64C}Cadastro realizado com sucesso! confirme para prosseguir para o pagamento');
                                     //sendMessage(To, From, '\u{1F64C}Cadastro realizado com sucesso!');
                                 }

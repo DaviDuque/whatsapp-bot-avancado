@@ -12,16 +12,6 @@ export const TransacoesController = {
         }
     },
 
-    // Criar assinatura
-    /**************
-    Adicionar atributos
-    id_transacao_gateway
-    payer_id_gateway
-    collector_id_gateway
-    aplication_id_gateway
-    data_criacao
-    data_modificacao
-    **************/
     async criarAssinatura(req: Request, res: Response) {
         try {
             const transacao = await TransacoesService.criarAssinatura(req.body);

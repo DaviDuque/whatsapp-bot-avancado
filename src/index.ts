@@ -13,7 +13,7 @@ import { Receitas } from './modules/receitas/receitas.controller';
 import { Investimentos } from './modules/investimentos/investimentos.controller';
 import { Cartao } from './modules/cartao/cartao.controller';
 import { Conta } from './modules/conta/conta.controller';
-import { verificarClientePorTelefone, criarClientePorTelefone } from './modules/clientes/clientes.repository';
+import { verificarClientePorTelefone, criarClientePorTelefone, buscarClientePorTelefone } from './modules/clientes/clientes.repository';
 import { AudioService } from './infra/integrations/audio.service';
 import { SummarizeServiceDespesas } from './infra/integrations/summarize.service';
 import { GlobalState } from './infra/states/global-state';
@@ -113,18 +113,26 @@ app.post('/whatsapp', async (req: Request, res: Response) => {
 
     // Verificar se o cliente já está cadastrado
     const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
-    //const clienteCadastrado = true;
+    const dadosCliente: any = await buscarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')))
     console.log("cliente index...........", clienteCadastrado);
 
     if (!clienteCadastrado) {
         console.log("cliente index 2...........", clienteCadastrado);
-        const cliente = globalState.setClientCondition('pagamento');
+        //const cliente = globalState.setClientCondition('pagamento');
         await newCliente.whatsapp(req, res);
     }
 
     if (clienteCadastrado) {
         const cliente = globalState.getClientId();
-        if (!cliente) {
+        if(dadosCliente[0].status == 1 || dadosCliente[0].status == 2 ){
+            console.log("cliente status 1..2.........", clienteCadastrado);
+            const cliente = globalState.setClientCondition('pagamento');
+            //await newPagamento.pagamentoWhatsapp(req, res);
+        }
+
+        
+        
+        if (!cliente && dadosCliente[0].status == 3) {
             console.log("entruuuuuuuuuuu");
             const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
             globalState.setClientId(cliente_id);

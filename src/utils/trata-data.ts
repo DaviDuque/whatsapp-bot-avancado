@@ -28,3 +28,4 @@ export const formatDateToYYYYMMDD = (dateStr: any): string | null => {
 
   return null; // Retorna null se a data não for válida
 }
+

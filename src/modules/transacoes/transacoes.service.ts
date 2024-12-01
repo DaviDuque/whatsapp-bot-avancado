@@ -48,8 +48,10 @@ export const TransacoesService = {
 
             // Salvar a transação
             const [result]: any = await operacoes.query(
-                `INSERT INTO transacoes (id_cliente, id_produto, id_tipo, meio_pagamento, valor, valor_pago, valor_total, frequencia, frequencia_tipo, data_inicio, data_fim)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO transacoes (id_cliente, id_produto, id_tipo, meio_pagamento, 
+                valor, valor_pago, valor_total, frequencia, frequencia_tipo, data_inicio, 
+                data_fim, id_transacao_gateway, id_pagador_gateway, id_loja_gateway, id_aplicacao_gateway)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     dados.id_cliente,
                     dados.id_produto,
@@ -61,13 +63,16 @@ export const TransacoesService = {
                     dados.frequencia,
                     dados.frequencia_tipo,
                     dayjs(dados.data_inicio.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD'),
-                    dayjs(dados.data_fim.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD')
-                    
+                    dayjs(dados.data_fim.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD'),
+                    dados.id_transacao_gateway,
+                    dados.id_pagador_gateway,
+                    dados.id_loja_gateway,
+                    dados.id_aplicacao_gateway
                 ]
             );
 
             // Atualizar o status do cliente para "Ativo"
-            await operacoes.query(`UPDATE clientes SET status = 2 WHERE id_cliente = ?`, [
+            await operacoes.query(`UPDATE clientes SET status = 3 WHERE id_cliente = ?`, [
                 dados.id_cliente,
             ]);
 
