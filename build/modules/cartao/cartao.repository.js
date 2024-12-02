@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cadastrarCartao = exports.verificarCartaoPorCliente = void 0;
+exports.buscarCartaoPorCliente = exports.cadastrarCartao = exports.verificarCartaoPorCliente = void 0;
 const mysql_connection_1 = require("../../infra/database/mysql-connection");
 const verificarCartaoPorCliente = (cliente_id) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -46,3 +46,18 @@ const cadastrarCartao = (id_cliente, nome_cartao, tipo, banco, limite_total, lim
     }
 });
 exports.cadastrarCartao = cadastrarCartao;
+const buscarCartaoPorCliente = (id_cliente) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const query = 'SELECT * FROM cartoes WHERE id_cliente = ?';
+        const values = [
+            id_cliente
+        ];
+        const [dados] = yield mysql_connection_1.connection.execute(query, values);
+        return { sucesso: true, mensagem: 'Sucesso.', dados: dados };
+    }
+    catch (error) {
+        console.error('Erro ao encontrar cartões:', error);
+        return { sucesso: false, mensagem: `Erro ao encontrar cartões: ${error}`, dados: "erro" };
+    }
+});
+exports.buscarCartaoPorCliente = buscarCartaoPorCliente;

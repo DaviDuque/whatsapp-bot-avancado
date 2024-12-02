@@ -25,6 +25,23 @@ export const cadastrarMeta = async (
 };
 
 
+export const buscarMetasPorCliente = async (
+    id_cliente: string, 
+   ): Promise<{ sucesso: boolean; mensagem: string, dados: any }> => {
+    try {
+        const query = 'select * from metas_financeiras where id_cliente = ?';
+        const values = [
+            id_cliente
+        ];
+         const [dados] = await connection.execute(query, values);
+        return { sucesso: true, mensagem: 'sSssucesso.', dados:dados };
+    } catch (error) {
+        console.error('Erro ao encontrar metas:', error);
+        return { sucesso: false, mensagem: `Erro ao encontrar meta: ${error}`, dados: "erro" };
+    }
+};
+
+
 
 
 

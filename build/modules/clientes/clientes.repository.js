@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buscarClientePorTelefone = exports.buscarClientes = exports.cadastrarCliente = exports.criarClientePorTelefone = exports.verificarClientePorTelefone = void 0;
+exports.modificarStatusCliente = exports.atualizarStatusCliente = exports.buscarClientePorTelefone = exports.buscarClientes = exports.cadastrarCliente = exports.criarClientePorTelefone = exports.verificarClientePorTelefone = void 0;
 //clientes.repository.ts
 const mysql_connection_1 = require("../../infra/database/mysql-connection");
 const trata_telefone_1 = require("../../utils/trata-telefone");
@@ -53,3 +53,47 @@ const buscarClientePorTelefone = (telefone) => __awaiter(void 0, void 0, void 0,
     return rows;
 });
 exports.buscarClientePorTelefone = buscarClientePorTelefone;
+const atualizarStatusCliente = (id_cliente) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log("id_cliente>>>>>", id_cliente);
+        const [result] = yield mysql_connection_1.connection.query(`UPDATE clientes SET status = 3 WHERE id_cliente = ?`, [id_cliente]);
+        return { status: "sucesso" };
+    }
+    catch (error) {
+        console.log("errro>>>>>", error);
+        return { status: "errror" };
+    }
+});
+exports.atualizarStatusCliente = atualizarStatusCliente;
+const modificarStatusCliente = (idTransacaoGateway) => __awaiter(void 0, void 0, void 0, function* () {
+    const operacoes = yield mysql_connection_1.connection.getConnection();
+    try {
+        yield operacoes.beginTransaction();
+        const [transacao] = yield operacoes.query(`
+          SELECT id_cliente
+          FROM transacoes
+          WHERE id_transacao_gateway = ?
+          LIMIT 1
+        `, [idTransacaoGateway]);
+        if (transacao.length === 0) {
+            throw new Error('Transação não encontrada.');
+        }
+        const idCliente = transacao[0].id_cliente;
+        console.log("id do cliente", idCliente);
+        const [updateResult] = yield operacoes.query(`UPDATE clientes SET status = 3 WHERE id_cliente = ?`, [idCliente]);
+        if (updateResult.affectedRows === 0) {
+            throw new Error('Falha ao atualizar o status do cliente.');
+        }
+        yield operacoes.commit();
+        return true;
+    }
+    catch (error) {
+        yield operacoes.rollback();
+        console.error('Erro durante a transação:', error);
+        return false;
+    }
+    finally {
+        operacoes.release();
+    }
+});
+exports.modificarStatusCliente = modificarStatusCliente;

@@ -46,3 +46,22 @@ export const cadastrarCartao = async (
 
 
 
+export const buscarCartaoPorCliente = async (
+    id_cliente: string, 
+   ): Promise<{ sucesso: boolean; mensagem: string, dados: any }> => {
+    try {
+        const query = 'SELECT * FROM cartoes WHERE id_cliente = ?';
+        const values = [
+            id_cliente
+        ];
+         const [dados] = await connection.execute(query, values);
+        return { sucesso: true, mensagem: 'Sucesso.', dados:dados };
+    } catch (error) {
+        console.error('Erro ao encontrar cartões:', error);
+        return { sucesso: false, mensagem: `Erro ao encontrar cartões: ${error}`, dados: "erro" };
+    }
+};
+
+
+
+

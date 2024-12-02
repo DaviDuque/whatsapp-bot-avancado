@@ -7,6 +7,8 @@ import { ListarDespesaPorClienteControler, ListarReceitasPorClienteControler, Li
 import { promises as fsPromises } from 'fs';
 import ExcelJS from 'exceljs';
 import { gerarCodigoAleatorio } from '../../utils/codigoRandometro';
+import { buscarMetasPorCliente } from '../metas/metas.repository';
+import { buscarCartaoPorCliente } from '../cartao/cartao.repository';
 
 
 const dataAtual = new Date();
@@ -53,6 +55,13 @@ export async function gerarRelatorioExcel(
     const despesas = await ListarDespesaPorClienteControler(id_cliente, datStrIni, datStrFim);
     const receitas = await ListarReceitasPorClienteControler(id_cliente, datStrIni, datStrFim);
     const investimentos = await ListarInvestimentosPorClienteControler(id_cliente, datStrIni, datStrFim);
+    const metas: any = await buscarMetasPorCliente(id_cliente);
+    const cartoes: any = await buscarCartaoPorCliente(id_cliente);
+    console.log(">>>>>>metas", metas.dados);
+    console.log(">>>>>>receitas", receitas);
+    console.log(">>>>>>despesas", despesas);
+    console.log(">>>>>>investimentos", investimentos);
+    console.log(">>>>>>cartoes", cartoes.dados);
 
     const despesasOrdenadas = despesas.sort((a: any, b: any) => (a.categoria || "").localeCompare(b.categoria || ""));
     const receitasOrdenadas = receitas.sort((a: any, b: any) => (a.categoria || "").localeCompare(b.categoria || ""));
@@ -63,7 +72,7 @@ export async function gerarRelatorioExcel(
     let currentRow = 1;
 
     // Título
-    sheet.mergeCells('A1:D1');
+    sheet.mergeCells('A1:E1');
     const titleCell = sheet.getCell('A1');
     titleCell.value = `Relatório período ${dayjs(datStrIni).format('DD/MM/YYYY')} a ${dayjs(datStrFim).format('DD/MM/YYYY')}`;
     titleCell.font = { name: 'Arial', size: 20, bold: true, color: { argb: 'FFFFFFFF' } };
@@ -72,34 +81,58 @@ export async function gerarRelatorioExcel(
     currentRow += 1;
 
     // Subtítulos
-    const pastelColors = ['FFFBE4B4', 'FFF3B6C1', 'FFE6E6FA', 'FFE0FFFF'];
+    const pastelColors = ['FFFBE4B4', 'FFF3B6C1', 'FFE6E6FA', 'FFE0FFFF','FFFBE4B4'];
     const addSubtitle = (text: string, colorIndex: number) => {
         const cell = sheet.getCell(`A${currentRow}`);
         cell.value = text;
         cell.font = { name: 'Arial', size: 14, bold: true };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: pastelColors[colorIndex % pastelColors.length] } };
         cell.alignment = { horizontal: 'left', vertical: 'middle' };
-        sheet.mergeCells(`A${currentRow}:D${currentRow}`);
+        sheet.mergeCells(`A${currentRow}:E${currentRow}`);
         currentRow += 1; // Incrementa a linha após adicionar o subtítulo
     };
 
     addSubtitle('Resumo Financeiro', 0);
     currentRow += 1;
+
+
+    const totalDespesas = despesas.reduce((sum: number, item: { valor: number }) => sum + Number(item.valor || 0), 0);
+    const totalReceitas = receitas.reduce((sum: number, item: { valor: number }) => sum + Number(item.valor || 0), 0);
+    const totalInvestimentos = investimentos.reduce((sum: number, item: { valor: number }) => sum + Number(item.valor || 0), 0);
+
+    const saldo = totalReceitas - totalDespesas;
+    //const StringSaldo: string = saldo.toString();
+    const percentualInvestido = saldo > 0 ? ((totalInvestimentos / saldo) * 100).toFixed(2) : "0.00";
+    //const StringPercentualInvestido: string = percentualInvestido.toString();
     
+    console.log(".....totalReceitas", `R$${totalReceitas}`);
+    console.log(".....", );
+    console.log(".....", );
+    console.log(".....", );
+    console.log(".....", );
+    console.log(".....StringPercentualInvestido", `R$${percentualInvestido}`);
 
     // Dados de resumo
     sheet.addRow(['Tipo', 'Valor']).font = { bold: true };
-    sheet.addRow(['Receitas', '1200,00']);
-    sheet.addRow(['Despesas', '450,00']);
-    sheet.addRow(['Investimentos', '1000,00']);
-    sheet.addRow(['Saldo', '750,00']);
-    currentRow += 7;
+    sheet.addRow(['Receitas',`R$${totalReceitas}`]);
+    sheet.addRow(['Despesas', `R$${totalDespesas}`]);
+    sheet.addRow(['Investimentos', `R$${totalInvestimentos}`]);
+    sheet.addRow(['Saldo', `R$${saldo}`]);
+    sheet.addRow(['Percentual investido', `R$${percentualInvestido}`]);
+    currentRow += 8;
+
+    console.log(".....totalReceitas", `R$${totalReceitas}`);
+    console.log(".....", );
+    console.log(".....", );
+    console.log(".....", );
+    console.log(".....", );
+    console.log(".....StringPercentualInvestido", `R$${percentualInvestido}`);
 
     addSubtitle('Detalhes de Despesas', 1);
     sheet.addRow(['Categoria', 'Descrição', 'Valor', 'Data']).font = { bold: true };
     currentRow += 1;
     despesasOrdenadas.forEach((d: any) => {
-        sheet.addRow([d.categoria, d.descricao, d.valor.replace('.', ','), dayjs(d.data).format('DD/MM/YYYY')]);
+        sheet.addRow([d.categoria, d.descricao, `R$${d.valor.replace('.', ',')}`, dayjs(d.data).format('DD/MM/YYYY')]);
         currentRow += 1;
     });
 
@@ -108,8 +141,8 @@ export async function gerarRelatorioExcel(
     addSubtitle('Detalhes de Receitas', 2);
     sheet.addRow(['Categoria', 'Descrição', 'Valor', 'Data']).font = { bold: true };
     currentRow += 1;
-    receitas.forEach((r: any) => {
-        sheet.addRow([r.categoria, r.descricao, r.valor.replace('.', ','), dayjs(r.data).format('DD/MM/YYYY')]);
+    receitasOrdenadas.forEach((r: any) => {
+        sheet.addRow([r.categoria, r.descricao, `R$${r.valor.replace('.', ',')}`, dayjs(r.data).format('DD/MM/YYYY')]);
         currentRow += 1;
     });
 
@@ -118,8 +151,45 @@ export async function gerarRelatorioExcel(
     addSubtitle('Detalhes de Investimentos', 3);
     sheet.addRow(['Tipo', 'Descrição', 'Valor', 'Data']).font = { bold: true };
     currentRow += 1;
-    investimentos.forEach((i: any) => {
-        sheet.addRow([i.tipo, i.descricao, i.valor.replace('.', ','), dayjs(i.data).format('DD/MM/YYYY')]);
+    investimentosOrdenados.forEach((i: any) => {
+        sheet.addRow([i.tipo, i.descricao, `R$${i.valor.replace('.', ',')}`, dayjs(i.data).format('DD/MM/YYYY')]);
+        currentRow += 1;
+    });
+
+
+
+    currentRow += 1;
+
+    addSubtitle('Minhas Metas', 4);
+    sheet.addRow(['Número', 'Descrição', 'Valor Objetivo', 'Valor do Momento', 'Data Limite']).font = { bold: true };
+    currentRow += 1;
+    metas.dados.forEach((i: any) => {
+        sheet.addRow([
+            i.id_meta, 
+            i.descricao, 
+            `R$${i.valor_objetivo.replace('.', ',')}`,
+            `R$${i.valor_atual.replace('.', ',')}`, 
+            dayjs(i.data_limite).format('DD/MM/YYYY')
+        ]
+        );
+        currentRow += 1;
+    });
+
+
+
+    currentRow += 1;
+
+    addSubtitle('Meus cartões', 4);
+    sheet.addRow(['Cartão', 'Tipo', 'Banco', 'Limite']).font = { bold: true };
+    currentRow += 1;
+    cartoes.dados.forEach((i: any) => {
+        sheet.addRow([
+            i.nome_cartao,
+            i.tipo,
+            i.banco,
+            `R$${i.limite_total.replace('.', ',')}`
+        ]
+        );
         currentRow += 1;
     });
 

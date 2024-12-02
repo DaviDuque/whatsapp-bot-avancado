@@ -62,6 +62,7 @@ const pagamentos_controller_1 = require("./modules/pagamentos/pagamentos.control
 const arquivos_controller_1 = require("./modules/arquivos/arquivos.controller");
 const metas_controller_1 = require("./modules/metas/metas.controller");
 const transacoes_routes_1 = __importDefault(require("./routers/transacoes.routes"));
+const clientes_repository_2 = require("./modules/clientes/clientes.repository");
 const cors_1 = __importDefault(require("cors"));
 const trata_telefone_1 = require("./utils/trata-telefone");
 const app = (0, express_1.default)();
@@ -246,25 +247,32 @@ app.post("/create-payment-link", (req, res) => __awaiter(void 0, void 0, void 0,
 app.post("/create-subscription", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield newPagamento.pagamentoRecorrente(req, res);
 }));
-app.post("/webhook", (req, res) => {
+app.post("/webhook", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { type, data } = req.body;
         console.log("Webhook recebido:", req.body);
         if (type === "preapproval") {
             const preapprovalId = data.id; // ID da assinatura enviada na notificação
-            console.log(`ID da assinatura recebida: ${preapprovalId}`);
             console.log(`corpo da assinatura recebida>>>>>>: ${req.body}`);
+            console.log(`ID da assinatura recebida: ${preapprovalId}`);
+            const atualizacliente = yield (0, clientes_repository_2.modificarStatusCliente)(preapprovalId);
             ////////////////////////////////
+            console.log("retorno da atualização do cliente", atualizacliente);
+            if (atualizacliente) {
+                res.status(200).send("Webhook recebido com sucesso!");
+            }
+            else {
+                res.status(400).send("Ops! Erro ao atualizar");
+            }
             ////////////////////////////////////
             // Aqui você pode implementar a lógica para salvar ou processar a notificação
             // Exemplo: Atualizar banco de dados com o status da assinatura
         }
         // Retornar status 200 para confirmar que a notificação foi recebida
-        res.status(200).send("Webhook recebido com sucesso!");
     }
     catch (error) {
         console.error("Erro ao processar webhook:", error);
         res.status(500).send("Erro ao processar webhook");
     }
-});
+}));
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
