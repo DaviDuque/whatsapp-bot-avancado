@@ -6,7 +6,8 @@ const router = Router();
 router.post('/avulso', TransacoesController.criarPagamentoAvulso);
 router.post('/assinatura', TransacoesController.criarAssinatura);
 router.put('/assinatura/:id', TransacoesController.atualizarAssinatura);
-router.put('/:id', TransacoesController.atualizarPagamento);
+router.put(':id', TransacoesController.atualizarPagamento);
+router.patch('/assinatura/:id', TransacoesController.atualizarStatusAssinatura);
 router.delete('/:id', TransacoesController.cancelarPagamento);
 
 export default router;

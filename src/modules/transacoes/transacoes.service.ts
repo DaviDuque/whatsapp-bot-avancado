@@ -97,6 +97,17 @@ export const TransacoesService = {
         return { id_transacao, ...dados };
     },
 
+    // Atualizar status assinatura
+    async atualizarStatusAssinatura(id_transacao: number, dados: any) {
+        console.log("dados", dados.status, id_transacao);
+        const [result] = await connection.query(
+            `UPDATE transacoes SET status = ? WHERE id_transacao = ?`,
+            [dados, id_transacao]
+        );
+
+        return { id_transacao, ...dados };
+    },
+
     // Atualizar pagamento
     async atualizarPagamento(id_transacao: number, dados: any) {
         const [result] = await connection.query(

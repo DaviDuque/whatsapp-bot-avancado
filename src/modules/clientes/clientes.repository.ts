@@ -2,7 +2,8 @@
 import { connection } from '../../infra/database/mysql-connection';
 import { RowDataPacket } from 'mysql2';
 import { reverterNumeroTelefone } from '../../utils/trata-telefone';
-import {  verificarClienteEstado } from '../../infra/states/states'
+import { verificarClienteEstado } from '../../infra/states/states'
+import { ifError } from 'assert';
 
 export interface Cliente {
     id_cliente?: any;
@@ -19,7 +20,7 @@ export interface Cliente {
 export const verificarClientePorTelefone = async (telefone: string): Promise<boolean> => {
     const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
 
-    if(rows.length > 0){
+    if (rows.length > 0) {
         const From = reverterNumeroTelefone(telefone);
         const cliente = verificarClienteEstado(rows[0].id_cliente);
         const teste = verificarClienteEstado(From);
@@ -31,7 +32,7 @@ export const verificarClientePorTelefone = async (telefone: string): Promise<boo
 export const criarClientePorTelefone = async (telefone: string): Promise<string> => {
     const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
 
-    if(rows.length > 0){
+    if (rows.length > 0) {
         const From = reverterNumeroTelefone(telefone);
         const teste = verificarClienteEstado(rows[0].id_cliente);
     }
@@ -40,7 +41,7 @@ export const criarClientePorTelefone = async (telefone: string): Promise<string>
 
 export const cadastrarCliente = async (cliente: Cliente): Promise<void> => {
     const { nome, email, telefone, cpf, id_endereco, codigo_indicacao, codigo_proprio, senha } = cliente;
-    
+
     await connection.execute(
         `INSERT INTO clientes (nome, email, telefone, cpf, id_endereco, codigo_indicacao, codigo_proprio, senha) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -54,15 +55,76 @@ export const buscarClientes = async (): Promise<any> => {
 };
 
 
-export const buscarClientePorTelefone  = async (telefone: string): Promise<[]> => {
+export const buscarClientePorTelefone = async (telefone: string): Promise<[]> => {
     const [rows]: any = await connection.execute<[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
 
-    if(rows.length > 0){
+    if (rows.length > 0) {
         const From = reverterNumeroTelefone(telefone);
         const estadoCliente = verificarClienteEstado(rows.id_cliente);
     }
     return rows;
 };
+
+export const atualizarStatusCliente = async (id_cliente: number) => {
+    try {
+        console.log("id_cliente>>>>>", id_cliente);
+        const [result] = await connection.query(
+            `UPDATE clientes SET status = 3 WHERE id_cliente = ?`,
+            [id_cliente]
+        );
+        return { status: "sucesso" };
+    } catch (error) {
+        console.log("errro>>>>>", error);
+        return { status: "errror" };
+    }
+};
+
+
+export const modificarStatusCliente = async (idTransacaoGateway: string) => {
+    const operacoes = await connection.getConnection(); 
+    try {
+      await operacoes.beginTransaction();
+  
+      const [transacao]: any = await operacoes.query(
+        `
+          SELECT id_cliente
+          FROM transacoes
+          WHERE id_transacao_gateway = ?
+          LIMIT 1
+        `,
+        [idTransacaoGateway]
+      );
+  
+      if (transacao.length === 0) {
+        throw new Error('Transação não encontrada.');
+      }
+  
+      const idCliente = transacao[0].id_cliente;
+      console.log("id do cliente", idCliente);
+  
+      const [updateResult]: any = await operacoes.query(
+        `UPDATE clientes SET status = 3 WHERE id_cliente = ?`,[idCliente]
+      );
+  
+      if (updateResult.affectedRows === 0) {
+        throw new Error('Falha ao atualizar o status do cliente.');
+      }
+  
+      await operacoes.commit();
+      return true;
+    } catch (error) {
+
+      await operacoes.rollback();
+      console.error('Erro durante a transação:', error);
+      return false;
+    } finally {
+
+      operacoes.release();
+    }
+
+  };
+
+
 
 
 

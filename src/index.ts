@@ -26,6 +26,7 @@ import { Pagamentos } from './modules/pagamentos/pagamentos.controller';
 import { getFile, sendWhatsAppFile } from './modules/arquivos/arquivos.controller';
 import { Meta } from './modules/metas/metas.controller';
 import transacoesRoutes from './routers/transacoes.routes';
+import { modificarStatusCliente } from './modules/clientes/clientes.repository';
 import cors from 'cors';
 //import { MercadoPagoConfig, Preference } from "mercadopago";
 import { MercadoPagoConfig, PreApproval } from "mercadopago";
@@ -129,8 +130,6 @@ app.post('/whatsapp', async (req: Request, res: Response) => {
             const cliente = globalState.setClientCondition('pagamento');
             //await newPagamento.pagamentoWhatsapp(req, res);
         }
-
-        
         
         if (!cliente && dadosCliente[0].status == 3) {
             console.log("entruuuuuuuuuuu");
@@ -244,7 +243,7 @@ app.post("/create-subscription", async (req: Request, res: Response) => {
 });
 
 
-app.post("/webhook", (req: Request, res: Response) => {
+app.post("/webhook", async(req: Request, res: Response) => {
     try {
       const { type, data } = req.body;
   
@@ -252,14 +251,19 @@ app.post("/webhook", (req: Request, res: Response) => {
   
       if (type === "preapproval") {
         const preapprovalId = data.id; // ID da assinatura enviada na notificação
-        console.log(`ID da assinatura recebida: ${preapprovalId}`);
+        
         console.log(`corpo da assinatura recebida>>>>>>: ${req.body}`);
+        console.log(`ID da assinatura recebida: ${preapprovalId}`);
 
-
+        const atualizacliente = await modificarStatusCliente(preapprovalId);
         ////////////////////////////////
 
-
-
+        console.log("retorno da atualização do cliente", atualizacliente);
+        if(atualizacliente){
+            res.status(200).send("Webhook recebido com sucesso!");
+        }else{
+            res.status(400).send("Ops! Erro ao atualizar");
+        }
         ////////////////////////////////////
   
         // Aqui você pode implementar a lógica para salvar ou processar a notificação
@@ -267,7 +271,7 @@ app.post("/webhook", (req: Request, res: Response) => {
       }
   
       // Retornar status 200 para confirmar que a notificação foi recebida
-      res.status(200).send("Webhook recebido com sucesso!");
+      
     } catch (error) {
       console.error("Erro ao processar webhook:", error);
       res.status(500).send("Erro ao processar webhook");

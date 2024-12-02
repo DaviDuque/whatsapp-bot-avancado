@@ -34,6 +34,20 @@ export const TransacoesController = {
         }
     },
 
+     // Atualizar assinatura
+     async atualizarStatusAssinatura(req: Request, res: Response) {
+        console.log("transaçoes patch", req.body);
+        try {
+            const transacao = await TransacoesService.atualizarStatusAssinatura(
+                parseInt(req.params.id),
+                req.body
+            );
+            res.status(200).json(transacao);
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
     // Atualizar pagamento
     async atualizarPagamento(req: Request, res: Response) {
         try {
