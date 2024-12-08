@@ -70,8 +70,10 @@ export class Investimentos {
 
         const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
         if (!Transcribe) return;
+        console.log("<><><><>", Transcribe);
 
     const response = await summarizeServiceInvestimentos.summarize(Transcribe);
+    console.log("<><><><>", response);
  
     let [descricao, valorStr, dataStr, categoria] = response.split(',');
     let dataString: string = dayjs(dataStr).format('YYYY-MM-DD');

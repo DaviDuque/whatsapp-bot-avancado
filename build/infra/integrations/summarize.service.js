@@ -97,7 +97,13 @@ exports.SummarizeServiceReceitas = SummarizeServiceReceitas;
 class SummarizeServiceInvestimentos {
     constructor() {
         this.temperature = 0.7;
-        this.prompt = contas_1.contas;
+        this.prompt = `extrair um array a partir do texto fornecido sempre no formato: 
+    [<investimentos/entrada>, <valor>, <data>, <categaria>]', 
+    onde "investimentos" seja do tipo string, "valor" seja tipo float: 10,00, 
+    "data" seja tipo date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja tipo string. caso os dados "data" e "valor"  
+    não seja identificado retorne null para cada um deles em sua devida posição no array. "investimento" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
+    Para "categoria" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
+    opções["Títulos", "Criptomoedas", "Ações", "Popança", "Imóveis", "N/A", "Debentures", "Previdência"]. Texto: `;
         this.model = 'gpt-3.5-turbo';
         this.openai = new openai_1.default({
             apiKey: process.env.OPENAI_API_KEY
@@ -155,15 +161,7 @@ exports.SummarizeServiceCartao = SummarizeServiceCartao;
 class SummarizeServiceConta {
     constructor() {
         this.temperature = 0.7;
-        this.prompt = `extrair um array a partir do texto fornecido sempre no formato: 
-    [<conta>, <tipo>, <banco>, <limite> <saldo>]', 
-    onde "cartão" seja do tipo string, "tipo" seja tipo string, "banco" seja do tipo string, "limite" seja do tipo float: 10,00,  "saldo" seja do tipo float: 10,00.
-    caso os dados 
-    não sejam identificados retorne null para cada um deles em sua devida posição no array. "conta" representa o nome de uma conta bancario. 
-    Para "tipo" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Poupança", "Conta corrente", "N/A"]. 
-Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
-     Texto: `;
+        this.prompt = contas_1.contas;
         this.model = 'gpt-3.5-turbo';
         this.openai = new openai_1.default({
             apiKey: process.env.OPENAI_API_KEY

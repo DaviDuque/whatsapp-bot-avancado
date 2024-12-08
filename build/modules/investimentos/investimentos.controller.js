@@ -97,7 +97,9 @@ class Investimentos {
                 const Transcribe = yield (0, transcribe_controler_1.transcribe)(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
                 if (!Transcribe)
                     return;
+                console.log("<><><><>", Transcribe);
                 const response = yield summarizeServiceInvestimentos.summarize(Transcribe);
+                console.log("<><><><>", response);
                 let [descricao, valorStr, dataStr, categoria] = response.split(',');
                 let dataString = (0, dayjs_1.default)(dataStr).format('YYYY-MM-DD');
                 if (dataString == 'Invalid Date') {
