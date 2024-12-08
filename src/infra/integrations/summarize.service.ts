@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import SummarizeServiceInterface from "../../domain/service/summarize.service.interface";
-import { privateDecrypt } from "crypto";
+import { despesas } from '../memory/propts/despesas';
 
 const dataAtual = new Date();
 const dia = dataAtual.getDate(); // Dia do mês
@@ -37,19 +37,10 @@ export class SummarizeService implements SummarizeServiceInterface {
 
 
 
+
 export class SummarizeServiceDespesas implements SummarizeServiceInterface {
     private temperature = 0.7;
-    private prompt = `extrair um array normalizando a partir do texto fornecido, adaptando e encaixando conforme descrito. sempre no formato: 
-    [<Despesa/gasto>, <valor>, <data da despesa>, <categoria>, <metodo_pagamento>]', 
-    onde "Despesa" seja do tipo string com o nome da despesa, "valor" seja float: 10.00, 
-    "data da despesa" seja date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja string, 
-    e "metodo_pagamento" seja do tipo string, normalize em uma das opções: [Crédito parcelado, Crédito a vista, Débito, PIX]. caso os dados "data da despesa" e "valor"  
-    não seja identificado retorne null para cada um deles em sua devida posição no array. "Despesa" representa algo comprado, adiquirido ou utilizado. caso "parcelado" 
-    não seja identificado no texto, retorne o default "null". 
-    Para "categoria" localize em qual das o pções melhor se encaixa, 
-    opções["Mercado", "Veiculos", "Pets", "Contas_residência", "imóveis", "Lazer", "restaurante", "Shopping", "Transporte", "internet", "viajens", "hotéis", "N/A"]. Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
-    Texto: `
-
+    private prompt = despesas;
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';
 
@@ -58,7 +49,6 @@ export class SummarizeServiceDespesas implements SummarizeServiceInterface {
             apiKey: process.env.OPENAI_API_KEY
         });
     }
-
     async summarize(text:string): Promise<string> {
         const response = await this.openai.chat.completions.create({
             messages: [{ role: 'user', content: `${this.prompt} ${text}`}],
@@ -117,7 +107,7 @@ export class SummarizeServiceInvestimentos implements SummarizeServiceInterface 
     "data" seja tipo date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja tipo string. caso os dados "data" e "valor"  
     não seja identificado retorne null para cada um deles em sua devida posição no array. "investimento" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
     Para "categoria" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Títulos", "Criptomoedas", "Ações", "Popança", "imóveis", "N/A", "Debentures", "Previdência"]. Texto: `;
+    opções["Títulos", "Criptomoedas", "Ações", "Popança", "Imóveis", "N/A", "Debentures", "Previdência", "Renda extra"]. Texto: `;
 
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';

@@ -106,6 +106,7 @@ export async function sendConfirmMessage( To: string, From: string, dados: strin
 
 export async function sendConfirmPadraoMessage( To: string, From: string, dados: string) {
   try {
+      console.log("sendmsg", dados);
       const message = await client.messages.create({
           contentSid: "HX56d5469870327f13b001efc754af58e0",
           contentVariables: JSON.stringify({
@@ -113,8 +114,7 @@ export async function sendConfirmPadraoMessage( To: string, From: string, dados:
           }),
           from: To,
           messagingServiceSid: "MGd3e5ec8692cb6c7983621534eccf6d6f",
-          to: From,
-   
+          to: From
         });
   } catch (error) {
     console.error('Erro ao enviar a mensagem:', error);

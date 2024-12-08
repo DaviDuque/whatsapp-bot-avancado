@@ -94,7 +94,9 @@ export class Despesas {
                 } else {
                     console.log(">>>>>>acerto", newDescricao, newCategoria, newMetodo);
                     globalState.setClientCondition("despesas_1");
-                   const dadosMsg = ` \u{1F4B8}Despesa: *${newDescricao.trim()}*, *Valor:${formatWithRegex(valor)}*, *Data:${dayjs(dataString).format('DD-MM-YYYY')}* , ${newCategoria}, ${newMetodo}`;
+                   const dadosMsg = 
+`\u{1F4B8}Despesa: ${newDescricao.trim()}, *Valor:${formatWithRegex(valor)},* Data:${dayjs(dataString).format('DD-MM-YYYY').trim()}, ${newCategoria.trim()}, ${newMetodo.trim()}`;
+                   console.log(">>>>>>dados MSG", dadosMsg);
                    await atualizarEstado(From, "aguardando_confirmacao_dados");
                    sendConfirmPadraoMessage(To, From, dadosMsg); 
                 }

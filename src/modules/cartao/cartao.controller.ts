@@ -87,7 +87,8 @@ export class Cartao {
                     const formatLimiteValor = formatWithRegex(limiteValor);
                     const formatDisponivelValor = formatWithRegex(disponivelValor);
                     globalState.setClientCondition("cartao_1");
-                    const dadosMsg = ` \u{1F4B5}Cartão: *${newNomeCartao.trim()}*, *Tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite Total:${formatLimiteValor}*, *Limite Disponível:${formatDisponivelValor}*`
+                    const dadosMsg = 
+`\u{1F4B5}Cartão: *${newNomeCartao.trim()}*, *Tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite Total:${formatLimiteValor}*, *Limite Disponível:${formatDisponivelValor}*`
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
                     sendConfirmPadraoMessage(To, From, dadosMsg); 
                 }

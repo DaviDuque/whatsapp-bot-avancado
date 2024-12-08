@@ -92,7 +92,8 @@ export class Conta {
                     const formatSaldoValor = formatWithRegex(saldoValor);
      
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
-                    const dadosMsg = ` \u{1F4B5}Conta: *${newNomeConta.trim()}*, *tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite:${formatLimiteValor}*, *Saldo:${formatSaldoValor}*`
+                    const dadosMsg = 
+`\u{1F4B5}Conta: *${newNomeConta.trim()}*, *tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite:${formatLimiteValor}*, *Saldo:${formatSaldoValor}*`
                     sendConfirmPadraoMessage(To, From, dadosMsg); 
                 }
             } catch (error) {

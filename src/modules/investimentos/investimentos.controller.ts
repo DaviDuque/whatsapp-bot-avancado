@@ -92,7 +92,8 @@ export class Investimentos {
             investimentoDados = { descricao: newDescricao, valor, dataString, categoria: newCategoria };
             await atualizarEstado(From, "confirmacao_dados");
             globalState.setClientCondition("investimentos_1");
-            const dadosMsg = ` \u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${formatWithRegex(valor)}*, *Data:${dayjs(dataString).format('DD-MM-YYYY')}*`
+            const dadosMsg =
+`\u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${formatWithRegex(valor)}*, *Data:${dayjs(dataString).format('DD-MM-YYYY')}*`
             await sendConfirmMessage(To, From, dadosMsg); 
         }
     } catch (error) {

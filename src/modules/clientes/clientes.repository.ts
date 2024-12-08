@@ -18,25 +18,35 @@ export interface Cliente {
 }
 
 export const verificarClientePorTelefone = async (telefone: string): Promise<boolean> => {
-    const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
+  try {
+      const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
 
-    if (rows.length > 0) {
-        const From = reverterNumeroTelefone(telefone);
-        const cliente = verificarClienteEstado(rows[0].id_cliente);
-        const teste = verificarClienteEstado(From);
-    }
-    return rows.length > 0;
+      if (rows.length > 0) {
+          const From = reverterNumeroTelefone(telefone);
+          verificarClienteEstado(rows[0].id_cliente);
+          verificarClienteEstado(From);
+      }
+      return rows.length > 0;
+  } catch (error) {
+      console.error('Erro ao verificar cliente por telefone:', error);
+      throw new Error('Erro ao verificar cliente por telefone');
+  }
 };
 
 
 export const criarClientePorTelefone = async (telefone: string): Promise<string> => {
-    const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
+  try {
+      const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
 
-    if (rows.length > 0) {
-        const From = reverterNumeroTelefone(telefone);
-        const teste = verificarClienteEstado(rows[0].id_cliente);
-    }
-    return rows[0].id_cliente;
+      if (rows.length > 0) {
+          const From = reverterNumeroTelefone(telefone);
+          verificarClienteEstado(rows[0].id_cliente);
+      }
+      return rows[0].id_cliente;
+  } catch (error) {
+      console.error('Erro ao criar cliente por telefone:', error);
+      throw new Error('Erro ao criar cliente por telefone');
+  }
 };
 
 export const cadastrarCliente = async (cliente: Cliente): Promise<void> => {

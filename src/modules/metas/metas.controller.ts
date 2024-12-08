@@ -87,7 +87,8 @@ export class Meta {
                     globalState.setClientCondition("meta_1");
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
 
-                    const dadosMsg = ` \u{1F4B5}Meta definida:${newDescricao.trim()}, *Valor Objetivo:${formatWithRegex(ValorObjetivo)}*, *Valor Atual:${formatWithRegex(ValorAtual)}*, *Data Limite:${dayjs(limiteValor).format('DD-MM-YYYY')}*`
+                    const dadosMsg = 
+`\u{1F4B5}Meta definida:${newDescricao.trim()}, *Valor Objetivo:${formatWithRegex(ValorObjetivo)}*, *Valor Atual:${formatWithRegex(ValorAtual)}*, *Data Limite:${dayjs(limiteValor).format('DD-MM-YYYY').trim()}*`
                     sendConfirmPadraoMessage(To, From, dadosMsg);
                 }
             } catch (error) {
