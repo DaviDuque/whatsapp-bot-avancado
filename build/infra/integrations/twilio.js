@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendFileViaWhatsApp = exports.sendMessage = void 0;
 exports.sendInteractiveMessage = sendInteractiveMessage;
 exports.sendListPickerMessage = sendListPickerMessage;
+exports.sendListPickerPlanos = sendListPickerPlanos;
 exports.sendConfirmMessage = sendConfirmMessage;
 exports.sendConfirmPadraoMessage = sendConfirmPadraoMessage;
 const twilio_1 = require("twilio");
@@ -75,6 +76,25 @@ function sendListPickerMessage(To, From) {
                 messagingServiceSid: "MGd3e5ec8692cb6c7983621534eccf6d6f",
                 to: From,
             });
+        }
+        catch (error) {
+            console.error('Erro ao enviar a mensagem:', error);
+        }
+    });
+}
+function sendListPickerPlanos(To, From, v_1, v_2, v_3, v_4) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const message = yield client.messages.create({
+                contentSid: "HXb184d227d97614cd970f417d7ff9d92e",
+                from: To,
+                messagingServiceSid: "MGd3e5ec8692cb6c7983621534eccf6d6f",
+                to: From,
+                contentVariables: JSON.stringify({
+                    v_1, v_2, v_3, v_4
+                }),
+            });
+            console.log('Mensagem enviada com sucesso:', message.sid);
         }
         catch (error) {
             console.error('Erro ao enviar a mensagem:', error);

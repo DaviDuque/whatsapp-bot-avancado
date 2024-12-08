@@ -27,12 +27,11 @@ import { getFile, sendWhatsAppFile } from './modules/arquivos/arquivos.controlle
 import { Meta } from './modules/metas/metas.controller';
 import transacoesRoutes from './routers/transacoes.routes';
 import { modificarStatusCliente } from './modules/clientes/clientes.repository';
+import produtosRoutes from './routers/produtos.routes';
 import cors from 'cors';
 //import { MercadoPagoConfig, Preference } from "mercadopago";
 import { MercadoPagoConfig, PreApproval } from "mercadopago";
 import { formatarNumeroTelefone } from './utils/trata-telefone';
-
-
 
 const app = express();
 const port = process.env.PORT || '3333';
@@ -44,7 +43,6 @@ app.use(cors({
     methods: 'GET,POST,PUT,DELETE', // Métodos permitidos
     allowedHeaders: 'Content-Type, Authorization' // Cabeçalhos permitidos
 }));
-
 
 const newCliente = new Clientes();
 const newRelatorioClientes = new RelatorioClientes;
@@ -61,16 +59,15 @@ const newRelatorioTotal = new RelatoriosTotal();
 const newMeta = new Meta();
 const newPagamento = new Pagamentos();
 
-
 app.get('/', (req: Request, res: Response) => {
     res.send('API ON');
 });
 
 app.post('/login', authUsercase.login);
 app.post('/register', authMiddleware, authUsercase.register);
-//modulo cliente não finalizado cadastro de cliente via API
 app.use('/clientes', newCliente.cadastrarCliente);
 app.post('/refresh-token', authUsercase.refreshToken);
+
 app.post('/relatorio-simples', newRelatorioSimples.RelatorioSimples);
 app.post('/relatorio-total', newRelatorioTotal.RelatorioTotal);
 
@@ -80,15 +77,12 @@ app.get('/user/:id_usuario', authUsercase.user);
 app.get('/file/:filename', getFile); // Endpoint para servir o arquivo
 app.post('/send-whatsapp', sendWhatsAppFile);
 
-
 app.use('/transacoes', transacoesRoutes);
-
-
+app.use('/produtos', produtosRoutes);
 
 app.get('/download', async (req: Request, res: Response) => {
     try {
         const serviceAudio = new AudioService();
-
         const url = process.env.AUDIO_OGG_FILE_PATH;
 
         if (url == undefined) {
@@ -104,37 +98,35 @@ app.get('/download', async (req: Request, res: Response) => {
 });
 
 
-
 app.post('/whatsapp', async (req: Request, res: Response) => {
     const { From, To, Body } = req.body;
-    console.log("reqbody>>>", Body);
-    //if(!Body) return undefined;
+    console.log("BODY>>>", Body);
     const [commandName, ...args] = Body.split(' ');
-    console.log("req...........", req.body);
+    console.log("req.body...........", req.body);
 
-    // Verificar se o cliente já está cadastrado
     const clienteCadastrado = await verificarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
     const dadosCliente: any = await buscarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')))
     console.log("cliente index...........", clienteCadastrado);
 
     if (!clienteCadastrado) {
-        console.log("cliente index 2...........", clienteCadastrado);
-        //const cliente = globalState.setClientCondition('pagamento');
         await newCliente.whatsapp(req, res);
     }
 
     if (clienteCadastrado) {
         const cliente = globalState.getClientId();
-        if(dadosCliente[0].status == 1 || dadosCliente[0].status == 2 ){
-            console.log("cliente status 1..2.........", clienteCadastrado);
-            const cliente = globalState.setClientCondition('pagamento');
-            //await newPagamento.pagamentoWhatsapp(req, res);
+        let condicao: any = await globalState.getClientCondition();
+
+        if (dadosCliente[0].status == 1 || dadosCliente[0].status == 2) {
+            if (condicao != "pagamento_1" && condicao != "pagamento_2") {
+                globalState.setClientCondition('pagamento');
+            }
         }
-        
+
         if (!cliente && dadosCliente[0].status == 3) {
-            console.log("entruuuuuuuuuuu");
+            console.log("-----entrou-------op whatsapp");
             const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
             globalState.setClientId(cliente_id);
+            //globalState.setClientCondition("pagamento");
             globalState.setClientCondition("inicial");
             globalState.setMensagem([
                 req.body.SmsMessageSid,
@@ -155,7 +147,6 @@ app.post('/whatsapp', async (req: Request, res: Response) => {
             ]
             );
         }
-
 
         const mensagem = globalState.getMensagem();
         console.log(`ID do cliente armazenado: ${globalState.getClientId()}`);
@@ -239,47 +230,10 @@ app.post("/create-payment-link", async (req: Request, res: Response) => {
 
 app.post("/create-subscription", async (req: Request, res: Response) => {
     await newPagamento.pagamentoRecorrente(req, res);
-   
+
 });
 
 
-app.post("/webhook", async(req: Request, res: Response) => {
-    try {
-      const { type, data } = req.body;
-  
-      console.log("Webhook recebido:", req.body);
-  
-      if (type === "preapproval") {
-        const preapprovalId = data.id; // ID da assinatura enviada na notificação
-        
-        console.log(`corpo da assinatura recebida>>>>>>: ${req.body}`);
-        console.log(`ID da assinatura recebida: ${preapprovalId}`);
-
-        const atualizacliente = await modificarStatusCliente(preapprovalId);
-        ////////////////////////////////
-
-        console.log("retorno da atualização do cliente", atualizacliente);
-        if(atualizacliente){
-            res.status(200).send("Webhook recebido com sucesso!");
-        }else{
-            res.status(400).send("Ops! Erro ao atualizar");
-        }
-        ////////////////////////////////////
-  
-        // Aqui você pode implementar a lógica para salvar ou processar a notificação
-        // Exemplo: Atualizar banco de dados com o status da assinatura
-      }
-  
-      // Retornar status 200 para confirmar que a notificação foi recebida
-      
-    } catch (error) {
-      console.error("Erro ao processar webhook:", error);
-      res.status(500).send("Erro ao processar webhook");
-    }
-  });
-  
-
-  
 
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
 

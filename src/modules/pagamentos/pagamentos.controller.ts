@@ -1,128 +1,151 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
+import dayjs from 'dayjs';
 import { Request, Response } from 'express';
-import { sendMessage, sendConfirmPadraoMessage } from '../../infra/integrations/twilio';
+import { sendMessage, sendConfirmPadraoMessage, sendListPickerPlanos } from '../../infra/integrations/twilio';
 import '../../commands';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
-import { formatWithRegex } from '../../utils/formata-dinheiro';
-import { cadastrarPagamento } from './pagamentos.repository';
-import { validarDescricao, validarValorTotal } from '../../utils/validation';
-import { criarClientePorTelefone, buscarClientePorTelefone } from '../clientes/clientes.repository';
-import { verificarEstado, atualizarEstado, limparEstado, verificarClienteEstado } from '../../infra/states/states';
-import { transcribe } from '../transcribe/transcribe.controler';
-import { SummarizeServiceMeta } from '../../infra/integrations/summarize.service';
-import dayjs from 'dayjs';
+import { buscarClientePorTelefone } from '../clientes/clientes.repository';
+import { verificarEstado, atualizarEstado, verificarClienteEstado } from '../../infra/states/states';
 import { GlobalState } from '../../infra/states/global-state';
-dotenv.config();
-import { SummarizeServiceReceitas } from '../../infra/integrations/summarize.service';
-import { MercadoPagoConfig, Preference, PreApproval } from "mercadopago";
 import { processaAssinatura, processaPagamento } from "./pagamentos.service";
+import { TransacoesController } from '../transacoes/transacoes.controller';
 import { TransacoesService } from '../transacoes/transacoes.service';
-
+import { ProdutosController } from '../produtos/produtos.controller';
 
 export class Pagamentos {
-
-
   pagamentoWhatsapp = async (req: Request, res: Response) => {
-    //const summarizeServiceReceitas = new SummarizeServiceReceitas();
-    const { SmsMessageSid, MediaContentType0, NumMedia, Body, To, From, MediaUrl0 } = req.body;
+    const { Body, To, From } = req.body;
     const globalState = GlobalState.getInstance();
-    //const mensagem = globalState.getMensagem();
     const condicao = globalState.getClientCondition();
     const dadosCliente: any = await buscarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')))
-    //const cliente_id = await criarClientePorTelefone(formatarNumeroTelefone(From.replace(/^whatsapp:/, '')));
+    const produtosController = new ProdutosController();
+    const listProdutos: any = await produtosController.getTodosProdutosDireto();
+    let dados: any;
 
     if (condicao == "pagamento") {
-      //await atualizarEstado(From, "aguardando_dados");
+      await atualizarEstado(From, "aguardando_dados");
     }
 
-    const cliente = verificarClienteEstado(dadosCliente.id_cliente);
-    const email = await dadosCliente[0].email;
     const estadoAtual = await verificarEstado(From);
-    console.log(">>>>>>email", email);
-    console.log(">>>>>>email", dadosCliente);
 
-
-    //////////////////////////////////////////////////////////////
-
-    if (Body == 'Não' || Body == 'não' || Body == 'N' || Body == 'n') {
+    if ((Body == 'Não' || Body == 'não' || Body == 'N' || Body == 'n') && estadoAtual == 'aguardando_dados') {
       globalState.setClientCondition("pagamento_1");
       await sendMessage(To, From, "\u{1F522} Para usufruir da nossa consultoria automática é necessário o pagamamento \n Enviamos uma notificação para administração. Entraremos em contato em breve");
     }
 
-  
-
-    else if (Body == 'Sim' || Body == 'sim' || Body == 'S' || Body == 's') {
-
-    try {
-      const dataUmAno = dayjs(new Date()).add(1, 'year').format('YYYY-MM-DD');
-
-      const payer_email = await dadosCliente[0].email;
-      const reason = "Assinatura Premium";
-      const amount = 40.00;
-      const frequency = 1;
-      const frequency_type = "months";
-      const start_date = dayjs(new Date()).toISOString();
-      const end_date = dayjs(dataUmAno).toISOString();
-      const back_url = "https://www.vanessafonsecaoficial.com/assinatura-finalizada";
-
-      console.log("data", end_date);
-      const response: any = await processaAssinatura(
-        payer_email,
-        reason,
-        amount,
-        frequency,
-        frequency_type,
-        start_date,
-        end_date,
-        back_url
-      );
-      console.log(">>>>>>>>>>>>>response", response);
-      if (response.status == 'sucesso') {
-
-        const dadosAssinatura = {
-          id_cliente: dadosCliente[0].id_cliente,
-          id_produto: 1,
-          id_tipo: "assinatura",
-          meio_pagamento: null,
-          valor: amount,
-          valor_pago: amount,
-          valor_total: amount,
-          frequencia:frequency,
-          frequencia_tipo: 1,
-          data_inicio: dayjs(start_date.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD'),
-          data_fim: dayjs(end_date.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD'),
-          id_transacao_gateway: response.id,
-          id_pagador_gateway: response.payer_id,
-          id_loja_gateway: response.collector_id,
-          id_aplicacao_gateway: response.application_id
-        };
-
-        const transacao = await TransacoesService.criarAssinatura(dadosAssinatura);
-        console.log("transacai>>>>>>>", transacao);
-
-        sendMessage(To, From, `pague por aqui ${response.init_point}`);
-      } else {
-        sendMessage(To, From, "\u{1F534} Erro ao criar assinatura, uma notificação foi enviada para o administrador, aguarde que entraremos em contato");
-      }
-
-    } catch (error) {
-      console.log("errrrrrrrr", error);
-      sendMessage(To, From, "\u{26A0} Erro ao criar assinatura, uma notificação foi enviada para o administrador, aguarde que entraremos em contato");
+    if ((Body == 'Sim' || Body == 'sim' || Body == 'S' || Body == 's') && estadoAtual == 'aguardando_dados') {
+      globalState.setClientCondition("pagamento_1");
+      await atualizarEstado(From, "aguardando_continuacao");
+      await sendListPickerPlanos(To, From, `${listProdutos[0].valor}`, `${listProdutos[1].valor}`, `${listProdutos[2].valor}`, `${listProdutos[3].valor}`);
     }
 
-  }
-    else{
+    if (estadoAtual == "aguardando_continuacao") {
+      switch (Body) {
+        case "1":
+          dados = await produtosController.getProdutosPorGrupoDireto('PPMU');
+          break;
+        case "2":
+          dados = await produtosController.getProdutosPorGrupoDireto('PPMR');
+          break;
+        case "3":
+          dados = await produtosController.getProdutosPorGrupoDireto('PPS');
+          break;
+        case "4":
+          dados = await produtosController.getProdutosPorGrupoDireto('PPA');
+          break;
+        default:
+          break;
+      }
+    }
+
+    if (Body == '2' && estadoAtual == "aguardando_continuacao") {
+      try {
+        const dataUmAno = dayjs(new Date()).add(1, 'year').format('YYYY-MM-DD');
+        const payer_email = await dadosCliente[0].email;
+        const reason = dados[0].nome_produto;
+        const amount = parseFloat(dados[0].valor);
+        const frequency = 1;
+        const frequency_type = "months";
+        const start_date = dayjs(new Date()).toISOString();
+        const end_date = dayjs(dataUmAno).toISOString();
+        const back_url = "https://www.vanessafonsecaoficial.com/assinatura-finalizada";
+        const response: any = await processaAssinatura(
+          payer_email,
+          reason,
+          amount,
+          frequency,
+          frequency_type,
+          start_date,
+          end_date,
+          back_url
+        );
+
+        if (response.status == 'sucesso') {
+          const dadosAssinatura = {
+            id_cliente: dadosCliente[0].id_cliente,
+            id_produto: dados[0].id_produto,
+            id_tipo: "assinatura",
+            meio_pagamento: null,
+            valor: amount,
+            valor_pago: amount,
+            valor_total: amount,
+            frequencia: frequency,
+            frequencia_tipo: 1,
+            data_inicio: dayjs(start_date.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD'),
+            data_fim: dayjs(end_date.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD'),
+            id_transacao_gateway: response.id,
+            id_pagador_gateway: response.payer_id,
+            id_loja_gateway: response.collector_id,
+            id_aplicacao_gateway: response.application_id
+          };
+          const transacao = await TransacoesService.criarAssinatura(dadosAssinatura);
+          sendMessage(To, From, `pague por aqui ${response.init_point}`);
+        } else {
+          sendMessage(To, From, "\u{1F534} Erro ao criar assinatura, uma notificação foi enviada para o administrador, aguarde que entraremos em contato");
+        }
+      } catch (error) {
+        sendMessage(To, From, "\u{26A0} Erro ao criar assinatura, uma notificação foi enviada para o administrador, aguarde que entraremos em contato");
+      }
+    }
+    else if ((Body == '1' || Body == '3' || Body == '4') && estadoAtual == "aguardando_continuacao") {
+      const dadosPagamento: any = {
+        id_cliente: dadosCliente[0].id_cliente,
+        id_produto: dados[0].id_produto,
+        meio_pagamento: null,
+        valor: dados[0].valor,
+        valor_pago: dados[0].valor,
+        valor_total: dados[0].valor
+      };
+
+      try {
+        const response: any = await processaPagamento(
+          dados[0].id_produto,
+          dados[0].nome_produto,
+          parseFloat(dados[0].valor),
+          1,
+        );
+
+        if (response.status == 'sucesso') {
+          const transacao = await TransacoesController.criarPagamentoAvulsoDireto(dadosPagamento);
+          sendMessage(To, From, `pague por aqui ${response.init_point.init_point}`);
+        } else {
+          sendMessage(To, From, "\u{1F534} Erro ao criar pagamento, uma notificação foi enviada para o administrador, aguarde que entraremos em contato");
+        }
+      } catch (error) {
+        sendMessage(To, From, "\u{26A0} Erro ao criar pagamento, uma notificação foi enviada para o administrador, aguarde que entraremos em contato");
+      }
+    }
+    else if((Body != '1' && Body != '2' && Body != '3' && Body != '4' && Body != 'Sim' && Body != 'Não') && estadoAtual != "aguardando_continuacao"){
       globalState.setClientCondition("pagamento_1");
       await sendConfirmPadraoMessage(To, From, '\u{1F44D} Deseja receber novamente o link de pagamento?');;
     }
-}
-
-
+  }
 
   pagamentoLink = async (req: Request, res: Response) => {
     try {
-      const { id,
+      const {
+        id,
         title,
         unit_price,
         quantity
@@ -134,7 +157,6 @@ export class Pagamentos {
         unit_price,
         quantity
       );
-
       return res.json(
         response
       );
@@ -144,7 +166,6 @@ export class Pagamentos {
     }
 
   };
-
 
   pagamentoRecorrente = async (req: Request, res: Response) => {
     try {
@@ -169,46 +190,11 @@ export class Pagamentos {
         end_date,
         back_url
       );
-      console.log(">>>>>>>>>>>>>", response);
-
       return res.status(201).json(response);
     } catch (error) {
       return res.status(400).json({ error: "Erro ao criar assinatura", details: error });
     }
   };
-
-
-  /*Whebhook = async (req: Request, res: Response) => {
-    try {
-      const event = req.body;
-  
-      console.log("Notificação recebida:", event);
-  
-      // Verifique o tipo de evento
-      if (event.type === "preapproval") {
-        const preapprovalId = event.data.id;
-  
-        // Consulte o Mercado Pago para obter detalhes da assinatura
-        const preApprovalDetails = await preApproval.get({ id: preapprovalId });
-  
-        // Salve os dados no banco de dados (exemplo com MongoDB ou outro banco)
-        console.log("Detalhes da assinatura:", preApprovalDetails.body);
-  
-        // Exemplo: Verificar status da assinatura
-        if (preApprovalDetails.body.status === "authorized") {
-          console.log("Assinatura autorizada!");
-          // Salvar no banco de dados
-        }
-      }
-  
-      res.status(200).send("OK");
-    } catch (error) {
-      console.error("Erro ao processar webhook:", error);
-      res.status(500).send("Erro ao processar webhook");
-    }
-  };*/
-
-
 }
 
 

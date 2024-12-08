@@ -1,5 +1,3 @@
-import { AnyAaaaRecord } from "dns";
-import path from 'path';
 import { Twilio } from "twilio";
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -69,6 +67,25 @@ export async function sendListPickerMessage( To: string, From: string) {
       console.error('Erro ao enviar a mensagem:', error);
     }
 }
+
+
+export async function sendListPickerPlanos(To: string, From: string, v_1: string, v_2: string, v_3: string, v_4: string) {
+  try {
+    const message = await client.messages.create({
+      contentSid: "HXb184d227d97614cd970f417d7ff9d92e",
+      from: To,
+      messagingServiceSid: "MGd3e5ec8692cb6c7983621534eccf6d6f",
+      to: From,
+      contentVariables: JSON.stringify({
+       v_1, v_2, v_3, v_4
+      }),
+    });
+    console.log('Mensagem enviada com sucesso:', message.sid);
+  } catch (error) {
+    console.error('Erro ao enviar a mensagem:', error);
+  }
+}
+
 
 export async function sendConfirmMessage( To: string, From: string, dados: string) {
   try {

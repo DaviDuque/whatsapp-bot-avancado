@@ -99,6 +99,9 @@ class Despesas {
                 const response = yield summarizeServiceDespesas.summarize(Transcribe);
                 console.log(">>>>>>summerize", response);
                 let [descricao, valorStr, dataStr, categoria, metodo_pagamento] = response.split(',');
+                if (descricao == null || valorStr == null || dataStr == null || categoria == null || metodo_pagamento == null) {
+                    console.log("Ops !!!!!!!!!!!!", descricao, valorStr, dataStr, categoria, metodo_pagamento);
+                }
                 let dataString = (0, dayjs_1.default)(dataStr).format('YYYY-MM-DD');
                 if (dataString === 'Invalid Date') {
                     dataString = (0, dayjs_1.default)().format('YYYY-MM-DD');

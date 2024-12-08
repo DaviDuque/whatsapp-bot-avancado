@@ -70,6 +70,10 @@ export class Despesas {
             const response = await summarizeServiceDespesas.summarize(Transcribe);
             console.log(">>>>>>summerize", response);
             let [descricao, valorStr, dataStr, categoria, metodo_pagamento] = response.split(',');
+
+            if(descricao==null ||  valorStr==null || dataStr==null || categoria==null ||metodo_pagamento==null){
+               console.log("Ops !!!!!!!!!!!!", descricao, valorStr, dataStr, categoria, metodo_pagamento);
+            }
             let dataString: string = dayjs(dataStr).format('YYYY-MM-DD');
             if (dataString === 'Invalid Date') { dataString = dayjs().format('YYYY-MM-DD'); }
             console.log(">>>>>>tese", descricao, valorStr, dataStr, categoria, metodo_pagamento);

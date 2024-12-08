@@ -62,7 +62,7 @@ const pagamentos_controller_1 = require("./modules/pagamentos/pagamentos.control
 const arquivos_controller_1 = require("./modules/arquivos/arquivos.controller");
 const metas_controller_1 = require("./modules/metas/metas.controller");
 const transacoes_routes_1 = __importDefault(require("./routers/transacoes.routes"));
-const clientes_repository_2 = require("./modules/clientes/clientes.repository");
+const produtos_routes_1 = __importDefault(require("./routers/produtos.routes"));
 const cors_1 = __importDefault(require("cors"));
 const trata_telefone_1 = require("./utils/trata-telefone");
 const app = (0, express_1.default)();
@@ -93,7 +93,6 @@ app.get('/', (req, res) => {
 });
 app.post('/login', authUsercase.login);
 app.post('/register', auth_middleware_1.authMiddleware, authUsercase.register);
-//modulo cliente não finalizado cadastro de cliente via API
 app.use('/clientes', newCliente.cadastrarCliente);
 app.post('/refresh-token', authUsercase.refreshToken);
 app.post('/relatorio-simples', newRelatorioSimples.RelatorioSimples);
@@ -103,6 +102,7 @@ app.get('/user/:id_usuario', authUsercase.user);
 app.get('/file/:filename', arquivos_controller_1.getFile); // Endpoint para servir o arquivo
 app.post('/send-whatsapp', arquivos_controller_1.sendWhatsAppFile);
 app.use('/transacoes', transacoes_routes_1.default);
+app.use('/produtos', produtos_routes_1.default);
 app.get('/download', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const serviceAudio = new audio_service_1.AudioService();
@@ -121,30 +121,28 @@ app.get('/download', (req, res) => __awaiter(void 0, void 0, void 0, function* (
 }));
 app.post('/whatsapp', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { From, To, Body } = req.body;
-    console.log("reqbody>>>", Body);
-    //if(!Body) return undefined;
+    console.log("BODY>>>", Body);
     const [commandName, ...args] = Body.split(' ');
-    console.log("req...........", req.body);
-    // Verificar se o cliente já está cadastrado
+    console.log("req.body...........", req.body);
     const clienteCadastrado = yield (0, clientes_repository_1.verificarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
     const dadosCliente = yield (0, clientes_repository_1.buscarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
     console.log("cliente index...........", clienteCadastrado);
     if (!clienteCadastrado) {
-        console.log("cliente index 2...........", clienteCadastrado);
-        //const cliente = globalState.setClientCondition('pagamento');
         yield newCliente.whatsapp(req, res);
     }
     if (clienteCadastrado) {
         const cliente = globalState.getClientId();
+        let condicao = yield globalState.getClientCondition();
         if (dadosCliente[0].status == 1 || dadosCliente[0].status == 2) {
-            console.log("cliente status 1..2.........", clienteCadastrado);
-            const cliente = globalState.setClientCondition('pagamento');
-            //await newPagamento.pagamentoWhatsapp(req, res);
+            if (condicao != "pagamento_1" && condicao != "pagamento_2") {
+                globalState.setClientCondition('pagamento');
+            }
         }
         if (!cliente && dadosCliente[0].status == 3) {
-            console.log("entruuuuuuuuuuu");
+            console.log("-----entrou-------op whatsapp");
             const cliente_id = yield (0, clientes_repository_1.criarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
             globalState.setClientId(cliente_id);
+            //globalState.setClientCondition("pagamento");
             globalState.setClientCondition("inicial");
             globalState.setMensagem([
                 req.body.SmsMessageSid,
@@ -246,33 +244,5 @@ app.post("/create-payment-link", (req, res) => __awaiter(void 0, void 0, void 0,
 }));
 app.post("/create-subscription", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield newPagamento.pagamentoRecorrente(req, res);
-}));
-app.post("/webhook", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { type, data } = req.body;
-        console.log("Webhook recebido:", req.body);
-        if (type === "preapproval") {
-            const preapprovalId = data.id; // ID da assinatura enviada na notificação
-            console.log(`corpo da assinatura recebida>>>>>>: ${req.body}`);
-            console.log(`ID da assinatura recebida: ${preapprovalId}`);
-            const atualizacliente = yield (0, clientes_repository_2.modificarStatusCliente)(preapprovalId);
-            ////////////////////////////////
-            console.log("retorno da atualização do cliente", atualizacliente);
-            if (atualizacliente) {
-                res.status(200).send("Webhook recebido com sucesso!");
-            }
-            else {
-                res.status(400).send("Ops! Erro ao atualizar");
-            }
-            ////////////////////////////////////
-            // Aqui você pode implementar a lógica para salvar ou processar a notificação
-            // Exemplo: Atualizar banco de dados com o status da assinatura
-        }
-        // Retornar status 200 para confirmar que a notificação foi recebida
-    }
-    catch (error) {
-        console.error("Erro ao processar webhook:", error);
-        res.status(500).send("Erro ao processar webhook");
-    }
 }));
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));

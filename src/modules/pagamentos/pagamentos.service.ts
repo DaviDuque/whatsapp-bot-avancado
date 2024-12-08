@@ -2,6 +2,7 @@ import { connection } from '../../infra/database/mysql-connection';
 import { MercadoPagoConfig, Preference, PreApproval } from "mercadopago";
 
 
+const url = process.env.FILE_URL;
 export const cadastrarPagamento = async (
     id_cliente: string,
     descricao: string,
@@ -25,55 +26,42 @@ export const cadastrarPagamento = async (
     }
 };
 
-
-
-
 export const processaPagamento = async (
     id: string, // Identificador único do item
     title: string, // Nome do item
-    unit_price: number, // Preço unitário
-    quantity: number, // Quantidade
+    unit_price: number,
+    quantity: number,
 
 ) => {
     const client = new MercadoPagoConfig({
-        accessToken: `${process.env.ACCESS_TOKEN_MERCADO_PAGO}`, // Substitua pelo seu Access Token do Mercado Pago
+        accessToken: `${process.env.ACCESS_TOKEN_MERCADO_PAGO}`,
     });
-
-
     const preference = new Preference(client);
 
     try {
-
-
-        // Validação básica dos campos
         if (!id || !title || !unit_price || !quantity) {
             return { status: 'error', error: "Missing required fields" };
         }
-
         const body = {
             items: [
                 {
-                    id: id, // Identificador único do item
-                    title: title, // Nome do item
-                    unit_price: unit_price, // Preço unitário
-                    quantity: quantity, // Quantidade
+                    id: id,
+                    title: title,
+                    unit_price: unit_price,
+                    quantity: quantity,
                 },
             ],
             back_urls: {
-                success: "https://www.seusite.com/success", // URL em caso de sucesso
-                failure: "https://www.seusite.com/failure", // URL em caso de falha
-                pending: "https://www.seusite.com/pending", // URL para pendente
+                success: `${url}/success`,
+                failure: `${url}/failure`,
+                pending: `${url}/pending`,
             },
             auto_return: "approved", // Retorno automático ao sucesso
-            notification_url: "https://seusite.com/webhook"
-
+            notification_url: `${url}/webhook`
         };
 
         // Criação do link de pagamento
         const response = await preference.create({ body });
-
-        // Retorna o link gerado
-        console.log("response.....", response);
         return {
             status: 'sucesso',
             init_point: response, // URL do link de pagamento
@@ -83,7 +71,6 @@ export const processaPagamento = async (
         return { status: 'error', error: "Failed to create payment link" };
     }
 }
-
 
 export const processaAssinatura = async (
     payer_email: string,
@@ -102,15 +89,6 @@ export const processaAssinatura = async (
     const preapproval = new PreApproval(client);
     try {
 
-        console.log("747>>>>>>>>>>>>>>>>>",  payer_email,
-            reason,
-            amount,
-            frequency,
-            frequency_type,
-            start_date,
-            end_date,
-            back_url);
-
         if (!payer_email || !reason || !amount || !frequency || !frequency_type || !start_date || !end_date || !back_url) {
             return { error: "Missing required fields" };
         }
@@ -127,20 +105,15 @@ export const processaAssinatura = async (
                     start_date,
                     end_date
                 },
-                back_url,
-                //notification_url: "https://seusite.com/webhook"
-
+                back_url
             },
         });
-
         response.status = "sucesso";
-        console.log("service", response)
         return response;
     } catch (error) {
         console.log("erro", error);
         return { status: 'error', error: "Erro ao criar assinatura", details: error };
     }
-
 }
 
 
