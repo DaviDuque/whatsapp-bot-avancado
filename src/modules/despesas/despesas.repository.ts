@@ -8,7 +8,6 @@ export const verificarDespesaPorCliente = async (id_cliente: number) => {
         if (Array.isArray(rows) && rows.length > 0) {
             return true;
         }
-
         return false;
     } catch (error) {
         console.error('Erro ao verificar despesa:', error);

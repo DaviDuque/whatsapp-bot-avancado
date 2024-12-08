@@ -18,7 +18,7 @@ const cliente = globalState.getClientId();
 *Nome da despesa*
 *data* 
 *Valor*
-*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX)
+*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX, Cartão BHBus, Vale alimentação, Vale refeição)
 `;
     },
 });
@@ -30,7 +30,8 @@ const cliente = globalState.getClientId();
         return `\u{1F4B5}Para cadastrar uma receita, digite ou fale os detalhes como: 
 *Nome da receita*
 *Valor*
-*Data*`;
+*Data*
+`;
     },
 });
 (0, commandManager_1.addCommand)({
@@ -93,7 +94,6 @@ const cliente = globalState.getClientId();
 *Nome da conta*
 *Tipo*
 *Banco*
-*Limite*
 *Saldo*
 `;
     },

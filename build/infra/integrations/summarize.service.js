@@ -14,6 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SummarizeServiceRelatorio = exports.SummarizeServiceMeta = exports.SummarizeServiceConta = exports.SummarizeServiceCartao = exports.SummarizeServiceInvestimentos = exports.SummarizeServiceReceitas = exports.SummarizeServiceDespesas = exports.SummarizeService = void 0;
 const openai_1 = __importDefault(require("openai"));
+const despesas_1 = require("../memory/prompts/despesas");
+const receitas_1 = require("../memory/prompts/receitas");
+const contas_1 = require("../memory/prompts/contas");
 const dataAtual = new Date();
 const dia = dataAtual.getDate(); // Dia do mês
 const mes = dataAtual.getMonth() + 1; // Mês (0-11, então adicionamos 1)
@@ -46,16 +49,7 @@ exports.SummarizeService = SummarizeService;
 class SummarizeServiceDespesas {
     constructor() {
         this.temperature = 0.7;
-        this.prompt = `extrair um array normalizando a partir do texto fornecido, adaptando e encaixando conforme descrito. sempre no formato: 
-    [<Despesa/gasto>, <valor>, <data da despesa>, <categoria>, <metodo_pagamento>]', 
-    onde "Despesa" seja do tipo string com o nome da despesa, "valor" seja float: 10.00, 
-    "data da despesa" seja date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja string, 
-    e "metodo_pagamento" seja do tipo string, normalize em uma das opções: [Crédito parcelado, Crédito a vista, Débito, PIX]. caso os dados "data da despesa" e "valor"  
-    não seja identificado retorne null para cada um deles em sua devida posição no array. "Despesa" representa algo comprado, adiquirido ou utilizado. caso "parcelado" 
-    não seja identificado no texto, retorne o default "null". 
-    Para "categoria" localize em qual das o pções melhor se encaixa, 
-    opções["Mercado", "Veiculos", "Pets", "Contas_residência", "imóveis", "Lazer", "restaurante", "Shopping", "Transporte", "internet", "viajens", "hotéis", "N/A"]. Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
-    Texto: `;
+        this.prompt = despesas_1.despesas;
         this.model = 'gpt-3.5-turbo';
         this.openai = new openai_1.default({
             apiKey: process.env.OPENAI_API_KEY
@@ -79,14 +73,7 @@ exports.SummarizeServiceDespesas = SummarizeServiceDespesas;
 class SummarizeServiceReceitas {
     constructor() {
         this.temperature = 0.7;
-        this.prompt = `extrair um array a partir do texto fornecido sempre no formato: 
-    [<receita/entrada>, <valor>, <data>, <categaria>]', 
-    onde "receita" seja do tipo string, "valor" seja tipo float: 10,00, 
-    "data" seja tipo date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja tipo string. caso os dados "data" e "valor"  
-    não seja identificado retorne null para cada um deles em sua devida posição no array. "receita" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
-    Para "categoria" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Salário", "Rendimentos", "Ações", "Aluguel", "imóveis", "N/A", "Extra", "Vendas", "Pensão", "Herança", "Previdência"]. Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
-     Texto: `;
+        this.prompt = receitas_1.receitas;
         this.model = 'gpt-3.5-turbo';
         this.openai = new openai_1.default({
             apiKey: process.env.OPENAI_API_KEY
@@ -110,13 +97,7 @@ exports.SummarizeServiceReceitas = SummarizeServiceReceitas;
 class SummarizeServiceInvestimentos {
     constructor() {
         this.temperature = 0.7;
-        this.prompt = `extrair um array a partir do texto fornecido sempre no formato: 
-    [<investimentos/entrada>, <valor>, <data>, <categaria>]', 
-    onde "investimentos" seja do tipo string, "valor" seja tipo float: 10,00, 
-    "data" seja tipo date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja tipo string. caso os dados "data" e "valor"  
-    não seja identificado retorne null para cada um deles em sua devida posição no array. "investimento" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
-    Para "categoria" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Títulos", "Criptomoedas", "Ações", "Popança", "imóveis", "N/A", "Debentures", "Previdência"]. Texto: `;
+        this.prompt = contas_1.contas;
         this.model = 'gpt-3.5-turbo';
         this.openai = new openai_1.default({
             apiKey: process.env.OPENAI_API_KEY
@@ -239,12 +220,12 @@ class SummarizeServiceRelatorio {
         this.prompt = `considere o texto enviado para extrair um array a partir do texto fornecido sempre no formato: 
     [<data inicial>, <data final>]', 
     onde:
-    "data inicial" seja tipo date:YYYY-MM-DD e data final" seja tipo date:YYYY-MM-DD.  e se data inicial for "hoje" ou "atual" retorne ${dataCompleta},
+    "data inicial" seja a data mais antiga e do tipo date:YYYY-MM-DD e data final" seja a menos antiga e do tipo date:YYYY-MM-DD.  e se data inicial for "hoje" ou "atual" retorne ${dataCompleta},
      caso data final ou data inicial seja em outro formato como tempo corrido, realize o cálculo, exemplo: se data inicial é hoje, logo é ${dataCompleta}, 
      se data final é daqui um mês, logo data final é ${dataCompleta} + 1 mês ou mais 30 dias (se for 21 de dezembro, sera 21 de janeiro). 
      Os dados podem vir em formatos diferentes, coloque no formato correto(date:YYYY-MM-DD). caso os dados  
     não sejam identificados retorne null para cada um deles que não for identificado em sua devida posição no array.
-     Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
+     Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado com data menor na primeira posição e data maior na segunda posição.
      Texto: `;
         this.model = 'gpt-3.5-turbo';
         this.openai = new openai_1.default({

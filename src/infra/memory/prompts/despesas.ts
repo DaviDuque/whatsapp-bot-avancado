@@ -33,11 +33,12 @@ Tarifas/taxas/impostos = Tudo e qualquer despesa referente a pagamento de impost
 Despesas esporádicas = Tudo e qualquer despesa referente a gastos diversos e não mapeado.
 Dividas = Tudo e qualquer despesa referente a pagamento de dívidas.
 
-5-Forma de pagamento-> string, podendo ser Crédito parcelado, Crédito a vista, Débito, PIX.
+5-Forma de pagamento-> string, podendo ser Crédito parcelado, Crédito a vista, Débito, PIX, Cartão bh bus, Vale alimentação, Vale refeição.
 
 
 Regras de formação do array: 
 1-deve ter o formato: [<Despesa/gasto>, <valor>, <data da despesa>, <categaria>, <metodo_pagamento>]
 2-Caso não seja identificado no texto algum item do array retorne null para qualquer um deles em sua devida posição no array.
 3-Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado.
+
 Texto de entrada: `;

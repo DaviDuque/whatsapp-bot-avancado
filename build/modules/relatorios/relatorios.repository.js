@@ -108,14 +108,14 @@ function gerarRelatorioExcel(id_cliente, data_inicial, data_final) {
         sheet.addRow(['Despesas', `R$${totalDespesas}`]);
         sheet.addRow(['Investimentos', `R$${totalInvestimentos}`]);
         sheet.addRow(['Saldo', `R$${saldo}`]);
-        sheet.addRow(['Percentual investido', `R$${percentualInvestido}`]);
+        sheet.addRow(['Percentual investido', `${percentualInvestido}%`]);
         currentRow += 8;
         console.log(".....totalReceitas", `R$${totalReceitas}`);
         console.log(".....");
         console.log(".....");
         console.log(".....");
         console.log(".....");
-        console.log(".....StringPercentualInvestido", `R$${percentualInvestido}`);
+        console.log(".....StringPercentualInvestido", ` ${percentualInvestido}%`);
         addSubtitle('Detalhes de Despesas', 1);
         sheet.addRow(['Categoria', 'Descrição', 'Valor', 'Data']).font = { bold: true };
         currentRow += 1;
@@ -141,11 +141,10 @@ function gerarRelatorioExcel(id_cliente, data_inicial, data_final) {
         });
         currentRow += 1;
         addSubtitle('Minhas Metas', 4);
-        sheet.addRow(['Número', 'Descrição', 'Valor Objetivo', 'Valor do Momento', 'Data Limite']).font = { bold: true };
+        sheet.addRow(['Descrição', 'Valor Objetivo', 'Valor do Momento', 'Data Limite']).font = { bold: true };
         currentRow += 1;
         metas.dados.forEach((i) => {
             sheet.addRow([
-                i.id_meta,
                 i.descricao,
                 `R$${i.valor_objetivo.replace('.', ',')}`,
                 `R$${i.valor_atual.replace('.', ',')}`,

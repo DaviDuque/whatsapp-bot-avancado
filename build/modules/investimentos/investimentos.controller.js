@@ -118,7 +118,7 @@ class Investimentos {
                         investimentoDados = { descricao: newDescricao, valor, dataString, categoria: newCategoria };
                         yield (0, states_1.atualizarEstado)(From, "confirmacao_dados");
                         globalState.setClientCondition("investimentos_1");
-                        const dadosMsg = ` \u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${(0, formata_dinheiro_1.formatWithRegex)(valor)}*, *Data:${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}*`;
+                        const dadosMsg = `\u{1F4B5}Investimento: *${newDescricao.trim()}*, *Valor:${(0, formata_dinheiro_1.formatWithRegex)(valor)}*, *Data:${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}*`;
                         yield (0, twilio_1.sendConfirmMessage)(To, From, dadosMsg);
                     }
                 }

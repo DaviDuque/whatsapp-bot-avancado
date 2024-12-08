@@ -88,7 +88,7 @@ class Despesas {
 *Nome da despesa*
 *data* 
 *Valor*
-*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX)
+*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX, Cartão BHBus, Vale alimentação, Vale refeição)
 `);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
             }
@@ -124,7 +124,8 @@ class Despesas {
                     else {
                         console.log(">>>>>>acerto", newDescricao, newCategoria, newMetodo);
                         globalState.setClientCondition("despesas_1");
-                        const dadosMsg = ` \u{1F4B8}Despesa: *${newDescricao.trim()}*, *Valor:${(0, formata_dinheiro_1.formatWithRegex)(valor)}*, *Data:${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}* , ${newCategoria}, ${newMetodo}`;
+                        const dadosMsg = `\u{1F4B8}Despesa: ${newDescricao.trim()}, *Valor:${(0, formata_dinheiro_1.formatWithRegex)(valor)},* Data:${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY').trim()}, ${newCategoria.trim()}, ${newMetodo.trim()}`;
+                        console.log(">>>>>>dados MSG", dadosMsg);
                         yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
                         (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }

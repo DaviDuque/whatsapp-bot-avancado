@@ -1,6 +1,8 @@
 import OpenAI from "openai";
 import SummarizeServiceInterface from "../../domain/service/summarize.service.interface";
-import { despesas } from '../memory/propts/despesas';
+import { despesas } from '../memory/prompts/despesas';
+import { receitas } from '../memory/prompts/receitas';
+import { contas } from '../memory/prompts/contas'
 
 const dataAtual = new Date();
 const dia = dataAtual.getDate(); // Dia do mês
@@ -66,15 +68,7 @@ export class SummarizeServiceDespesas implements SummarizeServiceInterface {
 
 export class SummarizeServiceReceitas implements SummarizeServiceInterface {
     private temperature = 0.7;
-    private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
-    [<receita/entrada>, <valor>, <data>, <categaria>]', 
-    onde "receita" seja do tipo string, "valor" seja tipo float: 10,00, 
-    "data" seja tipo date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja tipo string. caso os dados "data" e "valor"  
-    não seja identificado retorne null para cada um deles em sua devida posição no array. "receita" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
-    Para "categoria" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Salário", "Rendimentos", "Ações", "Aluguel", "imóveis", "N/A", "Extra", "Vendas", "Pensão", "Herança", "Previdência"]. Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
-     Texto: `;
-
+    private prompt = receitas;
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';
 
@@ -101,14 +95,7 @@ export class SummarizeServiceReceitas implements SummarizeServiceInterface {
 
 export class SummarizeServiceInvestimentos implements SummarizeServiceInterface {
     private temperature = 0.7;
-    private prompt = `extrair um array a partir do texto fornecido sempre no formato: 
-    [<investimentos/entrada>, <valor>, <data>, <categaria>]', 
-    onde "investimentos" seja do tipo string, "valor" seja tipo float: 10,00, 
-    "data" seja tipo date:YYYY-MM-DD e se data for "hoje" ou "atual" retorne ${dataCompleta}, "categoria" seja tipo string. caso os dados "data" e "valor"  
-    não seja identificado retorne null para cada um deles em sua devida posição no array. "investimento" representa capital o dinheiro que entrou na conta ou no bolso, adiquirido. 
-    Para "categoria" localize em qual das o pções melhor se encaixa, sendo "N/A" quando não identificado.
-    opções["Títulos", "Criptomoedas", "Ações", "Popança", "Imóveis", "N/A", "Debentures", "Previdência", "Renda extra"]. Texto: `;
-
+    private prompt = contas;
     private openai: OpenAI;
     private model = 'gpt-3.5-turbo';
 
@@ -241,12 +228,12 @@ export class SummarizeServiceRelatorio implements SummarizeServiceInterface {
     private prompt = `considere o texto enviado para extrair um array a partir do texto fornecido sempre no formato: 
     [<data inicial>, <data final>]', 
     onde:
-    "data inicial" seja tipo date:YYYY-MM-DD e data final" seja tipo date:YYYY-MM-DD.  e se data inicial for "hoje" ou "atual" retorne ${dataCompleta},
+    "data inicial" seja a data mais antiga e do tipo date:YYYY-MM-DD e data final" seja a menos antiga e do tipo date:YYYY-MM-DD.  e se data inicial for "hoje" ou "atual" retorne ${dataCompleta},
      caso data final ou data inicial seja em outro formato como tempo corrido, realize o cálculo, exemplo: se data inicial é hoje, logo é ${dataCompleta}, 
      se data final é daqui um mês, logo data final é ${dataCompleta} + 1 mês ou mais 30 dias (se for 21 de dezembro, sera 21 de janeiro). 
      Os dados podem vir em formatos diferentes, coloque no formato correto(date:YYYY-MM-DD). caso os dados  
     não sejam identificados retorne null para cada um deles que não for identificado em sua devida posição no array.
-     Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado conforme exemplo.
+     Os dados podem vir desestruturados e fora de ordem. Retorne apenas o array e ordenado com data menor na primeira posição e data maior na segunda posição.
      Texto: `;
 
     private openai: OpenAI;

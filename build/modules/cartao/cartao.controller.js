@@ -111,7 +111,7 @@ class Cartao {
                         const formatLimiteValor = (0, formata_dinheiro_1.formatWithRegex)(limiteValor);
                         const formatDisponivelValor = (0, formata_dinheiro_1.formatWithRegex)(disponivelValor);
                         globalState.setClientCondition("cartao_1");
-                        const dadosMsg = ` \u{1F4B5}Cartão: *${newNomeCartao.trim()}*, *Tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite Total:${formatLimiteValor}*, *Limite Disponível:${formatDisponivelValor}*`;
+                        const dadosMsg = `\u{1F4B5}Cartão: *${newNomeCartao.trim()}*, *Tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite Total:${formatLimiteValor}*, *Limite Disponível:${formatDisponivelValor}*`;
                         yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
                         (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }

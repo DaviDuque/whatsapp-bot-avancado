@@ -101,6 +101,7 @@ class Receitas {
                 if (dataString == 'Invalid Date') {
                     dataString = (0, dayjs_1.default)().format('YYYY-MM-DD');
                 }
+                let newCategoria = categoria.replace(/["'\[\]\(\)]/g, '');
                 const valor = parseFloat(valorStr);
                 if (!cliente) {
                     return undefined;
@@ -116,7 +117,8 @@ class Receitas {
                         const confirmationMessage = `Por favor, confirme os dados abaixo:\n 
 \u{1F4B5} *Receita:* ${newDescricao.trim()}
 \u{1F4B0} *Valor:* ${(0, formata_dinheiro_1.formatWithRegex)(valor)}
-\u{231A} *Data:* ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')} \n
+\u{231A} *Data:* ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')} 
+\u{1F4C4} *Categoria:* ${newCategoria.trim()} \n
 `;
                         yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
                         yield (0, twilio_1.sendMessage)(To, From, confirmationMessage);
@@ -147,6 +149,7 @@ class Receitas {
 \u{1F4B5} Receita: ${newDescricao}
 \u{1F4B0} Valor: ${(0, formata_dinheiro_1.formatWithRegex)(valor)}
 \u{231A} Data: ${(0, dayjs_1.default)(dataString).format('DD-MM-YYYY')}
+\u{1F4C4} *Categoria:* ${newCategoria.trim()}
 \u{1F4A1}Para cadastrar outra receita digite *2* ou para voltar digite *8* ou ainda para sair digite *9*`);
                             yield (0, states_1.limparEstado)(From);
                             globalState.setClientCondition("inicial");

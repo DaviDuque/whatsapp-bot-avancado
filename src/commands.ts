@@ -19,7 +19,7 @@ addCommand({
 *Nome da despesa*
 *data* 
 *Valor*
-*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX)
+*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX, Cartão BHBus, Vale alimentação, Vale refeição)
 `;
     },
 });
@@ -33,7 +33,8 @@ addCommand({
         return `\u{1F4B5}Para cadastrar uma receita, digite ou fale os detalhes como: 
 *Nome da receita*
 *Valor*
-*Data*`;
+*Data*
+`;
     },
 });
 
@@ -102,7 +103,6 @@ addCommand({
 *Nome da conta*
 *Tipo*
 *Banco*
-*Limite*
 *Saldo*
 `;
     },

@@ -41,7 +41,6 @@ export class Conta {
 *Nome da conta*
 *tipo:* Corrente/poupança
 *banco*
-*limite*
 *saldo*
                      `);
                 await atualizarEstado(From, "aguardando_dados");
@@ -61,7 +60,6 @@ export class Conta {
 *Nome da conta*
 *Tipo:* Corrente/poupança
 *Banco*
-*Limite*
 *Saldo*
                      `);
             await atualizarEstado(From, "aguardando_dados");
@@ -72,9 +70,9 @@ export class Conta {
             if (!Transcribe) return;
 
             const response = await summarizeServiceConta.summarize(Transcribe);         
-            let [nome_conta, tipo, banco, limite, saldo] = response.split(',');
-           
-            const limiteValor = parseFloat(limite);
+            let [nome_conta, tipo, banco, saldo] = response.split(',');
+            console.log("response summ", response);
+            //const limiteValor = parseFloat(limite) || null;
             const saldoValor = parseFloat(saldo);
             if (!cliente) { return undefined; }
             globalState.setMensagem(`${response}`);
@@ -84,16 +82,16 @@ export class Conta {
                 const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                 const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
                 
-                if (!validarDescricao(nome_conta) || !validarValorTotal(limiteValor) || !validarValorTotal(saldoValor) || newNomeConta == null) {
+                if (!validarDescricao(nome_conta) || !validarValorTotal(saldoValor) || newNomeConta == null) {
                     await sendMessage(To, From, "\u{26A0}Desculpe não entendi, forneça os dados corretos da conta. Você pode digitar ou falar");
                 } else {
                     globalState.setClientCondition("conta_1");
-                    const formatLimiteValor = formatWithRegex(limiteValor);
+                   // const formatLimiteValor = limiteValor ? formatWithRegex(limiteValor) : null;
                     const formatSaldoValor = formatWithRegex(saldoValor);
      
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
                     const dadosMsg = 
-`\u{1F4B5}Conta: *${newNomeConta.trim()}*, *tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite:${formatLimiteValor}*, *Saldo:${formatSaldoValor}*`
+`\u{1F4B5}Conta: *${newNomeConta.trim()}*, *tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Saldo:${formatSaldoValor}*`
                     sendConfirmPadraoMessage(To, From, dadosMsg); 
                 }
             } catch (error) {
@@ -106,7 +104,7 @@ export class Conta {
 
         let dados = globalState.getMensagem();
         if(!dados)return null
-        let [nome_conta, tipo, banco, limite, saldo] = dados.split(',');
+        let [nome_conta, tipo, banco, saldo] = dados.split(',');
 
             if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
                 if(cliente){
@@ -114,11 +112,11 @@ export class Conta {
                         const newNomeConta = nome_conta!.replace(/["'\[\]\(\)]/g, '');
                         const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                         const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
-                        const limiteValor = parseFloat(limite);
+                        //const limiteValor = limite ? parseFloat(limite) : null;
                         const saldoValor = parseFloat(saldo);
-                        const formatLimiteValor = formatWithRegex(limiteValor);
+                        //const formatLimiteValor = limiteValor ? formatWithRegex(limiteValor) : null;
                         const formatSaldoValor = formatWithRegex(saldoValor);
-                        const resultado = await cadastrarConta(cliente, newNomeConta, newTipo, newBanco, limiteValor, saldoValor);
+                        const resultado = await cadastrarConta(cliente, newNomeConta, newTipo, newBanco, saldoValor);
         
                         if (resultado?.sucesso) {
                             await sendMessage(To, From, `
@@ -126,7 +124,6 @@ export class Conta {
 *Conta:* ${newNomeConta.trim()}
 *Tipo:* ${newTipo.trim()}
 *Banco:* ${newBanco.trim()}
-*Limite:*  ${formatLimiteValor}
 *Saldo:* ${formatSaldoValor} \n
 \u{1F4A1}Para cadastrar outra Conta digite *7*, para voltar digite *8* ou para sair digite *9*`);
                                         

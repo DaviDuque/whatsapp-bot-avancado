@@ -15,22 +15,34 @@ const mysql_connection_1 = require("../../infra/database/mysql-connection");
 const trata_telefone_1 = require("../../utils/trata-telefone");
 const states_1 = require("../../infra/states/states");
 const verificarClientePorTelefone = (telefone) => __awaiter(void 0, void 0, void 0, function* () {
-    const [rows] = yield mysql_connection_1.connection.execute('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
-    if (rows.length > 0) {
-        const From = (0, trata_telefone_1.reverterNumeroTelefone)(telefone);
-        const cliente = (0, states_1.verificarClienteEstado)(rows[0].id_cliente);
-        const teste = (0, states_1.verificarClienteEstado)(From);
+    try {
+        const [rows] = yield mysql_connection_1.connection.execute('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
+        if (rows.length > 0) {
+            const From = (0, trata_telefone_1.reverterNumeroTelefone)(telefone);
+            (0, states_1.verificarClienteEstado)(rows[0].id_cliente);
+            (0, states_1.verificarClienteEstado)(From);
+        }
+        return rows.length > 0;
     }
-    return rows.length > 0;
+    catch (error) {
+        console.error('Erro ao verificar cliente por telefone:', error);
+        throw new Error('Erro ao verificar cliente por telefone');
+    }
 });
 exports.verificarClientePorTelefone = verificarClientePorTelefone;
 const criarClientePorTelefone = (telefone) => __awaiter(void 0, void 0, void 0, function* () {
-    const [rows] = yield mysql_connection_1.connection.execute('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
-    if (rows.length > 0) {
-        const From = (0, trata_telefone_1.reverterNumeroTelefone)(telefone);
-        const teste = (0, states_1.verificarClienteEstado)(rows[0].id_cliente);
+    try {
+        const [rows] = yield mysql_connection_1.connection.execute('SELECT * FROM clientes WHERE telefone = ?', [telefone]);
+        if (rows.length > 0) {
+            const From = (0, trata_telefone_1.reverterNumeroTelefone)(telefone);
+            (0, states_1.verificarClienteEstado)(rows[0].id_cliente);
+        }
+        return rows[0].id_cliente;
     }
-    return rows[0].id_cliente;
+    catch (error) {
+        console.error('Erro ao criar cliente por telefone:', error);
+        throw new Error('Erro ao criar cliente por telefone');
+    }
 });
 exports.criarClientePorTelefone = criarClientePorTelefone;
 const cadastrarCliente = (cliente) => __awaiter(void 0, void 0, void 0, function* () {

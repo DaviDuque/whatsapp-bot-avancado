@@ -71,7 +71,7 @@ export class Receitas {
             let [descricao, valorStr, dataStr, categoria] = response.split(',');
             let dataString: string = dayjs(dataStr).format('YYYY-MM-DD');
             if (dataString == 'Invalid Date') { dataString = dayjs().format('YYYY-MM-DD') }
-
+            let newCategoria = categoria!.replace(/["'\[\]\(\)]/g, '');
             const valor = parseFloat(valorStr);
             if (!cliente) { return undefined }
 
@@ -87,7 +87,8 @@ export class Receitas {
                     const confirmationMessage =`Por favor, confirme os dados abaixo:\n 
 \u{1F4B5} *Receita:* ${newDescricao.trim()}
 \u{1F4B0} *Valor:* ${formatWithRegex(valor)}
-\u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')} \n
+\u{231A} *Data:* ${dayjs(dataString).format('DD-MM-YYYY')} 
+\u{1F4C4} *Categoria:* ${newCategoria.trim()} \n
 `;
                     await atualizarEstado(From, "aguardando_confirmacao_dados");
                     await sendMessage(To, From, confirmationMessage);
@@ -122,6 +123,7 @@ export class Receitas {
 \u{1F4B5} Receita: ${newDescricao}
 \u{1F4B0} Valor: ${formatWithRegex(valor)}
 \u{231A} Data: ${dayjs(dataString).format('DD-MM-YYYY')}
+\u{1F4C4} *Categoria:* ${newCategoria.trim()}
 \u{1F4A1}Para cadastrar outra receita digite *2* ou para voltar digite *8* ou ainda para sair digite *9*`);
                     
                     await limparEstado(From);

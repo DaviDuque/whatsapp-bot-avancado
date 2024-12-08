@@ -122,6 +122,7 @@ function sendConfirmMessage(To, From, dados) {
 function sendConfirmPadraoMessage(To, From, dados) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            console.log("sendmsg", dados);
             const message = yield client.messages.create({
                 contentSid: "HX56d5469870327f13b001efc754af58e0",
                 contentVariables: JSON.stringify({
@@ -129,7 +130,7 @@ function sendConfirmPadraoMessage(To, From, dados) {
                 }),
                 from: To,
                 messagingServiceSid: "MGd3e5ec8692cb6c7983621534eccf6d6f",
-                to: From,
+                to: From
             });
         }
         catch (error) {

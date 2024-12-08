@@ -66,7 +66,9 @@ export class Relatorios {
             
         const Transcribe = await transcribe(SmsMessageSid, NumMedia, Body, MediaContentType0, MediaUrl0);
         if (!Transcribe) return;
+        console.log("relatorio>>>>>>>>", Transcribe);
         const response = await summarizeServiceRelatorio.summarize(Transcribe);
+        console.log("relatorio>>>>>>>>", response);
         const [data_inicial, data_final] = response.split(',');
         const datStrIni: string = dayjs(data_inicial.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD');
         const datStrFim: string = dayjs(data_final.replace(/["'\[\]\(\)]/g, '')).format('YYYY-MM-DD');
@@ -129,8 +131,9 @@ export class Relatorios {
                     }
                 }
             } else if (Body.toUpperCase() === 'N' || Body.trim() === 'Não') {
-                await sendMessage(To, From, "\u{274C}Cadastro de meta cancelado. Você pode tentar novamente.");
                 await atualizarEstado(From, "aguardando_dados");
+                await sendMessage(To, From, "\u{274C}Cadastro de Relatório cancelado. Você pode tentar novamente.");
+                
             } else {
                 await sendMessage(To, From, "\u{26A0}Não reconheci sua resposta. Por favor, responda com *Sim* ou *Não*");
                 }

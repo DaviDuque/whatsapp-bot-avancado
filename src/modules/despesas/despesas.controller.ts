@@ -59,7 +59,7 @@ export class Despesas {
 *Nome da despesa*
 *data* 
 *Valor*
-*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX)
+*Método de pagamento* (Crédito parcelado, Crédito a vista, Débito, PIX, Cartão BHBus, Vale alimentação, Vale refeição)
 `);
             await atualizarEstado(From, "aguardando_dados");
         }

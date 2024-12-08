@@ -69,7 +69,6 @@ class Conta {
 *Nome da conta*
 *tipo:* Corrente/poupança
 *banco*
-*limite*
 *saldo*
                      `);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
@@ -86,7 +85,6 @@ class Conta {
 *Nome da conta*
 *Tipo:* Corrente/poupança
 *Banco*
-*Limite*
 *Saldo*
                      `);
                 yield (0, states_1.atualizarEstado)(From, "aguardando_dados");
@@ -96,8 +94,9 @@ class Conta {
                 if (!Transcribe)
                     return;
                 const response = yield summarizeServiceConta.summarize(Transcribe);
-                let [nome_conta, tipo, banco, limite, saldo] = response.split(',');
-                const limiteValor = parseFloat(limite);
+                let [nome_conta, tipo, banco, saldo] = response.split(',');
+                console.log("response summ", response);
+                //const limiteValor = parseFloat(limite) || null;
                 const saldoValor = parseFloat(saldo);
                 if (!cliente) {
                     return undefined;
@@ -107,15 +106,15 @@ class Conta {
                     const newNomeConta = nome_conta.replace(/["'\[\]\(\)]/g, '');
                     const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                     const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
-                    if (!(0, validation_1.validarDescricao)(nome_conta) || !(0, validation_1.validarValorTotal)(limiteValor) || !(0, validation_1.validarValorTotal)(saldoValor) || newNomeConta == null) {
+                    if (!(0, validation_1.validarDescricao)(nome_conta) || !(0, validation_1.validarValorTotal)(saldoValor) || newNomeConta == null) {
                         yield (0, twilio_1.sendMessage)(To, From, "\u{26A0}Desculpe não entendi, forneça os dados corretos da conta. Você pode digitar ou falar");
                     }
                     else {
                         globalState.setClientCondition("conta_1");
-                        const formatLimiteValor = (0, formata_dinheiro_1.formatWithRegex)(limiteValor);
+                        // const formatLimiteValor = limiteValor ? formatWithRegex(limiteValor) : null;
                         const formatSaldoValor = (0, formata_dinheiro_1.formatWithRegex)(saldoValor);
                         yield (0, states_1.atualizarEstado)(From, "aguardando_confirmacao_dados");
-                        const dadosMsg = ` \u{1F4B5}Conta: *${newNomeConta.trim()}*, *tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Limite:${formatLimiteValor}*, *Saldo:${formatSaldoValor}*`;
+                        const dadosMsg = `\u{1F4B5}Conta: *${newNomeConta.trim()}*, *tipo:${newTipo.trim()}*, *Banco:${newBanco.trim()}*, *Saldo:${formatSaldoValor}*`;
                         (0, twilio_1.sendConfirmPadraoMessage)(To, From, dadosMsg);
                     }
                 }
@@ -128,25 +127,24 @@ class Conta {
                 let dados = globalState.getMensagem();
                 if (!dados)
                     return null;
-                let [nome_conta, tipo, banco, limite, saldo] = dados.split(',');
+                let [nome_conta, tipo, banco, saldo] = dados.split(',');
                 if (Body.toUpperCase() === 'S' || Body.trim() === 'Sim') {
                     if (cliente) {
                         try {
                             const newNomeConta = nome_conta.replace(/["'\[\]\(\)]/g, '');
                             const newTipo = tipo.replace(/["'\[\]\(\)]/g, '');
                             const newBanco = banco.replace(/["'\[\]\(\)]/g, '');
-                            const limiteValor = parseFloat(limite);
+                            //const limiteValor = limite ? parseFloat(limite) : null;
                             const saldoValor = parseFloat(saldo);
-                            const formatLimiteValor = (0, formata_dinheiro_1.formatWithRegex)(limiteValor);
+                            //const formatLimiteValor = limiteValor ? formatWithRegex(limiteValor) : null;
                             const formatSaldoValor = (0, formata_dinheiro_1.formatWithRegex)(saldoValor);
-                            const resultado = yield (0, conta_repository_1.cadastrarConta)(cliente, newNomeConta, newTipo, newBanco, limiteValor, saldoValor);
+                            const resultado = yield (0, conta_repository_1.cadastrarConta)(cliente, newNomeConta, newTipo, newBanco, saldoValor);
                             if (resultado === null || resultado === void 0 ? void 0 : resultado.sucesso) {
                                 yield (0, twilio_1.sendMessage)(To, From, `
 *Conta cadastrada com sucesso!* 
 *Conta:* ${newNomeConta.trim()}
 *Tipo:* ${newTipo.trim()}
 *Banco:* ${newBanco.trim()}
-*Limite:*  ${formatLimiteValor}
 *Saldo:* ${formatSaldoValor} \n
 \u{1F4A1}Para cadastrar outra Conta digite *7*, para voltar digite *8* ou para sair digite *9*`);
                                 yield (0, states_1.limparEstado)(From);
