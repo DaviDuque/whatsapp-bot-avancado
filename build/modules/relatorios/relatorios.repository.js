@@ -123,7 +123,7 @@ function gerarRelatorioExcel(id_cliente, data_inicial, data_final) {
         sheet.addRow(['Despesas', totalDespesasFormatado]).font = { bold: true };
         sheet.addRow(['Investimentos', totalInvestimentosFormatado]).font = { bold: true };
         sheet.addRow(['Saldo', saldoFormatado]).font = { bold: true };
-        sheet.addRow(['Percentual investido', `${percentualInvestido}%`]).font = { bold: true };
+        sheet.addRow(['Percentual investido', `${percentualInvestidoFormatado}%`]).font = { bold: true };
         currentRow += 8;
         console.log(".....totalReceitas", `R$${totalReceitas}`);
         console.log(".....");
