@@ -69,6 +69,7 @@ const atualizarStatusCliente = (id_cliente) => __awaiter(void 0, void 0, void 0,
     try {
         console.log("id_cliente>>>>>", id_cliente);
         const [result] = yield mysql_connection_1.connection.query(`UPDATE clientes SET status = 3 WHERE id_cliente = ?`, [id_cliente]);
+        console.log("errro>>>>>", result);
         return { status: "sucesso" };
     }
     catch (error) {

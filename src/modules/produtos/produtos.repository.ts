@@ -13,6 +13,7 @@ export class ProdutosRepository {
       'SELECT * FROM produtos WHERE grupo = :grupo AND status = 1',
       { grupo }
     );
+    console.log("rows>>>>>", rows);
     return rows;
   }
 }

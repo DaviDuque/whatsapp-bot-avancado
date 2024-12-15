@@ -82,6 +82,7 @@ export const atualizarStatusCliente = async (id_cliente: number) => {
             `UPDATE clientes SET status = 3 WHERE id_cliente = ?`,
             [id_cliente]
         );
+        console.log("errro>>>>>", result);
         return { status: "sucesso" };
     } catch (error) {
         console.log("errro>>>>>", error);

@@ -102,11 +102,12 @@ export class Pagamentos {
           const transacao = await TransacoesService.criarAssinatura(dadosAssinatura);
           console.log(">>>>>>>resp2", response);
            /************Apagar essas 3 linhas e adicionar tratamento para pagamento */
+           await atualizarStatusCliente(dadosCliente[0].id_cliente);
            globalState.setClientId(dadosCliente[0].id_cliente);
            console.log(">>>>>>>resp3",dadosCliente[0].id_cliente);
            globalState.setClientCondition("inicial");
            console.log(">>>>>>>resp4");
-           await atualizarStatusCliente(dadosCliente[0].id_cliente);
+           
            console.log(">>>>>>>resp5", dadosCliente[0].id_cliente);
            /***********************fim de improviso */
           sendMessage(To, From, `pague por aqui ${response.init_point}`);
@@ -140,11 +141,12 @@ export class Pagamentos {
         if (response.status == 'sucesso') {
           console.log(">>>>>>>resp2");
            /************Apagar essas 3 linhas e adicionar tratamento para pagamento */
+           await atualizarStatusCliente(dadosCliente[0].id_cliente);
            globalState.setClientId(dadosCliente[0].id_cliente);
            console.log(">>>>>>>resp3",dadosCliente[0].id_cliente);
            globalState.setClientCondition("inicial");
            console.log(">>>>>>>resp4");
-           await atualizarStatusCliente(dadosCliente[0].id_cliente);
+           
            console.log(">>>>>>>resp5", dadosCliente[0].id_cliente);
            /***********************fim de improviso */
           const transacao = await TransacoesController.criarPagamentoAvulsoDireto(dadosPagamento);
