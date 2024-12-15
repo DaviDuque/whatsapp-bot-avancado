@@ -131,11 +131,17 @@ export class Pagamentos {
           1,
         );
 
+        console.log(">>>>>>>resp",response);
+
         if (response.status == 'sucesso') {
+          console.log(">>>>>>>resp2");
            /************Apagar essas 3 linhas e adicionar tratamento para pagamento */
            globalState.setClientId(dadosCliente[0].id_cliente);
+           console.log(">>>>>>>resp3",dadosCliente[0].id_cliente);
            globalState.setClientCondition("inicial");
+           console.log(">>>>>>>resp4");
            await atualizarStatusCliente(dadosCliente[0].id_cliente);
+           console.log(">>>>>>>resp5", dadosCliente[0].id_cliente);
            /***********************fim de improviso */
           const transacao = await TransacoesController.criarPagamentoAvulsoDireto(dadosPagamento);
           sendMessage(To, From, `pague por aqui ${response.init_point.init_point}`);
