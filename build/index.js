@@ -133,12 +133,15 @@ app.post('/whatsapp', (req, res) => __awaiter(void 0, void 0, void 0, function* 
     if (clienteCadastrado) {
         const cliente = globalState.getClientId();
         let condicao = yield globalState.getClientCondition();
-        if (dadosCliente[0].status == 1 || dadosCliente[0].status == 2) {
+        //logica para tratar clientes que pagaram
+        /*if (dadosCliente[0].status == 1 || dadosCliente[0].status == 2) {
             if (condicao != "pagamento_1" && condicao != "pagamento_2") {
                 globalState.setClientCondition('pagamento');
             }
         }
-        if (!cliente && dadosCliente[0].status == 3) {
+
+        if (!cliente && dadosCliente[0].status == 3) {*/
+        if (!cliente) {
             console.log("-----entrou-------op whatsapp");
             const cliente_id = yield (0, clientes_repository_1.criarClientePorTelefone)((0, trata_telefone_1.formatarNumeroTelefone)(From.replace(/^whatsapp:/, '')));
             globalState.setClientId(cliente_id);

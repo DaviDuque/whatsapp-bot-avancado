@@ -119,8 +119,8 @@ export async function gerarRelatorioExcel(
         currency: 'BRL'
       }).format(saldo);
 
-    const percentualInvestido = saldo > 0 ? ((totalInvestimentos / saldo) * 100).toFixed(2) : "0,00";
-    
+    const percentualInvestido = saldo > 0 ? ((totalInvestimentos / saldo) * 100).toFixed(2) : "0.00";
+    const percentualInvestidoFormatado =  percentualInvestido.replace(/\. /g, " ,");
     console.log(".....totalReceitas", `R$${totalReceitas}`);
     console.log(".....", );
     console.log(".....", );
@@ -133,7 +133,7 @@ export async function gerarRelatorioExcel(
     sheet.addRow(['Receitas',totalReceitasFormatado]).font = { bold: true };
     sheet.addRow(['Despesas', totalDespesasFormatado]).font = { bold: true };
     sheet.addRow(['Investimentos', totalInvestimentosFormatado]).font = { bold: true };
-    sheet.addRow(['Saldo', `R$${saldoFormatado}`]).font = { bold: true };
+    sheet.addRow(['Saldo', saldoFormatado]).font = { bold: true };
     sheet.addRow(['Percentual investido',  `${percentualInvestido}%`]).font = { bold: true };
     currentRow += 8;
 

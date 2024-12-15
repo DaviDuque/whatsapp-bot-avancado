@@ -19,10 +19,10 @@ export const cadastrarPagamento = async (
             data_limite.trim(),
         ];
         await connection.execute(query, values);
-        return { sucesso: true, mensagem: 'Meta cadastrado com sucesso.' };
+        return { sucesso: true, mensagem: 'pagamento cadastrado com sucesso.' };
     } catch (error) {
-        console.error('Erro ao cadastrar cartão:', error);
-        return { sucesso: false, mensagem: `Erro ao cadastrar meta: ${error}` };
+        console.error('Erro ao cadastrar pagamento:', error);
+        return { sucesso: false, mensagem: `Erro ao cadastrar pagamento: ${error}` };
     }
 };
 
