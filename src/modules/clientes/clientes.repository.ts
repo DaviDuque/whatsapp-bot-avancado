@@ -79,7 +79,8 @@ export const atualizarStatusCliente = async (id_cliente: number) => {
     try {
         console.log("id_cliente>>>>>", id_cliente);
         const result = await connection.query(
-            `UPDATE clientes SET status = 3 WHERE id_cliente = ?`, id_cliente
+            `UPDATE clientes SET status = 3 WHERE id_cliente = ?`,
+            [id_cliente]
         );
         console.log("rsp>>>>>", result);
         return { status: "sucesso" };
