@@ -68,13 +68,22 @@ exports.buscarClientePorTelefone = buscarClientePorTelefone;
 const atualizarStatusCliente = (id_cliente) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log("id_cliente>>>>>", id_cliente);
-        const result = yield mysql_connection_1.connection.query(`UPDATE clientes SET status = 3 WHERE id_cliente = ${id_cliente}`);
+        // Verifica se o id_cliente é um número válido
+        if (typeof id_cliente !== 'number' || id_cliente <= 0) {
+            throw new Error("ID do cliente inválido");
+        }
+        // Uso de prepared statement para evitar SQL Injection
+        const [result] = yield mysql_connection_1.connection.query(`UPDATE clientes SET status = ? WHERE id_cliente = ?`, [3, id_cliente]);
+        // Verifica se a atualização foi bem-sucedida
+        if (result.affectedRows === 0) {
+            throw new Error("Nenhum registro foi atualizado. Verifique o ID do cliente.");
+        }
         console.log("rsp>>>>>", result);
         return { status: "sucesso" };
     }
     catch (error) {
         console.log("errro>>>>>", error);
-        return { status: "errror" };
+        return { status: "error", message: error.message };
     }
 });
 exports.atualizarStatusCliente = atualizarStatusCliente;
