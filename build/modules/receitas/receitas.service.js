@@ -21,7 +21,7 @@ const cadastrarReceitaService = (id_cliente, descricao, valor, data_receita, cat
     try {
         const newDate = (0, dayjs_1.default)(data_receita).format('YYYY-MM-DD HH:mm:ss');
         const query = 'INSERT INTO receitas (id_cliente, descricao, valor, data_receita, categoria) VALUES (?, ?, ?, ?, ?)';
-        const values = [id_cliente, descricao, valor, newDate, categoria];
+        const values = [id_cliente, descricao.trimStart(), valor, newDate, categoria];
         yield mysql_connection_1.connection.execute(query, values);
     }
     catch (error) {

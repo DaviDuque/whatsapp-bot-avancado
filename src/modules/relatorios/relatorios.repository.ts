@@ -41,8 +41,6 @@ export async function generateCSVFile(csvContent: string, fileName: string): Pro
     return filePath;
 }
 
-
-
 export async function gerarRelatorioExcel(
     id_cliente: string,
     data_inicial: string,
@@ -99,11 +97,29 @@ export async function gerarRelatorioExcel(
     const totalDespesas = despesas.reduce((sum: number, item: { valor: number }) => sum + Number(item.valor || 0), 0);
     const totalReceitas = receitas.reduce((sum: number, item: { valor: number }) => sum + Number(item.valor || 0), 0);
     const totalInvestimentos = investimentos.reduce((sum: number, item: { valor: number }) => sum + Number(item.valor || 0), 0);
-
     const saldo = totalReceitas - totalDespesas;
-    //const StringSaldo: string = saldo.toString();
-    const percentualInvestido = saldo > 0 ? ((totalInvestimentos / saldo) * 100).toFixed(2) : "0.00";
-    //const StringPercentualInvestido: string = percentualInvestido.toString();
+
+    const totalDespesasFormatado = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(totalDespesas);
+
+      const totalReceitasFormatado = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(totalReceitas);
+
+      const totalInvestimentosFormatado = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(totalInvestimentos);
+
+      const saldoFormatado = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(saldo);
+
+    const percentualInvestido = saldo > 0 ? ((totalInvestimentos / saldo) * 100).toFixed(2) : "0,00";
     
     console.log(".....totalReceitas", `R$${totalReceitas}`);
     console.log(".....", );
@@ -114,11 +130,11 @@ export async function gerarRelatorioExcel(
 
     // Dados de resumo
     sheet.addRow(['Tipo', 'Valor']).font = { bold: true };
-    sheet.addRow(['Receitas',`R$${totalReceitas}`]);
-    sheet.addRow(['Despesas', `R$${totalDespesas}`]);
-    sheet.addRow(['Investimentos', `R$${totalInvestimentos}`]);
-    sheet.addRow(['Saldo', `R$${saldo}`]);
-    sheet.addRow(['Percentual investido',  `${percentualInvestido}%`]);
+    sheet.addRow(['Receitas',totalReceitasFormatado]).font = { bold: true };
+    sheet.addRow(['Despesas', totalDespesasFormatado]).font = { bold: true };
+    sheet.addRow(['Investimentos', totalInvestimentosFormatado]).font = { bold: true };
+    sheet.addRow(['Saldo', `R$${saldoFormatado}`]).font = { bold: true };
+    sheet.addRow(['Percentual investido',  `${percentualInvestido}%`]).font = { bold: true };
     currentRow += 8;
 
     console.log(".....totalReceitas", `R$${totalReceitas}`);
@@ -126,7 +142,7 @@ export async function gerarRelatorioExcel(
     console.log(".....", );
     console.log(".....", );
     console.log(".....", );
-    console.log(".....StringPercentualInvestido", ` ${percentualInvestido}%`);
+    console.log(".....StringPercentualInvestido", ` ${percentualInvestido.replace('.', ',')}%`);
 
     addSubtitle('Detalhes de Despesas', 1);
     sheet.addRow(['Categoria', 'Descrição', 'Valor', 'Data']).font = { bold: true };

@@ -7,7 +7,7 @@ export const cadastrarReceitaService = async (id_cliente: string, descricao: str
     try {
         const newDate: string = dayjs(data_receita).format('YYYY-MM-DD HH:mm:ss');
         const query = 'INSERT INTO receitas (id_cliente, descricao, valor, data_receita, categoria) VALUES (?, ?, ?, ?, ?)';
-        const values = [id_cliente, descricao, valor, newDate, categoria];
+        const values = [id_cliente, descricao.trimStart(), valor, newDate, categoria];
         await connection.execute(query, values);
     } catch (error) {
         console.error('Erro ao cadastrar receita:', error);

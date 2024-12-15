@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { sendMessage, sendConfirmPadraoMessage, sendListPickerPlanos } from '../../infra/integrations/twilio';
 import '../../commands';
 import { formatarNumeroTelefone } from '../../utils/trata-telefone';
-import { buscarClientePorTelefone } from '../clientes/clientes.repository';
+import { buscarClientePorTelefone,atualizarStatusCliente } from '../clientes/clientes.repository';
 import { verificarEstado, atualizarEstado, verificarClienteEstado } from '../../infra/states/states';
 import { GlobalState } from '../../infra/states/global-state';
 import { processaAssinatura, processaPagamento } from "./pagamentos.service";
@@ -100,6 +100,13 @@ export class Pagamentos {
             id_aplicacao_gateway: response.application_id
           };
           const transacao = await TransacoesService.criarAssinatura(dadosAssinatura);
+
+          /************Apagar essas 3 linhas e adicionar tratamento para pagamento */
+          globalState.setClientId(dadosCliente[0].id_cliente);
+          globalState.setClientCondition("inicial");
+          await atualizarStatusCliente(dadosCliente[0].id_cliente);
+          /***********************fim de improviso */
+
           sendMessage(To, From, `pague por aqui ${response.init_point}`);
         } else {
           sendMessage(To, From, "\u{1F534} Erro ao criar assinatura, uma notificação foi enviada para o administrador, aguarde que entraremos em contato");
