@@ -120,7 +120,7 @@ export async function gerarRelatorioExcel(
       }).format(saldo);
 
     const percentualInvestido = saldo > 0 ? ((totalInvestimentos / saldo) * 100).toFixed(2) : "0.00";
-    const percentualInvestidoFormatado =  percentualInvestido.replace(/\. /g, " ,");
+    const percentualInvestidoFormatado =  percentualInvestido.toString().replace(/\. /g, " ,");
     console.log(".....totalReceitas", `R$${totalReceitas}`);
     console.log(".....", );
     console.log(".....", );
